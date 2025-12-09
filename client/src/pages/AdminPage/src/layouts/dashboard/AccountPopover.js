@@ -1,8 +1,6 @@
 import { useRef, useState } from "react";
 import {
-  Link,
   Link as RouterLink,
-  Navigate,
   useNavigate,
 } from "react-router-dom";
 // @mui
@@ -18,8 +16,6 @@ import {
 } from "@mui/material";
 // components
 import MenuPopover from "../../components/MenuPopover";
-// mocks_
-import account from "../../_mock/account";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../../../../slices/userSlice";
 
@@ -42,6 +38,10 @@ const MENU_OPTIONS = [
     linkTo: "#",
   },
 ];
+
+const account = {
+  photoURL: "https://via.placeholder.com/150",
+}
 
 // ----------------------------------------------------------------------
 
@@ -90,7 +90,7 @@ export default function AccountPopover() {
           }),
         }}
       >
-        <Avatar src={account.photoURL} alt="photoURL" />
+        <Avatar src={profileInfo?.photoURL || account.photoURL} alt="photoURL" />
       </IconButton>
 
       <MenuPopover

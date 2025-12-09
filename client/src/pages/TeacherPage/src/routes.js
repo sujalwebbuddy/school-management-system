@@ -7,7 +7,6 @@ import Page404 from "./pages/Page404";
 
 import Calender from "../../../components/Calender";
 
-import Kanban from "./pages/Kanban";
 import MyStudents from "./pages/MyStudents";
 import Attendance from "./pages/Attendance";
 import Exam from "./pages/Exam";
@@ -15,6 +14,7 @@ import Marks from "./pages/Marks";
 import Homework from "./pages/Homework";
 import EditAccount from "./pages/EditProfile";
 import ChatPage from "../../../features/chat/pages/ChatPage";
+import { TaskPage } from "../../../features/tasks";
 
 // ----------------------------------------------------------------------
 
@@ -32,9 +32,9 @@ export default function Router({ isAuth, role }) {
         { path: "homework", element: <Homework /> },
         { path: "editprofile", element: <EditAccount /> },
         { path: "chat", element: <ChatPage /> },
+        { path: "tasks", element: <TaskPage /> },
 
         { path: "calender", element: <Calender /> },
-        { path: "kanban", element: <Kanban /> },
         { path: "*", element: <Page404 /> },
       ],
     },

@@ -24,6 +24,7 @@ app.use("/api/v1/student", require("./routes/studentRoute"));
 app.use("/api/v1/messages", require("./routes/messageRoute"));
 app.use("/api/v1/authmsg", require("./routes/messageAuth"));
 app.use("/api/v1/chats", require("./routes/chatRoute"));
+app.use("/api/v1/tasks", require("./routes/taskRoute"));
 
 app.use("/uploads", express.static("./uploads"));
 

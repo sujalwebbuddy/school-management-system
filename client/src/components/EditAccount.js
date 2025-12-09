@@ -17,17 +17,14 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { getApprovedUsers } from "../slices/adminSlice";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { selectFields } from "express-validator/src/select-fields";
 import swal from "sweetalert";
 import axios from "axios";
 const EditAccount = () => {
   const {
     register,
     handleSubmit,
-    reset,
-    formState: { errors },
   } = useForm();
   const states = [
     {

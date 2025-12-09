@@ -13,8 +13,6 @@ import {
 } from "@mui/material";
 // components
 import MenuPopover from "../../components/MenuPopover";
-// mocks_
-import account from "../../_mock/account";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../../../../slices/userSlice";
 

@@ -18,20 +18,37 @@ import {
   AppConversionRates,
 } from "../sections/@dashboard/app";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getApprovedUsers } from "../../../../slices/adminSlice";
+import { TaskDialog } from "../../../../features/tasks";
 
 // ----------------------------------------------------------------------
 
 export default function DashboardApp() {
   const dispatch = useDispatch();
+  const [taskDialogOpen, setTaskDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+
   useEffect(() => {
     dispatch(getApprovedUsers());
   }, [dispatch]);
+
   const theme = useTheme();
   const users = useSelector((state) => {
     return state.admin.usersApproved;
   });
+
+  const allUsers = users?.student?.concat(users?.teacher || [], users?.parent || [], users?.admin || []) || [];
+
+  const handleOpenTaskDialog = (task = null) => {
+    setEditingTask(task);
+    setTaskDialogOpen(true);
+  };
+
+  const handleCloseTaskDialog = () => {
+    setTaskDialogOpen(false);
+    setEditingTask(null);
+  };
 
   return (
     <Page title="Dashboard">
@@ -234,17 +251,18 @@ export default function DashboardApp() {
           <Grid item xs={12} md={6} lg={8}>
             <AppTasks
               title="Tasks"
-              list={[
-                { id: "1", label: "Create FireStone Logo" },
-                { id: "2", label: "Add SCSS and JS files if required" },
-                { id: "3", label: "Stakeholder Meeting" },
-                { id: "4", label: "Scoping & Estimations" },
-                { id: "5", label: "Sprint Showcase" },
-              ]}
+              onAddTask={() => handleOpenTaskDialog()}
             />
           </Grid>
         </Grid>
       </Container>
+
+      <TaskDialog
+        open={taskDialogOpen}
+        onClose={handleCloseTaskDialog}
+        task={editingTask}
+        users={allUsers}
+      />
     </Page>
   );
 }

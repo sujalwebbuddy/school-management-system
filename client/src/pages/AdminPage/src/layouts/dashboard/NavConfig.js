@@ -53,9 +53,9 @@ const navConfig = [
     icon: getIcon("uis:calender"),
   },
   {
-    title: "Kanban",
-    path: "/dashboard/kanban",
-    icon: getIcon("fluent:clipboard-task-list-rtl-24-filled"),
+    title: "Tasks",
+    path: "/dashboard/tasks",
+    icon: getIcon("fluent:clipboard-task-24-filled"),
   },
   {
     title: "Chat",

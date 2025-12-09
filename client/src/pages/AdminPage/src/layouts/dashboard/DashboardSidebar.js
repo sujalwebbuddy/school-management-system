@@ -12,13 +12,10 @@ import {
   Avatar,
   Stack,
 } from "@mui/material";
-// mock
-import account from "../../_mock/account";
 // hooks
 import useResponsive from "../../hooks/useResponsive";
 // components
 import Logo from "../../components/Logo";
-import Scrollbar from "../../components/Scrollbar";
 import NavSection from "../../components/NavSection";
 //
 import navConfig from "./NavConfig";
@@ -77,7 +74,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
       <Box sx={{ mb: 5, mx: 2.5 }}>
         <Link underline="none" component={RouterLink} to="#">
           <AccountStyle>
-            <Avatar src={account.photoURL} alt="photoURL" />
+            <Avatar src={''} alt="photoURL" />
             <Box sx={{ ml: 2 }}>
               <Typography variant="subtitle2" sx={{ color: "text.primary" }}>
                 {usename}

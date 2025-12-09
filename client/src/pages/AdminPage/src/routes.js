@@ -22,7 +22,7 @@ import Classes from "./pages/Classes";
 import ClassStudentList from "../../../components/ClassStudentList";
 import EditAccount from "../../../components/EditAccount";
 import Attendance from "./pages/Attendance";
-import Kanban from "./pages/Kanban";
+import { TaskPage } from "../../../features/tasks";
 import ChatPage from "../../../features/chat/pages/ChatPage";
 
 // ----------------------------------------------------------------------
@@ -52,7 +52,7 @@ export default function Router({ isAuth, role }) {
         { path: "teachers/profile/:id", element: <EditAccount /> },
         { path: "parents/profile/:id", element: <EditAccount /> },
         { path: "markattendance", element: <Attendance /> },
-        { path: "kanban", element: <Kanban /> },
+        { path: "tasks", element: <TaskPage /> },
         { path: "chat", element: <ChatPage /> },
         { path: "*", element: <Page404 /> },
       ],

@@ -5,10 +5,12 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import Loading from "./components/Loading";
 import { getUserData } from "./slices/userSlice";
 const Auth = React.lazy(() => import("./components/Auth"));
-// const LandingPage = React.lazy(() => import("./pages/LandingPage"));
 const Admin = React.lazy(() => import("./pages/AdminPage/src/Admin"));
 const Student = React.lazy(() => import("./pages/StudentPage/src/Student"));
 const Teacher = React.lazy(() => import("./pages/TeacherPage/src/Teacher"));
+const LandingPage = React.lazy(() => import("./pages/LandingPage"));
+const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = React.lazy(() => import("./pages/TermsOfService"));
 
 const App = () => {
   const dispatch = useDispatch();
@@ -20,9 +22,11 @@ const App = () => {
     <>
       <Suspense fallback={<Loading />}>
         <Routes>
-          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Auth />} />
           <Route path="/register" element={<Auth />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
         </Routes>
       </Suspense>
       {isAuth && userInfo.role === "admin" ? (

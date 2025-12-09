@@ -1,24 +1,43 @@
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Form, FormikProvider, useFormik } from 'formik';
 // @mui
-import { Card, Stack, Divider, Checkbox, MenuItem, IconButton, CardHeader, FormControlLabel } from '@mui/material';
+import { Card, Stack, Divider, Checkbox, MenuItem, IconButton, CardHeader, FormControlLabel, Button, Box, CircularProgress } from '@mui/material';
 // components
 import Iconify from '../../../components/Iconify';
 import MenuPopover from '../../../components/MenuPopover';
+// redux
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchTasks, updateTask, deleteTask } from '../../../../../../slices/taskSlice';
+import { selectTasks, selectTasksLoading, selectTasksError } from '../../../../../../slices/taskSlice';
 
 // ----------------------------------------------------------------------
 
 AppTasks.propTypes = {
   title: PropTypes.string,
   subheader: PropTypes.string,
-  list: PropTypes.array.isRequired,
+  onAddTask: PropTypes.func,
 };
 
-export default function AppTasks({ title, subheader, list, ...other }) {
+export default function AppTasks({ title, subheader, onAddTask, ...other }) {
+  const dispatch = useDispatch();
+  const tasks = useSelector(selectTasks);
+  const loading = useSelector(selectTasksLoading);
+  const error = useSelector(selectTasksError);
+
+  // Get only the first 5 tasks for the dashboard widget
+  const displayTasks = tasks.slice(0, 5).map(task => ({
+    id: task._id,
+    label: task.title,
+    description: task.description,
+    status: task.status,
+    priority: task.priority,
+    assignee: task.assignee,
+  }));
+
   const formik = useFormik({
     initialValues: {
-      checked: [list[2].id],
+      checked: displayTasks.filter(task => task.status === 'Close').map(task => task.id),
     },
     onSubmit: (values) => {
       console.log(values);
@@ -27,15 +46,78 @@ export default function AppTasks({ title, subheader, list, ...other }) {
 
   const { values, handleSubmit } = formik;
 
+  useEffect(() => {
+    // Fetch tasks when component mounts
+    dispatch(fetchTasks({ limit: 10 }));
+  }, [dispatch]);
+
+  const handleMarkComplete = async (taskId) => {
+    try {
+      await dispatch(updateTask({
+        taskId,
+        taskData: { status: 'Close' }
+      })).unwrap();
+    } catch (error) {
+      console.error('Failed to mark task complete:', error);
+    }
+  };
+
+  const handleDelete = async (taskId) => {
+    try {
+      await dispatch(deleteTask(taskId)).unwrap();
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+    }
+  };
+
+  if (loading && tasks.length === 0) {
+    return (
+      <Card {...other}>
+        <CardHeader title={title} subheader={subheader} />
+        <Box display="flex" justifyContent="center" p={3}>
+          <CircularProgress size={24} />
+        </Box>
+      </Card>
+    );
+  }
+
   return (
     <Card {...other}>
-      <CardHeader title={title} subheader={subheader} />
+      <CardHeader
+        title={title}
+        subheader={subheader}
+        action={
+          <Button
+            size="small"
+            startIcon={<Iconify icon="eva:plus-fill" />}
+            onClick={onAddTask}
+          >
+            Add Task
+          </Button>
+        }
+      />
 
       <FormikProvider value={formik}>
         <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
-          {list.map((task) => (
-            <TaskItem key={task.id} task={task} checked={values.checked.includes(task.id)} formik={formik} />
-          ))}
+          {displayTasks.length > 0 ? (
+            displayTasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                checked={values.checked.includes(task.id)}
+                formik={formik}
+                onMarkComplete={handleMarkComplete}
+                onDelete={handleDelete}
+              />
+            ))
+          ) : (
+            <Box p={3} textAlign="center">
+              <Iconify icon="eva:file-text-outline" width={48} height={48} color="text.disabled" />
+              <Box mt={1}>
+                No tasks found. Create your first task!
+              </Box>
+            </Box>
+          )}
         </Form>
       </FormikProvider>
     </Card>
@@ -48,9 +130,11 @@ TaskItem.propTypes = {
   formik: PropTypes.object,
   checked: PropTypes.bool,
   task: PropTypes.object,
+  onMarkComplete: PropTypes.func,
+  onDelete: PropTypes.func,
 };
 
-function TaskItem({ formik, task, checked, ...other }) {
+function TaskItem({ formik, task, checked, onMarkComplete, onDelete, ...other }) {
   const { getFieldProps } = formik;
 
   const [open, setOpen] = useState(null);
@@ -65,22 +149,24 @@ function TaskItem({ formik, task, checked, ...other }) {
 
   const handleMarkComplete = () => {
     handleCloseMenu();
-    console.log('MARK COMPLETE', task);
+    onMarkComplete(task.id);
   };
 
   const handleShare = () => {
     handleCloseMenu();
+    // TODO: Implement share functionality
     console.log('SHARE', task);
   };
 
   const handleEdit = () => {
     handleCloseMenu();
+    // TODO: Implement edit functionality
     console.log('EDIT', task);
   };
 
   const handleDelete = () => {
     handleCloseMenu();
-    console.log('DELETE', task);
+    onDelete(task.id);
   };
 
   return (
