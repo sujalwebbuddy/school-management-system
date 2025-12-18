@@ -1,219 +1,435 @@
-import React, { useState, useEffect } from "react";
-import { styled } from "@mui/material/styles";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell, { tableCellClasses } from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import { useSelector } from "react-redux";
-import { Button, Typography } from "@mui/material";
-import { Box } from "@mui/system";
-import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import Swal from "sweetalert2";
-import { DesktopDatePicker } from "@mui/lab";
-import axios from "axios";
+'use strict';
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.common.black,
-    color: theme.palette.common.white,
-  },
-  [`&.${tableCellClasses.body}`]: {
-    fontSize: 14,
-  },
-}));
+import { useEffect, useState } from 'react';
+import {
+  Card,
+  Table,
+  Stack,
+  Avatar,
+  Button,
+  TableRow,
+  TableBody,
+  TableCell,
+  TableHead,
+  Container,
+  Typography,
+  TableContainer,
+  Box,
+  ToggleButton,
+  ToggleButtonGroup,
+  Chip,
+  Alert,
+} from '@mui/material';
+import { DesktopDatePicker } from '@mui/lab';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import TextField from '@mui/material/TextField';
+import Page from '../components/Page';
+import Scrollbar from '../components/Scrollbar';
+import Iconify from '../components/Iconify';
+import { useSelector } from 'react-redux';
+import api from '../../../../utils/api';
+import Swal from 'sweetalert2';
 
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  "&:nth-of-type(odd)": {
-    backgroundColor: theme.palette.action.hover,
-  },
-  // hide last border
-  "&:last-child td, &:last-child th": {
-    border: 0,
-  },
-}));
+const ATTENDANCE_STATUS = {
+  PRESENT: 'present',
+  ABSENT: 'absent',
+};
 
-const Attendance = () => {
-  const [marked, setMarked] = useState(false);
-  const [update, setUpdate] = useState(false);
-
+export default function Attendance() {
   const classro = useSelector((state) => {
     return state.teacher?.teacherclass?.classro;
   });
-  const [rows, setRows] = useState([]);
-  const [value, setValue] = useState(null);
+
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [attendanceData, setAttendanceData] = useState({});
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
     const fetchStudents = async () => {
       if (classro?._id) {
         try {
-          const res = await axios.get("/api/v1/admin/students", {
-            headers: { token: localStorage.getItem("token") },
-          });
+          setLoading(true);
+          const res = await api.get('/admin/students');
           const allStudents = res.data.students || [];
-          const classStudents = allStudents.filter((student) => {
+          const classStudents = allStudents
+            .filter((student) => {
             const studentClassId = student.classIn?._id || student.classIn;
             return (
               studentClassId === classro._id ||
               studentClassId?.toString() === classro._id?.toString()
             );
+            })
+            .map((student, index) => ({
+              ...student,
+              rollNumber: student.rollNumber || index + 1,
+            }));
+          setStudents(classStudents);
+
+          const initialAttendance = {};
+          classStudents.forEach((student) => {
+            initialAttendance[student._id] = ATTENDANCE_STATUS.PRESENT;
           });
-          setRows(classStudents);
+          setAttendanceData(initialAttendance);
         } catch (error) {
-          setRows([]);
+          setStudents([]);
+        } finally {
+          setLoading(false);
         }
       }
     };
     fetchStudents();
   }, [classro]);
 
-  const handleChange = (newValue) => {
-    setValue(newValue);
-    setMarked(true);
-    setUpdate(false);
+  const handleDateChange = (newDate) => {
+    setSelectedDate(newDate);
+    setIsSubmitted(false);
+    setHasChanges(false);
+
+    const initialAttendance = {};
+    students.forEach((student) => {
+      initialAttendance[student._id] = ATTENDANCE_STATUS.PRESENT;
+    });
+    setAttendanceData(initialAttendance);
   };
+
+  const handleAttendanceChange = (studentId, status) => {
+    setAttendanceData((prev) => ({
+      ...prev,
+      [studentId]: status,
+    }));
+    setHasChanges(true);
+    setIsSubmitted(false);
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedDate) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Date Required',
+        text: 'Please select a date before submitting attendance.',
+      });
+      return;
+    }
+
+    try {
+      const formattedDate = selectedDate.toISOString().split('T')[0];
+      const attendancePayload = {
+        date: formattedDate,
+        classId: classro._id,
+        attendance: Object.keys(attendanceData).map((studentId) => ({
+          studentId,
+          status: attendanceData[studentId],
+        })),
+      };
+
+      await api.post('/teacher/attendance', attendancePayload);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: `Attendance marked successfully for ${formattedDate}`,
+      });
+
+      setIsSubmitted(true);
+      setHasChanges(false);
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: error.message || 'Failed to submit attendance. Please try again.',
+      });
+    }
+  };
+
+  const getStatusColor = (status) => {
+    return status === ATTENDANCE_STATUS.PRESENT ? 'success' : 'error';
+  };
+
+  const getStatusLabel = (status) => {
+    return status === ATTENDANCE_STATUS.PRESENT ? 'Present' : 'Absent';
+  };
+
+  const presentCount = Object.values(attendanceData).filter(
+    (status) => status === ATTENDANCE_STATUS.PRESENT
+  ).length;
+  const absentCount = students.length - presentCount;
+
   return (
-    <>
+    <Page title="Attendance">
+      <Container maxWidth="xl">
+        <Stack spacing={3} sx={{ mb: 3 }}>
       <Stack
         direction="row"
         alignItems="center"
         justifyContent="space-between"
-        mb={5}
+            flexWrap="wrap"
+            gap={2}
       >
-        <Typography variant="h4" gutterBottom style={{ color: "#ff808b" }}>
-          Mark Student attendance
+            <Typography variant="h4" sx={{ fontWeight: 600 }}>
+              Mark Student Attendance
         </Typography>
-      </Stack>
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <Stack spacing={2} style={{ width: "30%", margin: "auto" }}>
-          <DesktopDatePicker
-            label="Pick attendance date"
-            value={value}
-            onChange={handleChange}
-            inputFormat="MM/dd/yyyy"
-            renderInput={(params) => <TextField {...params} />}
-          />
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DesktopDatePicker
+                label="Select Date"
+                value={selectedDate}
+                onChange={handleDateChange}
+                inputFormat="MM/dd/yyyy"
+                renderInput={(params) => (
+                  <TextField {...params} sx={{ minWidth: 250 }} />
+                )}
+              />
+            </LocalizationProvider>
+          </Stack>
         </Stack>
-      </LocalizationProvider>
-      <br />
-      <br />
-      {marked ? (
-        <TableContainer component={Paper}>
-          <Table
-            sx={{ minWidth: 700 }}
-            aria-label="customized table"
-            style={{ width: "50%", margin: "auto" }}
+
+        {selectedDate && (
+          <Card
+            sx={{
+              borderRadius: 2,
+              boxShadow:
+                '0 0 2px 0 rgba(145, 158, 171, 0.08), 0 12px 24px -4px rgba(145, 158, 171, 0.08)',
+            }}
           >
+            <Box
+              sx={{
+                p: 3,
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                flexWrap="wrap"
+                gap={2}
+              >
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  Attendance for {selectedDate.toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </Typography>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Chip
+                    icon={<Iconify icon="eva:checkmark-circle-2-fill" />}
+                    label={`Present: ${presentCount}`}
+                    color="success"
+                    variant="outlined"
+                  />
+                  <Chip
+                    icon={<Iconify icon="eva:close-circle-2-fill" />}
+                    label={`Absent: ${absentCount}`}
+                    color="error"
+                    variant="outlined"
+                  />
+                </Stack>
+              </Stack>
+            </Box>
+
+            {isSubmitted && (
+              <Box sx={{ p: 2 }}>
+                <Alert severity="success" sx={{ borderRadius: 1 }}>
+                  Attendance has been successfully submitted for this date.
+                </Alert>
+              </Box>
+            )}
+
+            <Scrollbar>
+              <TableContainer sx={{ minWidth: 800 }}>
+                <Table>
             <TableHead>
               <TableRow>
-                <StyledTableCell>Full Name</StyledTableCell>
-                <StyledTableCell align="right">Role</StyledTableCell>
-                <StyledTableCell align="right">Status</StyledTableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: 'background.neutral',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Student Name
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: 'background.neutral',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Roll
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          backgroundColor: 'background.neutral',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Status
+                      </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows?.map((row, i) => (
-                <StyledTableRow key={i}>
-                  <StyledTableCell component="th" scope="row">
-                    {`${row?.firstName} ${row?.lastName}`}
-                  </StyledTableCell>
-                  <StyledTableCell align="right">{row?.role}</StyledTableCell>
-                  <StyledTableCell align="right">
-                    <input
-                      type="radio"
-                      name={`p${i}`}
-                      id={`p${i}`}
-                      style={{
-                        transform: "scale(1.7)",
-                        marginRight: "5px",
-                      }}
-                      className="present"
-                      required
-                    />
-                    <label
-                      htmlFor={`p${i}`}
-                      style={{
-                        position: "relative",
-                        left: "-15px",
-                        top: "-4px",
-                        fontSize: "8pt",
-                        opacity: "1",
-                        color: "green",
-                      }}
-                    >
-                      P
-                    </label>
-                    <input
-                      type="radio"
-                      name={`p${i}`}
-                      id={`a${i}`}
-                      style={{ transform: "scale(1.7)" }}
-                      className="absent"
-                      required
-                    />
-                    <label
-                      htmlFor={`a${i}`}
-                      style={{
-                        position: "relative",
-                        left: "-11px",
-                        top: "-4px",
-                        fontSize: "8pt",
-                        opacity: "0.9",
-                        color: "red",
-                      }}
-                    >
-                      A
-                    </label>
-                  </StyledTableCell>
-                </StyledTableRow>
-              ))}
+                    {students.map((student) => {
+                      const studentId = student._id;
+                      const currentStatus =
+                        attendanceData[studentId] || ATTENDANCE_STATUS.PRESENT;
+                      const name = `${student.firstName} ${student.lastName}`;
+                      const roll = `#${String(student.rollNumber || '').padStart(2, '0')}`;
+
+                      return (
+                        <TableRow
+                          key={studentId}
+                          hover
+                          sx={{
+                            '&:hover': {
+                              backgroundColor: 'action.hover',
+                            },
+                          }}
+                        >
+                          <TableCell>
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              spacing={2}
+                            >
+                              <Avatar
+                                alt={name}
+                                src={student.profileImage}
+                                sx={{ width: 40, height: 40 }}
+                              />
+                              <Typography variant="subtitle2">{name}</Typography>
+                            </Stack>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" color="text.secondary">
+                              {roll}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="center">
+                            <ToggleButtonGroup
+                              value={currentStatus}
+                              exclusive
+                              onChange={(event, newStatus) => {
+                                if (newStatus !== null) {
+                                  handleAttendanceChange(studentId, newStatus);
+                                }
+                              }}
+                              size="small"
+                              sx={{
+                                '& .MuiToggleButton-root': {
+                                  border: '1px solid',
+                                  borderColor: 'divider',
+                                  px: 2,
+                                  py: 0.5,
+                                  '&.Mui-selected': {
+                                    borderColor: 'primary.main',
+                                  },
+                                },
+                              }}
+                            >
+                              <ToggleButton
+                                value={ATTENDANCE_STATUS.PRESENT}
+                                disabled={isSubmitted}
+                              >
+                                <Stack
+                                  direction="row"
+                                  alignItems="center"
+                                  spacing={1}
+                                >
+                                  <Iconify
+                                    icon="eva:checkmark-circle-2-fill"
+                                    width={18}
+                                    height={18}
+                                    sx={{ color: 'success.main' }}
+                                  />
+                                  <Typography variant="body2">Present</Typography>
+                                </Stack>
+                              </ToggleButton>
+                              <ToggleButton
+                                value={ATTENDANCE_STATUS.ABSENT}
+                                disabled={isSubmitted}
+                              >
+                                <Stack
+                                  direction="row"
+                                  alignItems="center"
+                                  spacing={1}
+                                >
+                                  <Iconify
+                                    icon="eva:close-circle-2-fill"
+                                    width={18}
+                                    height={18}
+                                    sx={{ color: 'error.main' }}
+                                  />
+                                  <Typography variant="body2">Absent</Typography>
+                                </Stack>
+                              </ToggleButton>
+                            </ToggleButtonGroup>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
             </TableBody>
           </Table>
-          <br />
-          <br />
-          <Box m={1} display="flex" justifyContent="center" alignItems="center">
-            {update ? (
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ height: 40 }}
-                style={{ width: "15%" }}
-                onClick={() => {
-                  Swal.fire("Done!", "Student Attendance updated!", "success");
-                }}
-              >
-                Update
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ height: 40 }}
-                style={{ width: "15%" }}
-                onClick={() => {
-                  setUpdate(true);
-                  Swal.fire(
-                    "Done!",
-                    `Student Attendance marked for ${value}`,
-                    "success"
-                  );
-                }}
-              >
-                Submit
-              </Button>
-            )}
-          </Box>
-        </TableContainer>
-      ) : (
-        <></>
-      )}
-    </>
-  );
-};
+              </TableContainer>
+            </Scrollbar>
 
-export default Attendance;
+            <Box
+              sx={{
+                p: 3,
+                borderTop: '1px solid',
+                borderColor: 'divider',
+                display: 'flex',
+                justifyContent: 'flex-end',
+              }}
+            >
+              <Button
+                variant="contained"
+                size="large"
+                onClick={handleSubmit}
+                disabled={isSubmitted || !hasChanges || loading}
+                startIcon={<Iconify icon="eva:checkmark-circle-2-fill" />}
+                sx={{
+                  px: 4,
+                  py: 1.5,
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  borderRadius: 1,
+                }}
+              >
+                {isSubmitted ? 'Submitted' : 'Submit Attendance'}
+              </Button>
+            </Box>
+          </Card>
+        )}
+
+        {!selectedDate && (
+          <Card
+            sx={{
+              borderRadius: 2,
+              p: 6,
+              textAlign: 'center',
+              boxShadow:
+                '0 0 2px 0 rgba(145, 158, 171, 0.08), 0 12px 24px -4px rgba(145, 158, 171, 0.08)',
+            }}
+          >
+            <Iconify
+              icon="eva:calendar-outline"
+              sx={{ width: 80, height: 80, color: 'text.disabled', mb: 2 }}
+            />
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              Select a date to mark attendance
+            </Typography>
+            <Typography variant="body2" color="text.disabled">
+              Choose a date from the date picker above to start marking
+              attendance for your students.
+            </Typography>
+          </Card>
+        )}
+      </Container>
+    </Page>
+  );
+}

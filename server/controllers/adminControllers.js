@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const classroom = require("../models/classModel");
 const Subject = require("../models/subjectModel");
+const Attendance = require("../models/attendanceModel");
 const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator");
 const nodemailer = require("nodemailer");
@@ -204,7 +205,7 @@ exports.getAllStudents = async (req, res) => {
     const students = await User.find({
       isApproved: true,
       role: "student",
-    }).populate("classIn").populate("children");
+    }).populate("classIn");
     res.status(200).json({ msg: "list of the students", students });
   } catch (error) {
     console.log(error);
@@ -228,21 +229,6 @@ exports.getAllTeachers = async (req, res) => {
   }
 };
 
-// @desc get all parents
-// @params GET /api/v1/parents
-// @access PRIVATE
-exports.getAllParents = async (req, res) => {
-  try {
-    const parents = await User.find({
-      isApproved: true,
-      role: "parent",
-    }).populate("children");
-    res.status(200).json({ msg: "list of the parents", parents });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json("something went wrong");
-  }
-};
 
 // @desc get one user
 // @params GET /api/v1/user/:userId
@@ -251,8 +237,7 @@ exports.getUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.userId)
       .populate("classIn")
-      .populate("subject")
-      .populate("children");
+      .populate("subject");
     res.status(200).json({ msg: "user found", user });
   } catch (error) {
     console.log(error);
@@ -307,9 +292,8 @@ exports.updateUser = async (req, res) => {
       }
     }
     
-    if (req?.file?.filename) {
-      const imagePath = `${config.SERVER_BASE_URL}/uploads/${req.file.filename}`;
-      updateData.profileImage = imagePath;
+    if (req?.file?.s3Url) {
+      updateData.profileImage = req.file.s3Url;
     }
     
     const user = await User.findByIdAndUpdate(
@@ -331,20 +315,19 @@ exports.updateUser = async (req, res) => {
 // @access PRIVATE
 exports.getNumberUsers = async (req, res) => {
   try {
-    const numberParents = await User.find({
-      isApproved: true,
-      role: "parent",
-    }).select("-password");
-
     const numberTeachers = await User.find({
       isApproved: true,
       role: "teacher",
-    }).select("-password");
+    })
+      .select("-password")
+      .populate("subject");
 
     const numberStudents = await User.find({
       isApproved: true,
       role: "student",
-    }).select("-password");
+    })
+      .select("-password")
+      .populate("classIn");
 
     const numberAdmins = await User.find({
       role: "admin",
@@ -352,7 +335,6 @@ exports.getNumberUsers = async (req, res) => {
     }).select("-password");
     res.status(200).json({
       student: numberStudents,
-      parent: numberParents,
       admin: numberAdmins,
       teacher: numberTeachers,
     });
@@ -495,12 +477,181 @@ exports.getUserInfo = async (req, res) => {
   try {
     const user = await User.findOne({ email: req?.query?.email })
       .populate("classIn")
-      .populate("subject")
-      .populate("children");
+      .populate("subject");
     if (!user) return res.status(404).json({ msg: "user not found" });
     res.status(200).json({ user });
   } catch (error) {
     console.log(error);
     res.status(500).json("something went wrong");
+  }
+};
+
+exports.getAttendance = async (req, res) => {
+  try {
+    const { date, classId, userId, role } = req.query;
+
+    if (!date) {
+      return res.status(400).json({ msg: 'Date is required' });
+    }
+
+    const attendanceDate = new Date(date);
+    if (isNaN(attendanceDate.getTime())) {
+      return res.status(400).json({ msg: 'Invalid date format' });
+    }
+
+    const startOfDay = new Date(attendanceDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(attendanceDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const query = {
+      date: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
+    };
+
+    if (classId && mongoose.Types.ObjectId.isValid(classId)) {
+      query.classId = classId;
+    }
+
+    if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+      query.studentId = userId;
+    }
+
+    const attendanceRecords = await Attendance.find(query)
+      .populate('studentId', 'firstName lastName email role')
+      .populate('classId', 'className')
+      .populate('markedBy', 'firstName lastName')
+      .sort({ createdAt: -1 });
+
+    const attendanceMap = {};
+    attendanceRecords.forEach((record) => {
+      if (record.studentId && record.studentId._id) {
+        const userRole = record.studentId.role;
+        if (role && userRole !== role) {
+          return;
+        }
+        const userIdStr = record.studentId._id.toString();
+        attendanceMap[userIdStr] = {
+          userId: record.studentId._id,
+          status: record.status,
+          markedBy: record.markedBy,
+          markedAt: record.createdAt,
+        };
+      }
+    });
+
+    res.status(200).json({
+      msg: 'Attendance fetched successfully',
+      date: date,
+      attendance: attendanceMap,
+      count: attendanceRecords.length,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ msg: 'Something went wrong', error: error.message });
+  }
+};
+
+exports.submitAttendance = async (req, res) => {
+  try {
+    const { date, attendance, role } = req.body;
+    const adminId = req.userId || req.headers.userid;
+
+    if (!date) {
+      return res.status(400).json({ msg: 'Date is required' });
+    }
+
+    if (!attendance || !Array.isArray(attendance) || attendance.length === 0) {
+      return res.status(400).json({ msg: 'Attendance data is required' });
+    }
+
+    const attendanceDate = new Date(date);
+    if (isNaN(attendanceDate.getTime())) {
+      return res.status(400).json({ msg: 'Invalid date format' });
+    }
+
+    const expectedRole = role || 'student';
+    if (!['student', 'teacher'].includes(expectedRole)) {
+      return res.status(400).json({ msg: 'Role must be student or teacher' });
+    }
+
+    const results = [];
+    const errors = [];
+
+    for (const item of attendance) {
+      const { userId, status } = item;
+      const userIdToUse = userId || item.studentId;
+
+      if (!userIdToUse) {
+        errors.push({ userId: userIdToUse, error: 'User ID is required' });
+        continue;
+      }
+
+      if (!['present', 'absent'].includes(status)) {
+        errors.push({ userId: userIdToUse, error: 'Status must be present or absent' });
+        continue;
+      }
+
+      if (!mongoose.Types.ObjectId.isValid(userIdToUse)) {
+        errors.push({ userId: userIdToUse, error: 'Invalid user ID format' });
+        continue;
+      }
+
+      const user = await User.findById(userIdToUse);
+      if (!user) {
+        errors.push({ userId: userIdToUse, error: 'User not found' });
+        continue;
+      }
+
+      if (user.role !== expectedRole) {
+        errors.push({ userId: userIdToUse, error: `User is not a ${expectedRole}` });
+        continue;
+      }
+
+      const classId = expectedRole === 'student' ? (user.classIn || null) : null;
+
+      try {
+        const attendanceRecord = await Attendance.findOneAndUpdate(
+          {
+            date: attendanceDate,
+            studentId: userIdToUse,
+          },
+          {
+            date: attendanceDate,
+            studentId: userIdToUse,
+            classId: classId || null,
+            status,
+            markedBy: adminId || null,
+          },
+          {
+            upsert: true,
+            new: true,
+          }
+        );
+        results.push({ userId: userIdToUse, status: 'success', attendanceId: attendanceRecord._id });
+      } catch (error) {
+        errors.push({ userId: userIdToUse, error: error.message });
+      }
+    }
+
+    if (errors.length > 0 && results.length === 0) {
+      return res.status(400).json({
+        msg: 'Failed to submit attendance',
+        errors,
+      });
+    }
+
+    res.status(200).json({
+      msg: 'Attendance submitted successfully',
+      success: results.length,
+      failed: errors.length,
+      results,
+      errors: errors.length > 0 ? errors : undefined,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ msg: 'Something went wrong', error: error.message });
   }
 };

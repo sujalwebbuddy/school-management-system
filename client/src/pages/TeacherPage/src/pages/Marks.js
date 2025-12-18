@@ -1,217 +1,123 @@
-import React, { useState, useEffect } from "react";
-import { styled } from "@mui/material/styles";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell, { tableCellClasses } from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import { Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
-import { useSelector } from "react-redux";
-import { useForm } from "react-hook-form";
-import { Box } from "@mui/system";
-import axios from "axios";
-import swal from "sweetalert";
+'use strict';
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.common.black,
-    color: theme.palette.common.white,
-  },
-  [`&.${tableCellClasses.body}`]: {
-    fontSize: 14,
-  },
-}));
+import { useEffect, useState } from 'react';
+import { Card, Stack, Container, Typography } from '@mui/material';
+import Page from '../components/Page';
+import { useSelector } from 'react-redux';
+import ExamSelector from '../components/ExamSelector';
+import ExamInfoHeader from '../components/ExamInfoHeader';
+import MarksTable from '../components/MarksTable';
+import MarksEmptyState from '../components/MarksEmptyState';
+import MarksSubmitFooter from '../components/MarksSubmitFooter';
+import { useStudents } from '../hooks/useStudents';
+import { useMarksForm } from '../hooks/useMarksForm';
+import { useMarksSubmission } from '../hooks/useMarksSubmission';
 
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  "&:nth-of-type(odd)": {
-    backgroundColor: theme.palette.action.hover,
-  },
-  // hide last border
-  "&:last-child td, &:last-child th": {
-    border: 0,
-  },
-}));
-
-const Marks = () => {
+export default function Marks() {
   const classro = useSelector((state) => {
     return state?.teacher?.teacherclass?.classro;
   });
   const exams = useSelector((state) => {
-    return state?.teacher?.exams?.exams;
+    return state?.teacher?.exams?.exams || [];
   });
-  const [rows, setRows] = useState([]);
+
+  const { students, loading } = useStudents(classro);
+  const [selectedExam, setSelectedExam] = useState('');
+  const [selectedExamData, setSelectedExamData] = useState(null);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  const { register, handleSubmit, errors, watch } = useMarksForm(
+    students,
+    selectedExamData
+  );
+  const { isSubmitting, submitMarks } = useMarksSubmission(selectedExam, setHasChanges);
 
   useEffect(() => {
-    const fetchStudents = async () => {
-      if (classro?._id) {
-        try {
-          const res = await axios.get("/api/v1/admin/students", {
-            headers: { token: localStorage.getItem("token") },
-          });
-          const allStudents = res.data.students || [];
-          const classStudents = allStudents.filter((student) => {
-            const studentClassId = student.classIn?._id || student.classIn;
-            return (
-              studentClassId === classro._id ||
-              studentClassId?.toString() === classro._id?.toString()
-            );
-          });
-          setRows(classStudents);
-        } catch (error) {
-          setRows([]);
-        }
-      }
-    };
-    fetchStudents();
-  }, [classro]);
+    if (selectedExam) {
+      const exam = exams.find((el) => el.name === selectedExam);
+      setSelectedExamData(exam);
+      setHasChanges(false);
+    } else {
+      setSelectedExamData(null);
+      setHasChanges(false);
+    }
+  }, [selectedExam, exams]);
 
-  const [pickedExam, setPickedExam] = useState(null);
-  const handleChange = (event) => {
-    setPickedExam(event.target.value);
+  const handleExamChange = (event) => {
+    setSelectedExam(event.target.value);
   };
 
-  if (pickedExam) {
-    var myexam = exams?.find((el) => el.name === pickedExam);
-  }
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm();
-  const onSubmit = (data) => {
-    const input = { examname: pickedExam, exammarks: data };
-    axios
-      .put("/api/v1/teacher/submitmarks", input)
-      .then((res) => {
-        swal(
-          "Done!",
-          "Exam's Marks has been submitted successfully !",
-          "success"
-        );
-      })
-      .catch((err) => {
-        swal("Oops!", err.response.data.msg, "error");
+  const watchedValues = watch();
+
+  useEffect(() => {
+    if (selectedExamData) {
+      const hasFormChanges = students.some((student) => {
+        const studentId = student._id?.toString();
+        const currentValue = watchedValues[studentId];
+        return currentValue !== undefined && currentValue !== '';
       });
-  };
-  return (
-    <>
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        mb={5}
-      >
-        <Typography variant="h4" gutterBottom style={{ color: "#ff808b" }}>
-          Student's Marks
-        </Typography>
-      </Stack>
-      <Stack spacing={2} style={{ width: "20%", margin: "auto" }}>
-        <TextField
-          id="outlined-select-currency"
-          select
-          label="Please select exam"
-          onChange={handleChange}
-        >
-          {exams?.map((option, i) => (
-            <MenuItem key={i} value={option.name}>
-              {option.name}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Stack>
-      <br />
-      <br />
-      {pickedExam ? (
-        <>
-          <TableContainer
-            component={Paper}
-            style={{ width: "70%", margin: "auto" }}
-          >
-            <Table aria-label="customized table">
-              <TableHead>
-                <TableRow>
-                  <StyledTableCell>Full Name</StyledTableCell>
-                  <StyledTableCell align="right">Class</StyledTableCell>
-                  <StyledTableCell align="right">Gender</StyledTableCell>
-                  <StyledTableCell align="right">Total Mark</StyledTableCell>
-                  <StyledTableCell align="right">Mark</StyledTableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows?.map((row, i) => {
-                  const studentId = row?._id?.toString();
-                  let markassigned = undefined;
-                  if (myexam?.marks) {
-                    if (myexam.marks instanceof Map || typeof myexam.marks === "object") {
-                      const marksObj =
-                        myexam.marks instanceof Map
-                          ? Object.fromEntries(myexam.marks)
-                          : myexam.marks;
-                      const markEntry = Object.entries(marksObj)?.find(
-                        (el) => el[0] === studentId || el[0]?.toString() === studentId
-                      );
-                      if (markEntry) {
-                        const markData = markEntry[1];
-                        markassigned =
-                          typeof markData === "object" ? markData.mark : markData;
-                      }
-                    }
-                  }
-                  const classInDisplay =
-                    typeof row.classIn === "object"
-                      ? row.classIn?.className || row.classIn?.classesName
-                      : row.classIn;
-                  return (
-                    <StyledTableRow key={i}>
-                      <StyledTableCell component="th" scope="row">
-                        {`${row.firstName} ${row.lastName}`}
-                      </StyledTableCell>
-                      <StyledTableCell align="right">
-                        {classInDisplay}
-                      </StyledTableCell>
-                      <StyledTableCell align="right">
-                        {row.gender}
-                      </StyledTableCell>
-                      <StyledTableCell align="right">
-                        {myexam?.totalMark}
-                      </StyledTableCell>
-                      <StyledTableCell align="right">
-                        <input
-                          defaultValue={markassigned || ""}
-                          type="number"
-                          id="mark"
-                          name="mark"
-                          min="0"
-                          max={myexam?.totalMark}
-                          {...register(row._id, { required: true })}
-                        />
-                      </StyledTableCell>
-                    </StyledTableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <br />
-          <Box m={1} display="flex" justifyContent="center" alignItems="center">
-            <Button
-              variant="contained"
-              color="success"
-              style={{ width: "10%" }}
-              onClick={handleSubmit(onSubmit)}
-            >
-              Submit
-            </Button>
-          </Box>
-        </>
-      ) : (
-        <></>
-      )}
-    </>
-  );
-};
+      setHasChanges(hasFormChanges);
+    }
+  }, [watchedValues, students, selectedExamData]);
 
-export default Marks;
+  const onSubmit = handleSubmit(submitMarks);
+
+  return (
+    <Page title="Marks">
+      <Container maxWidth="xl">
+        <Stack spacing={3} sx={{ mb: 3 }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            flexWrap="wrap"
+            gap={2}
+          >
+            <Typography variant="h4" sx={{ fontWeight: 600 }}>
+              Student Marks
+            </Typography>
+            <ExamSelector
+              exams={exams}
+              selectedExam={selectedExam}
+              onChange={handleExamChange}
+            />
+          </Stack>
+        </Stack>
+
+        {selectedExam && selectedExamData ? (
+          <Card
+            sx={{
+              borderRadius: 2,
+              boxShadow:
+                '0 0 2px 0 rgba(145, 158, 171, 0.08), 0 12px 24px -4px rgba(145, 158, 171, 0.08)',
+            }}
+          >
+            <ExamInfoHeader
+              selectedExamData={selectedExamData}
+              studentsCount={students.length}
+            />
+
+            <form onSubmit={onSubmit}>
+              <MarksTable
+                students={students}
+                loading={loading}
+                selectedExamData={selectedExamData}
+                register={register}
+                errors={errors}
+                watchedValues={watchedValues}
+              />
+
+              <MarksSubmitFooter
+                hasChanges={hasChanges}
+                isSubmitting={isSubmitting}
+                onSubmit={onSubmit}
+              />
+            </form>
+          </Card>
+        ) : (
+          <MarksEmptyState />
+        )}
+      </Container>
+    </Page>
+  );
+}

@@ -1,21 +1,13 @@
-import { faker } from "@faker-js/faker";
 // @mui
 import { useTheme } from "@mui/material/styles";
 import { Grid, Container, Typography } from "@mui/material";
 // components
 import Page from "../components/Page";
-import Iconify from "../components/Iconify";
 // sections
 import {
   AppTasks,
-  AppNewsUpdate,
-  AppOrderTimeline,
-  AppCurrentVisits,
-  AppWebsiteVisits,
-  AppTrafficBySite,
   AppWidgetSummary,
   AppCurrentSubject,
-  AppConversionRates,
 } from "../sections/@dashboard/app";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
@@ -42,7 +34,6 @@ import "../../../../../node_modules/@syncfusion/ej2-popups/styles/material.css";
 import "../../../../../node_modules/@syncfusion/ej2-splitbuttons/styles/material.css";
 import "../../../../../node_modules/@syncfusion/ej2-react-schedule/styles/material.css";
 // ----------------------------------------------------------------------
-import { PieChart } from "react-minimal-pie-chart";
 import { getClasses } from "../../../../slices/teacherSlice";
 
 export default function DashboardApp() {
@@ -117,27 +108,6 @@ export default function DashboardApp() {
     },
   ];
 
-  const piedata = {
-    series: [44, 55, 41, 17, 15],
-    options: {
-      chart: {
-        type: "donut",
-      },
-      responsive: [
-        {
-          breakpoint: 480,
-          options: {
-            chart: {
-              width: 200,
-            },
-            legend: {
-              position: "bottom",
-            },
-          },
-        },
-      ],
-    },
-  };
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getApprovedUsers());
@@ -204,14 +174,6 @@ export default function DashboardApp() {
             />
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary
-              title="Parents"
-              total={users?.parent?.length}
-              color="warning"
-              icon={"ri:parent-line"}
-            />
-          </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
             <AppWidgetSummary
@@ -277,7 +239,7 @@ export default function DashboardApp() {
                 { id: "2", label: "Go to meeting" },
                 { id: "3", label: "Prepare exam" },
                 { id: "4", label: "Scoping & Estimations" },
-                { id: "5", label: "Talk to the parents" },
+                { id: "5", label: "Talk to the students" },
                 { id: "6", label: "Mark attendance" },
               ]}
             />

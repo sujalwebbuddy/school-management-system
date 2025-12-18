@@ -52,7 +52,7 @@ const userSchema = mongoose.Schema(
     role: {
       type: String,
       required: true,
-      enum: ["teacher", "student", "parent", "admin"],
+      enum: ["teacher", "student", "admin"],
       index: true,
     },
     isApproved: {
@@ -75,15 +75,6 @@ const userSchema = mongoose.Schema(
       required: function () {
         return this.role === "teacher" && this.isApproved === true;
       },
-    },
-    children: {
-      type: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-      ],
-      index: true,
     },
     profileImage: {
       type: String,

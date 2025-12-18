@@ -99,7 +99,7 @@ const UserInfo = () => {
                     <h6 className="mb-0">More Info</h6>
                   </div>
                   <div className="col-sm-9 text-secondary">
-                    {user?.classIn || user?.subject || "Unknown"}
+                    {user?.classIn?.subject || user?.subject?.name || "Unknown"}
                   </div>
                 </div>
               </div>

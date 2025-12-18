@@ -18,6 +18,7 @@ export const getNoApprovedUsers = createAsyncThunk(
   async (input, { rejectWithValue }) => {
     try {
       const res = await api.get("/admin/pendedusers");
+      return res.data;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -29,6 +30,7 @@ export const getClasses = createAsyncThunk(
   async (input, { rejectWithValue }) => {
     try {
       const res = await api.get("/admin/class");
+      return res.data;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -40,7 +42,7 @@ const adminSlice = createSlice({
   initialState: {
     usersApproved: {},
     usersNotApproved: {},
-    classrooms: {},
+    classrooms: { classes: [] },
     errors: null,
   },
 
@@ -60,7 +62,7 @@ const adminSlice = createSlice({
       state.errors = action.payload;
     },
     [getClasses.fulfilled]: (state, action) => {
-      state.classrooms = action.payload;
+      state.classrooms = { classes: action.payload?.classes || [] };
       state.errors = null;
     },
     [getClasses.rejected]: (state, action) => {

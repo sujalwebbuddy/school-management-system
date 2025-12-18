@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 // material
 import {
   Menu,
@@ -34,7 +34,6 @@ export default function UserMoreMenu({ id, role, userData }) {
     // Navigate to the appropriate add user form based on role
     let route = "/dashboard/newuser"; // default for student
     if (role === "teacher") route = "/dashboard/newusert";
-    else if (role === "parent") route = "/dashboard/newuserp";
 
     navigate(route, { state: { userData, isApproval: true } });
   };

@@ -1,8 +1,7 @@
-import { filter } from "lodash";
-import { sentenceCase } from "change-case";
-import { useEffect, useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
-// material
+'use strict';
+
+import { filter } from 'lodash';
+import { useEffect, useState } from 'react';
 import {
   Card,
   Table,
@@ -17,46 +16,79 @@ import {
   Typography,
   TableContainer,
   TablePagination,
-} from "@mui/material";
-// components
-import Page from "../components/Page";
-import Label from "../components/Label";
-import Scrollbar from "../components/Scrollbar";
-import Iconify from "../components/Iconify";
-import SearchNotFound from "../components/SearchNotFound";
-import {
-  UserListHead,
-  UserListToolbar,
-  UserMoreMenu,
-} from "../sections/@dashboard/user";
-
-import { useSelector } from "react-redux";
-import axios from "axios";
-
-// ----------------------------------------------------------------------
+  Box,
+  OutlinedInput,
+  InputAdornment,
+  MenuItem,
+  Select,
+  FormControl,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
+import Page from '../components/Page';
+import Scrollbar from '../components/Scrollbar';
+import Iconify from '../components/Iconify';
+import SearchNotFound from '../components/SearchNotFound';
+import { UserListHead } from '../sections/@dashboard/user';
+import { useSelector } from 'react-redux';
+import api from '../../../../utils/api';
+import { formatDate } from '../utils/formatDate';
 
 const TABLE_HEAD = [
-  { id: "name", label: "Name", alignRight: false },
-  { id: "email", label: "Email", alignRight: false },
-  { id: "gender", label: "Gender", alignRight: false },
-  { id: "phoneNumber", label: "Phone Number", alignRight: false },
-  { id: "Class", label: "Class", alignRight: false },
+  { id: 'name', label: 'Students Name', alignRight: false },
+  { id: 'roll', label: 'Roll', alignRight: false },
+  { id: 'address', label: 'Address', alignRight: false },
+  { id: 'class', label: 'Class', alignRight: false },
+  { id: 'dateOfBirth', label: 'Date of Birth', alignRight: false },
+  { id: 'phone', label: 'Phone', alignRight: false },
+  { id: 'action', label: 'Action', alignRight: false, sortable: false },
 ];
 
-// ----------------------------------------------------------------------
-
 function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
+  let aValue;
+  let bValue;
+
+  switch (orderBy) {
+    case 'name':
+      aValue = `${a.firstName} ${a.lastName}`;
+      bValue = `${b.firstName} ${b.lastName}`;
+      break;
+    case 'roll':
+      aValue = a.rollNumber || 0;
+      bValue = b.rollNumber || 0;
+      break;
+    case 'class':
+      aValue = a.classIn?.className || '';
+      bValue = b.classIn?.className || '';
+      break;
+    case 'phone':
+      aValue = a.phoneNumber || '';
+      bValue = b.phoneNumber || '';
+      break;
+    case 'dateOfBirth':
+      aValue = a.dateOfBirth ? new Date(a.dateOfBirth).getTime() : 0;
+      bValue = b.dateOfBirth ? new Date(b.dateOfBirth).getTime() : 0;
+      break;
+    case 'address':
+      aValue = a.address || '';
+      bValue = b.address || '';
+      break;
+    default:
+      aValue = a[orderBy] || '';
+      bValue = b[orderBy] || '';
+  }
+
+  if (bValue < aValue) {
     return -1;
   }
-  if (b[orderBy] > a[orderBy]) {
+  if (bValue > aValue) {
     return 1;
   }
   return 0;
 }
 
 function getComparator(order, orderBy) {
-  return order === "desc"
+  return order === 'desc'
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
@@ -71,47 +103,52 @@ function applySortFilter(array, comparator, query) {
   if (query) {
     return filter(
       array,
-      (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1
+      (_user) => {
+        const name = `${_user.firstName} ${_user.lastName}`;
+        const roll = `#${String(_user.rollNumber || '').padStart(2, '0')}`;
+        return (
+          name.toLowerCase().indexOf(query.toLowerCase()) !== -1 ||
+          roll.toLowerCase().indexOf(query.toLowerCase()) !== -1
+        );
+      }
     );
   }
   return stabilizedThis?.map((el) => el[0]);
 }
 
-export default function User() {
+export default function MyStudents() {
   const classro = useSelector((state) => {
     return state.teacher?.teacherclass?.classro;
   });
   const [USERLIST, setUserList] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [page, setPage] = useState(0);
-
-  const [order, setOrder] = useState("asc");
-
+  const [order, setOrder] = useState('asc');
   const [selected, setSelected] = useState([]);
-
-  const [orderBy, setOrderBy] = useState("name");
-
-  const [filterName, setFilterName] = useState("");
-
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [orderBy, setOrderBy] = useState('name');
+  const [filterName, setFilterName] = useState('');
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [dateFilter, setDateFilter] = useState('all');
 
   useEffect(() => {
     const fetchStudents = async () => {
       if (classro?._id) {
         try {
           setLoading(true);
-          const res = await axios.get("/api/v1/admin/students", {
-            headers: { token: localStorage.getItem("token") },
-          });
+          const res = await api.get('/admin/students');
           const allStudents = res.data.students || [];
-          const classStudents = allStudents.filter((student) => {
-            const studentClassId = student.classIn?._id || student.classIn;
-            return (
-              studentClassId === classro._id ||
-              studentClassId?.toString() === classro._id?.toString()
-            );
-          });
+          const classStudents = allStudents
+            .filter((student) => {
+              const studentClassId = student.classIn?._id || student.classIn;
+              return (
+                studentClassId === classro._id ||
+                studentClassId?.toString() === classro._id?.toString()
+              );
+            })
+            .map((student, index) => ({
+              ...student,
+              rollNumber: student.rollNumber || index + 1,
+            }));
           setUserList(classStudents);
         } catch (error) {
           setUserList([]);
@@ -124,14 +161,14 @@ export default function User() {
   }, [classro]);
 
   const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = USERLIST?.map((n) => n.name);
+      const newSelecteds = USERLIST?.map((n) => `${n.firstName} ${n.lastName}`);
       setSelected(newSelecteds);
       return;
     }
@@ -169,6 +206,10 @@ export default function User() {
     setFilterName(event.target.value);
   };
 
+  const handleDeleteStudent = (studentId) => {};
+
+  const handleEditStudent = (studentId) => {};
+
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST?.length) : 0;
 
@@ -181,28 +222,97 @@ export default function User() {
   const isUserNotFound = filteredUsers?.length === 0;
 
   return (
-    <Page title="User">
-      <Container>
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          mb={5}
-        >
-          <Typography variant="h4" gutterBottom>
-            My Student List
-          </Typography>
+    <Page title="Students List">
+      <Container maxWidth="xl">
+        <Stack spacing={3} sx={{ mb: 3 }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography variant="h4" sx={{ fontWeight: 600 }}>
+              Students List
+            </Typography>
+          </Stack>
         </Stack>
 
-        <Card>
-          <UserListToolbar
-            numSelected={selected?.length}
-            filterName={filterName}
-            onFilterName={handleFilterByName}
-          />
+        <Card
+          sx={{
+            borderRadius: 2,
+            boxShadow: '0 0 2px 0 rgba(145, 158, 171, 0.08), 0 12px 24px -4px rgba(145, 158, 171, 0.08)',
+          }}
+        >
+          <Box
+            sx={{
+              p: 3,
+              borderBottom: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              spacing={2}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Students Information
+              </Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <OutlinedInput
+                  value={filterName}
+                  onChange={handleFilterByName}
+                  placeholder="Search by name or roll"
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <Iconify
+                        icon="eva:search-fill"
+                        sx={{ color: 'text.disabled', width: 20, height: 20 }}
+                      />
+                    </InputAdornment>
+                  }
+                  sx={{
+                    width: { xs: '100%', sm: 280 },
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'divider',
+                    },
+                  }}
+                />
+                <FormControl
+                  sx={{
+                    minWidth: { xs: '100%', sm: 160 },
+                  }}
+                >
+                  <Select
+                    value={dateFilter}
+                    onChange={(e) => setDateFilter(e.target.value)}
+                    displayEmpty
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <Iconify
+                          icon="eva:calendar-fill"
+                          sx={{ color: 'text.disabled', width: 20, height: 20 }}
+                        />
+                      </InputAdornment>
+                    }
+                    sx={{
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'divider',
+                      },
+                    }}
+                  >
+                    <MenuItem value="all">All Time</MenuItem>
+                    <MenuItem value="30">Last 30 days</MenuItem>
+                    <MenuItem value="7">Last 7 days</MenuItem>
+                    <MenuItem value="today">Today</MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
+            </Stack>
+          </Box>
 
           <Scrollbar>
-            <TableContainer sx={{ minWidth: 800 }}>
+            <TableContainer sx={{ minWidth: 1200 }}>
               <Table>
                 <UserListHead
                   order={order}
@@ -224,14 +334,17 @@ export default function User() {
                         _id,
                         firstName,
                         lastName,
-                        gender,
                         email,
                         phoneNumber,
                         classIn,
                         profileImage,
+                        dateOfBirth,
+                        address,
+                        rollNumber,
                       } = row;
                       const name = `${firstName} ${lastName}`;
                       const isItemSelected = selected.indexOf(name) !== -1;
+                      const roll = `#${String(rollNumber || '').padStart(2, '0')}`;
 
                       return (
                         <TableRow
@@ -241,6 +354,11 @@ export default function User() {
                           role="checkbox"
                           selected={isItemSelected}
                           aria-checked={isItemSelected}
+                          sx={{
+                            '&:hover': {
+                              backgroundColor: 'action.hover',
+                            },
+                          }}
                         >
                           <TableCell padding="checkbox">
                             <Checkbox
@@ -253,23 +371,83 @@ export default function User() {
                               direction="row"
                               alignItems="center"
                               spacing={2}
+                              sx={{ py: 2 }}
                             >
-                              <Avatar alt={name} src={profileImage} />
+                              <Avatar
+                                alt={name}
+                                src={profileImage}
+                                sx={{ width: 40, height: 40 }}
+                              />
                               <Typography variant="subtitle2" noWrap>
                                 {name}
                               </Typography>
                             </Stack>
                           </TableCell>
-                          <TableCell align="left">{email}</TableCell>
-                          <TableCell align="left">{gender}</TableCell>
-                          <TableCell align="left">{phoneNumber}</TableCell>
-                          <TableCell align="left">{classIn}</TableCell>
+                          <TableCell align="left">
+                            <Typography variant="body2" color="text.secondary">
+                              {roll}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="left">
+                            <Typography variant="body2" color="text.secondary">
+                              {address || 'N/A'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="left">
+                            <Typography variant="body2" color="text.secondary">
+                              {classIn?.className || 'N/A'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="left">
+                            <Typography variant="body2" color="text.secondary">
+                              {formatDate(dateOfBirth)}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="left">
+                            <Typography variant="body2" color="text.secondary">
+                              {phoneNumber || 'N/A'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="left">
+                            <Stack direction="row" spacing={1}>
+                              <Tooltip title="Edit">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleEditStudent(_id)}
+                                  sx={{
+                                    color: 'text.secondary',
+                                    '&:hover': {
+                                      color: 'primary.main',
+                                      backgroundColor: 'action.hover',
+                                    },
+                                  }}
+                                >
+                                  <Iconify icon="eva:edit-fill" width={20} height={20} />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Delete">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleDeleteStudent(_id)}
+                                  sx={{
+                                    color: 'text.secondary',
+                                    '&:hover': {
+                                      color: 'error.main',
+                                      backgroundColor: 'action.hover',
+                                    },
+                                  }}
+                                >
+                                  <Iconify icon="eva:trash-2-fill" width={20} height={20} />
+                                </IconButton>
+                              </Tooltip>
+                            </Stack>
+                          </TableCell>
                         </TableRow>
                       );
                     })}
                   {emptyRows > 0 && (
                     <TableRow style={{ height: 53 * emptyRows }}>
-                      <TableCell colSpan={6} />
+                      <TableCell colSpan={8} />
                     </TableRow>
                   )}
                 </TableBody>
@@ -277,7 +455,7 @@ export default function User() {
                 {isUserNotFound && (
                   <TableBody>
                     <TableRow>
-                      <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                      <TableCell align="center" colSpan={8} sx={{ py: 3 }}>
                         <SearchNotFound searchQuery={filterName} />
                       </TableCell>
                     </TableRow>
@@ -288,13 +466,21 @@ export default function User() {
           </Scrollbar>
 
           <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
+            rowsPerPageOptions={[5, 10, 25, 50]}
             component="div"
             count={USERLIST?.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
+            sx={{
+              borderTop: '1px solid',
+              borderColor: 'divider',
+              '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows':
+                {
+                  fontWeight: 500,
+                },
+            }}
           />
         </Card>
       </Container>

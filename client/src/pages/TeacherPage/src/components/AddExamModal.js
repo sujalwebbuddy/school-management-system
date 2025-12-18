@@ -7,11 +7,13 @@ import {
   Modal,
   TextField,
   Typography,
+  Stack,
+  Divider,
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
-import { useDispatch } from 'react-redux';
-import axios from 'axios';
-import swal from 'sweetalert';
+import { useDispatch, useSelector } from 'react-redux';
+import api from '../../../../utils/api';
+import Swal from 'sweetalert2';
 import { getExams } from '../../../../slices/teacherSlice';
 import SubjectSelect from '../../../../components/SubjectSelect';
 import ClassNameSelect from '../../../../components/ClassNameSelect';
@@ -21,14 +23,19 @@ const modalStyle = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 400,
+  width: { xs: '90%', sm: 500 },
   bgcolor: 'background.paper',
+  borderRadius: 2,
   boxShadow: 24,
   p: 4,
 };
 
 const AddExamModal = ({ open, onClose }) => {
   const dispatch = useDispatch();
+  const subject = useSelector((state) => {
+    return state?.teacher?.userInfo?.user?.subject;
+  });
+
   const {
     register,
     handleSubmit,
@@ -45,16 +52,20 @@ const AddExamModal = ({ open, onClose }) => {
     },
   });
 
-
   const onSubmit = async (data) => {
     try {
-      await axios.post('/api/v1/teacher/newexam', data);
-      await swal('Done!', 'New Exam has been added successfully !', 'success');
-      dispatch(getExams(data.subject));
+      await api.post('/teacher/newexam', data);
+      Swal.fire('Done!', 'New Exam has been added successfully!', 'success');
+      const subjectValue =
+        typeof subject === 'object' ? subject?.name || subject?._id : subject;
+      dispatch(getExams(subjectValue || data.subject));
       handleClose();
-      reset();
-    } catch (err) {
-      swal('Oops!', err.response?.data?.msg || 'An error occurred', 'error');
+    } catch (error) {
+      Swal.fire(
+        'Oops!',
+        error.message || 'Failed to add exam. Please try again.',
+        'error'
+      );
     }
   };
 
@@ -81,68 +92,68 @@ const AddExamModal = ({ open, onClose }) => {
           id="modal-modal-title"
           variant="h6"
           component="h2"
-          style={{ textAlign: 'center', color: '#DB7093' }}
+          sx={{ fontWeight: 600, mb: 3, textAlign: 'center' }}
         >
           Add New Exam
         </Typography>
-        <hr></hr>
-        <TextField
-          id="outlined-basic"
-          label="Exam name"
-          variant="outlined"
-          style={{ width: '100%', marginTop: '16px' }}
-          {...register('name', { required: true })}
-        />
-        <p style={{ color: 'red', textAlign: 'center', margin: '4px 0' }}>
-          {errors.name?.type === 'required' && 'Exam Name is required'}
-        </p>
-        <TextField
-          id="date"
-          label="Exam's date"
-          type="date"
-          style={{ width: '100%', marginTop: '16px' }}
-          InputLabelProps={{
-            shrink: true,
-          }}
-          {...register('dateOf', { required: true })}
-        />
-        <p style={{ color: 'red', textAlign: 'center', margin: '4px 0' }}>
-          {errors.dateOf?.type === 'required' && "Exam's date is required"}
-        </p>
-        <TextField
-          id="outlined-basic"
-          label="Total Marks"
-          variant="outlined"
-          type="number"
-          style={{ width: '100%', marginTop: '16px' }}
-          {...register('totalMark', { required: true })}
-        />
-        <p style={{ color: 'red', textAlign: 'center', margin: '4px 0' }}>
-          {errors.totalMark?.type === 'required' && 'Total Mark is required'}
-        </p>
-        <SubjectSelect 
-          control={control} 
-          errors={errors} 
-          role="teacher"
-        />
-        <ClassNameSelect 
-          control={control} 
-          errors={errors} 
-          role="teacher"
-        />
-        <hr style={{ border: 'none', marginTop: '16px' }} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
-          <Button
-            variant="contained"
-            color="success"
-            onClick={handleSubmit(onSubmit)}
-          >
-            Submit
-          </Button>
-          <Button variant="outlined" color="error" onClick={handleClose}>
-            Cancel
-          </Button>
-        </div>
+        <Divider sx={{ mb: 3 }} />
+
+        <Stack spacing={3}>
+          <TextField
+            label="Exam Name"
+            variant="outlined"
+            fullWidth
+            {...register('name', { required: 'Exam name is required' })}
+            error={!!errors.name}
+            helperText={errors.name?.message}
+          />
+
+          <TextField
+            label="Exam Date"
+            type="date"
+            fullWidth
+            InputLabelProps={{
+              shrink: true,
+            }}
+            {...register('dateOf', { required: 'Exam date is required' })}
+            error={!!errors.dateOf}
+            helperText={errors.dateOf?.message}
+          />
+
+          <TextField
+            label="Total Marks"
+            type="number"
+            variant="outlined"
+            fullWidth
+            {...register('totalMark', {
+              required: 'Total marks is required',
+              min: { value: 1, message: 'Marks must be greater than 0' },
+            })}
+            error={!!errors.totalMark}
+            helperText={errors.totalMark?.message}
+          />
+
+          <SubjectSelect control={control} errors={errors} role="teacher" />
+          <ClassNameSelect control={control} errors={errors} role="teacher" />
+
+          <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 2 }}>
+            <Button
+              variant="outlined"
+              color="inherit"
+              onClick={handleClose}
+              sx={{ textTransform: 'none' }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleSubmit(onSubmit)}
+              sx={{ textTransform: 'none' }}
+            >
+              Create Exam
+            </Button>
+          </Stack>
+        </Stack>
       </Box>
     </Modal>
   );

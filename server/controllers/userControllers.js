@@ -19,8 +19,7 @@ exports.login = async (req, res) => {
     const userInfo = await User.findById(existUser._id)
       .select("-password")
       .populate("classIn")
-      .populate("subject")
-      .populate("children");
+      .populate("subject");
 
     const token = await jwt.sign(
       { sub: existUser._id },
@@ -59,8 +58,7 @@ exports.getUserData = async (req, res) => {
     const user = await User.findOne({ _id: req.userId })
       .select("-password")
       .populate("classIn")
-      .populate("subject")
-      .populate("children");
+      .populate("subject");
     if (!user) return res.status(401).json({ msg: "you are not authorized" });
     res.json(user);
   } catch (error) {

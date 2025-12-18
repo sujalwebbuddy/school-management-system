@@ -28,7 +28,7 @@ export default function Router({ isAuth, role }) {
       path: "/studentDashboard",
       element: isAuth && role === "student" ? <DashboardLayout /> : <Page404 />,
       children: [
-        { path: "app", element: <DashboardApp /> },
+        { path: "", element: <DashboardApp /> },
 
         { path: "calender", element: <Calender /> },
         { path: "homework", element: <Homework /> },

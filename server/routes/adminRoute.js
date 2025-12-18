@@ -1,5 +1,7 @@
-const express = require("express");
-const multer = require("multer");
+'use strict';
+
+const express = require('express');
+const multer = require('multer');
 const {
   getPendedUsers,
   addNewUser,
@@ -16,18 +18,13 @@ const {
   assignNewSubject,
   getUserInfo,
   addNewAdmin,
-} = require("../controllers/adminControllers");
+  submitAttendance,
+  getAttendance,
+} = require('../controllers/adminControllers');
+const { uploadFileToS3 } = require('../middlewares/s3UploadMiddleware');
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./uploads");
-  },
-  filename: function (req, file, cb) {
-    const fileName = Date.now() + "-" + file.originalname;
-    cb(null, fileName);
-  },
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({ storage: storage });
 
@@ -37,7 +34,7 @@ router.post("/newUser", addNewUser);
 router.delete("/deleteUser/:userId", deletePendedUsers);
 
 router.get("/students", getAllStudents);
-router.put("/user/update/:userId", upload.single("profile-image"), updateUser);
+router.put('/user/update/:userId', upload.single('profile-image'), uploadFileToS3('profile-images'), updateUser);
 router.get("/user/view/:userId", getUser);
 router.delete("/user/:userId", deleteUser);
 
@@ -50,5 +47,7 @@ router.put("/class/update/:userId", updateClass);
 
 router.post("/newsubject", assignNewSubject);
 router.get("/userInfo", getUserInfo);
+router.get("/attendance", getAttendance);
+router.post("/attendance", submitAttendance);
 
 module.exports = router;

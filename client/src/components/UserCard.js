@@ -16,8 +16,6 @@ const UserCard = ({ id, firstName, lastName, email, image }) => {
       return `/dashboard/teachers/profile/${id}`;
     } else if (pathname.includes('/students')) {
       return `/dashboard/students/profile/${id}`;
-    } else if (pathname.includes('/parents')) {
-      return `/dashboard/parents/profile/${id}`;
     }
     return ``;
   };

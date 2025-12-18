@@ -41,7 +41,7 @@ export default function Page404() {
           />
 
           <Button
-            to="/studentDashboard/app"
+            to="/studentDashboard"
             size="large"
             variant="contained"
             component={RouterLink}

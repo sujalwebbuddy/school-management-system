@@ -1,7 +1,8 @@
 'use strict';
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
 import {
   AppBar,
   Toolbar,
@@ -12,11 +13,40 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
+import { logoutUser } from '../../../slices/userSlice';
 import logoImage from '../../../images/landing/logo.svg';
 
 const Navigation = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const { isAuth, userInfo } = useSelector((state) => state.user);
+
+  const handleDashboardClick = () => {
+    if (!isAuth) return;
+
+    switch (userInfo.role) {
+      case 'admin':
+        navigate('/dashboard');
+        break;
+      case 'student':
+        navigate('/studentDashboard');
+        break;
+      case 'teacher':
+        navigate('/teacherDashboard');
+        break;
+      default:
+        navigate('/login');
+        break;
+    }
+  };
+
+  const handleLogout = () => {
+    dispatch(logoutUser());
+    navigate('/');
+  };
 
   return (
     <AppBar
@@ -115,34 +145,67 @@ const Navigation = () => {
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Button
-              component={Link}
-              to="/login"
-              sx={{
-                color: 'text.primary',
-                fontWeight: 500,
-                '&:hover': { color: 'primary.main' },
-                textTransform: 'none',
-                display: { xs: 'none', sm: 'block' },
-              }}
-            >
-              Login
-            </Button>
-            <Button
-              component={Link}
-              to="/register"
-              variant="contained"
-              color="primary"
-              sx={{
-                px: 3,
-                py: 1,
-                fontWeight: 500,
-                textTransform: 'none',
-                borderRadius: 1,
-              }}
-            >
-              Register
-            </Button>
+            {isAuth ? (
+              <>
+                <Button
+                  onClick={handleDashboardClick}
+                  variant="contained"
+                  color="primary"
+                  sx={{
+                    px: 3,
+                    py: 1,
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    borderRadius: 1,
+                  }}
+                >
+                  Dashboard
+                </Button>
+                <Button
+                  onClick={handleLogout}
+                  sx={{
+                    color: 'text.primary',
+                    fontWeight: 500,
+                    '&:hover': { color: 'primary.main' },
+                    textTransform: 'none',
+                    display: { xs: 'none', sm: 'block' },
+                  }}
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  component={Link}
+                  to="/login"
+                  sx={{
+                    color: 'text.primary',
+                    fontWeight: 500,
+                    '&:hover': { color: 'primary.main' },
+                    textTransform: 'none',
+                    display: { xs: 'none', sm: 'block' },
+                  }}
+                >
+                  Login
+                </Button>
+                <Button
+                  component={Link}
+                  to="/register"
+                  variant="contained"
+                  color="primary"
+                  sx={{
+                    px: 3,
+                    py: 1,
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    borderRadius: 1,
+                  }}
+                >
+                  Register
+                </Button>
+              </>
+            )}
           </Box>
         </Toolbar>
       </Container>

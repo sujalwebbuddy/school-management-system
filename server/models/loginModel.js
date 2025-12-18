@@ -19,7 +19,7 @@ const loginSchema = mongoose.Schema({
   role: {
     type: String,
     required: true,
-    enum: ["student", "teacher", "parent", "admin"],
+    enum: ["student", "teacher", "admin"],
   },
   isAvatarImageSet: {
     type: Boolean,

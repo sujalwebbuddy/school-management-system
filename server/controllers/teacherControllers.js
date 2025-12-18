@@ -334,9 +334,8 @@ exports.updateProfile = async (req, res) => {
       }
     }
     
-    if (req?.file?.filename) {
-      const imagePath = `${config.SERVER_BASE_URL}/uploads/${req.file.filename}`;
-      updateData.profileImage = imagePath;
+    if (req?.file?.s3Url) {
+      updateData.profileImage = req.file.s3Url;
     }
     
     const user = await User.findByIdAndUpdate(req.params.userId, updateData, {

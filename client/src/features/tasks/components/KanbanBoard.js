@@ -57,33 +57,41 @@ const Kanban = () => {
     dispatch(fetchTasks());
   }, [dispatch]);
 
-  // Handle card drag and drop
-  const onCardDragEnd = async (args) => {
-    const { data, dropIndex } = args;
+  // Handle card actions (including drag and drop)
+  const onActionComplete = async (args) => {
+    // Check if this is a card drop action
+    if (args.requestType === 'cardMoved' || args.requestType === 'cardDropped') {
+      if (args.changedRecords && args.changedRecords.length > 0) {
+        const changedRecord = args.changedRecords[0];
 
-    if (data && data.length > 0) {
-      const taskData = data[0];
-      const newStatus = args.columnKey; // The status column where the card was dropped
+        // Get the new status from the changed record
+        const newStatus = changedRecord.Status;
 
-      // Find the original task to get its ID
-      const originalTask = tasks.find(task => task.title === taskData.Id);
+        if (!newStatus) {
+          console.error('Could not determine new status from changed record');
+          return;
+        }
 
-      if (originalTask && originalTask.status !== newStatus) {
-        try {
-          // Optimistic update
-          dispatch(updateTaskStatusOptimistic({
-            taskId: originalTask._id,
-            status: newStatus
-          }));
+        // Find the original task to get its ID
+        const originalTask = tasks.find(task => task._id === changedRecord.taskId);
 
-          // API call
-          await dispatch(updateTaskStatus({
-            taskId: originalTask._id,
-            status: newStatus
-          })).unwrap();
-        } catch (error) {
-          console.error('Failed to update task status:', error);
-          // The optimistic update will be reverted by the rejected action
+        if (originalTask && originalTask.status !== newStatus) {
+          try {
+            // Optimistic update for immediate UI feedback
+            dispatch(updateTaskStatusOptimistic({
+              taskId: originalTask._id,
+              status: newStatus
+            }));
+
+            // API call to persist the change
+            await dispatch(updateTaskStatus({
+              taskId: originalTask._id,
+              status: newStatus
+            })).unwrap();
+          } catch (error) {
+            console.error('Failed to update task status:', error);
+            // The optimistic update will be reverted by the rejected action
+          }
         }
       }
     }
@@ -145,7 +153,7 @@ const Kanban = () => {
         keyField="Status"
         dataSource={kanbanData}
         cardSettings={{ contentField: "Summary", headerField: "Id" }}
-        dragEnd={onCardDragEnd}
+        actionComplete={onActionComplete}
         allowDragAndDrop={true}
       >
         <ColumnsDirective>

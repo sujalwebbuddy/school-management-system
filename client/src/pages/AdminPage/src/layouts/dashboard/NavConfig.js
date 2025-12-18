@@ -8,7 +8,7 @@ const getIcon = (name) => <Iconify icon={name} width={22} height={22} />;
 const navConfig = [
   {
     title: "dashboard",
-    path: "/dashboard/app",
+    path: "/dashboard",
     icon: getIcon("eva:pie-chart-2-fill"),
   },
   {
@@ -25,11 +25,6 @@ const navConfig = [
     title: "Teachers",
     path: "/dashboard/teachers",
     icon: getIcon("fa-solid:chalkboard-teacher"),
-  },
-  {
-    title: "Parents",
-    path: "/dashboard/parents",
-    icon: getIcon("raphael:parent"),
   },
   {
     title: "Classes",

@@ -10,16 +10,18 @@ import {
   Tabs,
   Tab,
   CircularProgress,
+  Chip,
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useDispatch, useSelector } from 'react-redux';
 
 // Import task components
-import AppTasks from '../components/AppTasks';
 import TaskDialog from '../components/TaskDialog';
 import KanbanBoard from '../components/KanbanBoard';
 
 // Import Redux actions and selectors
-import { fetchTasks, fetchTaskStats } from '../../../slices/taskSlice';
+import { fetchTasks, fetchTaskStats, deleteTask } from '../../../slices/taskSlice';
 import {
   selectTasks,
   selectTasksLoading,
@@ -76,6 +78,16 @@ const TaskPage = () => {
   const handleCloseTaskDialog = () => {
     setTaskDialogOpen(false);
     setEditingTask(null);
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    if (window.confirm('Are you sure you want to delete this task?')) {
+      try {
+        await dispatch(deleteTask(taskId)).unwrap();
+      } catch (error) {
+        console.error('Failed to delete task:', error);
+      }
+    }
   };
 
   // Mock users list - in a real app, this would come from an API
@@ -173,7 +185,7 @@ const TaskPage = () => {
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h6">Recent Tasks</Typography>
+                <Typography variant="h6">All Tasks</Typography>
                 <Button
                   variant="contained"
                   onClick={() => handleOpenTaskDialog()}
@@ -181,7 +193,88 @@ const TaskPage = () => {
                   Create Task
                 </Button>
               </Box>
-              <AppTasks onAddTask={() => handleOpenTaskDialog()} />
+
+              {/* Custom Task List */}
+              <Card>
+                {tasks.length > 0 ? (
+                  tasks.map((task) => (
+                    <Box
+                      key={task._id}
+                      sx={{
+                        p: 2,
+                        borderBottom: '1px solid',
+                        borderColor: 'divider',
+                        '&:last-child': { borderBottom: 0 },
+                        '&:hover': { bgcolor: 'action.hover' }
+                      }}
+                    >
+                      <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Box>
+                          <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                            {task.title}
+                          </Typography>
+                          {task.description && (
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                              {task.description.length > 100
+                                ? `${task.description.substring(0, 100)}...`
+                                : task.description}
+                            </Typography>
+                          )}
+                          <Box display="flex" gap={1} alignItems="center">
+                            <Chip
+                              label={task.status}
+                              size="small"
+                              color={
+                                task.status === 'Open' ? 'primary' :
+                                task.status === 'InProgress' ? 'warning' :
+                                task.status === 'Testing' ? 'info' : 'success'
+                              }
+                            />
+                            <Chip
+                              label={task.priority}
+                              size="small"
+                              variant="outlined"
+                              color={
+                                task.priority === 'Critical' ? 'error' :
+                                task.priority === 'High' ? 'warning' :
+                                task.priority === 'Normal' ? 'info' : 'default'
+                              }
+                            />
+                            {task.assignee && (
+                              <Typography variant="caption" color="text.secondary">
+                                Assigned to: {task.assignee.firstName} {task.assignee.lastName}
+                              </Typography>
+                            )}
+                          </Box>
+                        </Box>
+                        <Box display="flex" gap={1}>
+                          <Button
+                            size="small"
+                            onClick={() => handleOpenTaskDialog(task)}
+                            startIcon={<EditIcon />}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="small"
+                            color="error"
+                            onClick={() => handleDeleteTask(task._id)}
+                            startIcon={<DeleteIcon />}
+                          >
+                            Delete
+                          </Button>
+                        </Box>
+                      </Box>
+                    </Box>
+                  ))
+                ) : (
+                  <Box p={4} textAlign="center">
+                    <Typography color="text.secondary">
+                      No tasks found. Create your first task!
+                    </Typography>
+                  </Box>
+                )}
+              </Card>
             </Grid>
           </Grid>
         </TabPanel>

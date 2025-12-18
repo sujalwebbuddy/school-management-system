@@ -1,3 +1,5 @@
+'use strict';
+
 const {
   getTeacherClass,
   newExam,
@@ -9,21 +11,14 @@ const {
   newHomework,
   deleteHomework,
   updateProfile,
-} = require("../controllers/teacherControllers");
-const express = require("express");
-const multer = require("multer");
-const { makePredictions } = require("../middlewares/personDetectMiddleware");
+} = require('../controllers/teacherControllers');
+const express = require('express');
+const multer = require('multer');
+const { makePredictions } = require('../middlewares/personDetectMiddleware');
+const { uploadFileToS3 } = require('../middlewares/s3UploadMiddleware');
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./uploads");
-  },
-  filename: function (req, file, cb) {
-    const fileName = Date.now() + "-" + file.originalname;
-    cb(null, fileName);
-  },
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({ storage: storage });
 
@@ -38,8 +33,10 @@ router.get("/allhomeworks", getHomeworks);
 router.post("/newhomework", newHomework);
 router.delete("/delete/:homeId", deleteHomework);
 router.put(
-  "/update/:userId",
-  [upload.single("image"), makePredictions],
+  '/update/:userId',
+  upload.single('image'),
+  makePredictions,
+  uploadFileToS3('profile-images'),
   updateProfile
 );
 module.exports = router;

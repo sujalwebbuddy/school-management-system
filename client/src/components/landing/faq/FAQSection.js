@@ -27,11 +27,6 @@ const FAQSection = () => {
         'Yes, there is a free plan for primary schools. SchoolHub offers a completely free plan for primary schools with no limitations.',
     },
     {
-      question: 'Can parents create an account in SchoolHub ?',
-      answer:
-        'Yes, of course. Parents can access their children information to better control their studies. Our platform provides separate portals for parents to monitor their children academic progress.',
-    },
-    {
       question: 'What kind of payment methods do you accept ?',
       answer:
         'We accept all kinds of payment methods including credit cards, debit cards, and bank transfers. For enterprise plans, we also support invoice-based billing.',

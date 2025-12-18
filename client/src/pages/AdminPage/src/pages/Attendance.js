@@ -1,186 +1,177 @@
-import React, { useState } from "react";
-import { styled } from "@mui/material/styles";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell, { tableCellClasses } from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import { useSelector } from "react-redux";
-import { Button, Typography } from "@mui/material";
-import { Box } from "@mui/system";
-import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import Swal from "sweetalert2";
-import { DesktopDatePicker } from "@mui/lab";
+'use strict';
 
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.common.black,
-    color: theme.palette.common.white,
-  },
-  [`&.${tableCellClasses.body}`]: {
-    fontSize: 14,
-  },
-}));
+import { useState } from 'react';
+import {
+  Card,
+  Stack,
+  Button,
+  Container,
+  Typography,
+  Box,
+  Alert,
+  CircularProgress,
+} from '@mui/material';
+import { DesktopDatePicker } from '@mui/lab';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import TextField from '@mui/material/TextField';
+import Page from '../components/Page';
+import Iconify from '../components/Iconify';
+import AttendanceTable from '../components/AttendanceTable';
+import AttendanceHeader from '../components/AttendanceHeader';
+import AttendanceEmptyState from '../components/AttendanceEmptyState';
+import AttendanceRoleToggle from '../components/AttendanceRoleToggle';
+import useAttendance from '../hooks/useAttendance';
+import useAttendanceSubmission from '../hooks/useAttendanceSubmission';
 
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  "&:nth-of-type(odd)": {
-    backgroundColor: theme.palette.action.hover,
-  },
-  // hide last border
-  "&:last-child td, &:last-child th": {
-    border: 0,
-  },
-}));
+export default function Attendance() {
+  const {
+    users,
+    selectedDate,
+    selectedRole,
+    attendanceData,
+    isSubmitted,
+    hasChanges,
+    presentCount,
+    absentCount,
+    loading,
+    handleDateChange,
+    handleRoleChange,
+    handleAttendanceChange,
+    setIsSubmitted,
+    setHasChanges,
+    refetchAttendance,
+  } = useAttendance();
 
-const Attendance = () => {
-  const [update, setUpdate] = useState(false);
+  const { submitAttendance, isSubmitting } = useAttendanceSubmission();
 
-  const rows = useSelector((state) => {
-    return state.admin.usersApproved.student;
-  });
-  const [value, setValue] = useState(new Date());
-  const handleChange = (newValue) => {
-    setValue(newValue);
-    setUpdate(false);
+  const handleSubmit = async () => {
+    const result = await submitAttendance(selectedDate, attendanceData, selectedRole);
+    if (result.success) {
+      setIsSubmitted(true);
+      setHasChanges(false);
+      refetchAttendance();
+    }
   };
-  return (
-    <>
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        mb={5}
-      >
-        <Typography variant="h4" gutterBottom style={{ color: "#ff808b" }}>
-          Mark Employee attendance
-        </Typography>
-      </Stack>
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <Stack spacing={2} style={{ width: "30%", margin: "auto" }}>
-          <DesktopDatePicker
-            label="Pick attendance date"
-            value={value}
-            onChange={handleChange}
-            inputFormat="MM/dd/yyyy"
-            renderInput={(params) => <TextField {...params} />}
-          />
-        </Stack>
-      </LocalizationProvider>
-      <br />
-      <br />
-        <TableContainer component={Paper}>
-          <Table
-            sx={{ minWidth: 700 }}
-            aria-label="customized table"
-            style={{ width: "50%", margin: "auto" }}
-          >
-            <TableHead>
-              <TableRow>
-                <StyledTableCell>Full Name</StyledTableCell>
-                <StyledTableCell align="right">Role</StyledTableCell>
-                <StyledTableCell align="right">Status</StyledTableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows?.map((row, i) => (
-                <StyledTableRow key={i}>
-                  <StyledTableCell component="th" scope="row">
-                    {`${row?.firstName} ${row?.lastName}`}
-                  </StyledTableCell>
-                  <StyledTableCell align="right">{row?.role}</StyledTableCell>
-                  <StyledTableCell align="right">
-                    <input
-                      type="radio"
-                      name={`p${i}`}
-                      id={`p${i}`}
-                      style={{
-                        transform: "scale(1.7)",
-                        marginRight: "5px",
-                      }}
-                      className="present"
-                      required
-                    />
-                    <label
-                      htmlFor={`p${i}`}
-                      style={{
-                        position: "relative",
-                        left: "-15px",
-                        top: "-4px",
-                        fontSize: "8pt",
-                        opacity: "1",
-                        color: "green",
-                      }}
-                    >
-                      P
-                    </label>
-                    <input
-                      type="radio"
-                      name={`p${i}`}
-                      id={`a${i}`}
-                      style={{ transform: "scale(1.7)" }}
-                      className="absent"
-                      required
-                    />
-                    <label
-                      htmlFor={`a${i}`}
-                      style={{
-                        position: "relative",
-                        left: "-11px",
-                        top: "-4px",
-                        fontSize: "8pt",
-                        opacity: "0.9",
-                        color: "red",
-                      }}
-                    >
-                      A
-                    </label>
-                  </StyledTableCell>
-                </StyledTableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <br />
-          <br />
-          <Box m={1} display="flex" justifyContent="center" alignItems="center">
-            {update ? (
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ height: 40 }}
-                style={{ width: "15%" }}
-                onClick={() => {
-                  Swal.fire("Done!", "Employee Attendance updated!", "success");
-                }}
-              >
-                Update
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ height: 40 }}
-                style={{ width: "15%" }}
-                onClick={() => {
-                  setUpdate(true);
-                  Swal.fire(
-                    "Done!",
-                    `Employee Attendance marked for ${value}`,
-                    "success"
-                  );
-                }}
-              >
-                Submit
-              </Button>
-            )}
-        </Box>
-      </TableContainer>
-    </>
-  );
-};
 
-export default Attendance;
+  return (
+    <Page title="Attendance">
+      <Container maxWidth="xl">
+        <Stack spacing={3} sx={{ mb: 3 }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            flexWrap="wrap"
+            gap={2}
+          >
+            <Typography variant="h4" sx={{ fontWeight: 600 }}>
+              Mark Attendance
+            </Typography>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <AttendanceRoleToggle role={selectedRole} onChange={handleRoleChange} />
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <DesktopDatePicker
+                  label="Select Date"
+                  value={selectedDate}
+                  onChange={handleDateChange}
+                  inputFormat="MM/dd/yyyy"
+                  renderInput={(params) => (
+                    <TextField {...params} sx={{ minWidth: 250 }} />
+                  )}
+                />
+              </LocalizationProvider>
+            </Stack>
+          </Stack>
+        </Stack>
+
+        {selectedDate && (
+          <Card
+            sx={{
+              borderRadius: 2,
+              boxShadow:
+                '0 0 2px 0 rgba(145, 158, 171, 0.08), 0 12px 24px -4px rgba(145, 158, 171, 0.08)',
+            }}
+          >
+            <Box
+              sx={{
+                p: 3,
+                borderBottom: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
+              <AttendanceHeader
+                selectedDate={selectedDate}
+                presentCount={presentCount}
+                absentCount={absentCount}
+                totalCount={users.length}
+              />
+            </Box>
+
+            {isSubmitted && (
+              <Box sx={{ p: 2 }}>
+                <Alert severity="success" sx={{ borderRadius: 1 }}>
+                  Attendance has been successfully submitted for this date.
+                </Alert>
+              </Box>
+            )}
+
+            {loading ? (
+              <Box sx={{ p: 4, textAlign: 'center' }}>
+                <CircularProgress size={40} sx={{ mb: 2 }} />
+                <Typography variant="body2" color="text.secondary">
+                  Loading attendance data...
+                </Typography>
+              </Box>
+            ) : (
+              <AttendanceTable
+                users={users}
+                attendanceData={attendanceData}
+                onAttendanceChange={handleAttendanceChange}
+                role={selectedRole}
+              />
+            )}
+
+            <Box
+              sx={{
+                p: 3,
+                borderTop: '1px solid',
+                borderColor: 'divider',
+                display: 'flex',
+                justifyContent: 'flex-end',
+              }}
+            >
+              <Button
+                variant="contained"
+                size="large"
+                onClick={handleSubmit}
+                disabled={!hasChanges || isSubmitted || isSubmitting}
+                startIcon={<Iconify icon="eva:checkmark-circle-2-fill" />}
+                sx={{
+                  px: 4,
+                  py: 1.5,
+                  fontWeight: 600,
+                  textTransform: 'none',
+                }}
+              >
+                {isSubmitting ? 'Submitting...' : isSubmitted ? 'Submitted' : 'Submit Attendance'}
+              </Button>
+            </Box>
+          </Card>
+        )}
+
+        {!selectedDate && (
+          <Card
+            sx={{
+              borderRadius: 2,
+              boxShadow:
+                '0 0 2px 0 rgba(145, 158, 171, 0.08), 0 12px 24px -4px rgba(145, 158, 171, 0.08)',
+            }}
+          >
+            <AttendanceEmptyState />
+          </Card>
+        )}
+      </Container>
+    </Page>
+  );
+}

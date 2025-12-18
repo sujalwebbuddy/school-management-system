@@ -34,7 +34,7 @@ const PrinciplesSection = () => {
       icon: HomeIcon,
       title: 'Separate Portals Available',
       description:
-        'our school management system comes with a separate portal for every user role. An admin portal with full controls, separate portals for Management admin, Teachers, Parents, and Students.',
+        'our school management system comes with a separate portal for every user role. An admin portal with full controls, separate portals for Management admin, Teachers, and Students.',
       iconColor: '#ef4444',
       iconBgColor: 'rgba(239, 68, 68, 0.1)',
     },

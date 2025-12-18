@@ -19,7 +19,6 @@ export default function Admin() {
   const { isAuth, userInfo } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   useEffect(() => {
-    console.log("calling getApprovedUsers, getNoApprovedUsers and getClasses")
     dispatch(getApprovedUsers());
     dispatch(getNoApprovedUsers());
     dispatch(getClasses());

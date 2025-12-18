@@ -50,24 +50,23 @@ const Auth = () => {
 
   const [flag, setFlag] = useState(false);
 
-  const onSubmit = (data) => {
-    axios
-      .post("/api/v1/users/register", data)
-      .then((res) => {
-        swal(
-          "Done!",
-          "Your register request has been sent successfully! Wait to be approved",
-          "success"
-        ).then(() => window.location.reload(false));
-
-        console.log(res.data);
-      })
-      .catch((err) => {
-        swal("Oops!", err.response.data.msg, "error");
-
-        reset({ email: "" });
-        console.log(err.response.data);
-      });
+  const onSubmit = async (data) => {
+    try {
+      await axios.post("/api/v1/users/register", data);
+      await swal(
+        "Done!",
+        "Your register request has been sent successfully! Wait to be approved",
+        "success"
+      );
+      window.location.reload(false);
+    } catch (err) {
+      const message =
+        err && err.response && err.response.data && err.response.data.msg
+          ? err.response.data.msg
+          : "Registration failed due to an unknown error";
+      await swal("Oops!", message, "error");
+      reset({ email: "" });
+    }
   };
 
   const dispatch = useDispatch();
@@ -83,9 +82,8 @@ const Auth = () => {
   };
   const nav = useNavigate();
   useEffect(() => {
-    if (isAuth && userInfo.role === "admin") nav("/dashboard/app");
+    if (isAuth && userInfo.role === "admin") nav("/dashboard");
     else if (isAuth && userInfo.role === "student") nav("/studentDashboard");
-    else if (isAuth && userInfo.role === "parent") nav("/parentdashboard");
     else if (isAuth && userInfo.role === "teacher") nav("/teacherDashboard");
   }, [isAuth, nav, userInfo.role]);
 
@@ -208,14 +206,14 @@ const Auth = () => {
                 placeholder="Role"
                 {...register("role", {
                   required: true,
-                  pattern: /teacher|student|parent/g,
+                  pattern: /teacher|student/g,
                 })}
               />
             </div>
             <p style={{ color: "red" }}>
               {errors.role?.type === "required" && "Role is required"}
               {errors.role?.type === "pattern" &&
-                "Role must be : student , parent or teacher"}
+                "Role must be : student or teacher"}
             </p>
             <input
               type="submit"

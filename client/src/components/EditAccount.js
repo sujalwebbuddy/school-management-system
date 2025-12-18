@@ -44,20 +44,18 @@ const EditAccount = () => {
   const std = useSelector((state) => {
     return state.admin.usersApproved.student;
   }) || [];
-  const prt = useSelector((state) => {
-    return state.admin.usersApproved.parent;
-  }) || [];
   const tch = useSelector((state) => {
     return state.admin.usersApproved.teacher;
   }) || [];
   const adm = useSelector((state) => {
     return state.admin.usersApproved.admin;
   }) || [];
-  const user = [...std, ...prt, ...tch, ...adm];
+  const user = [...std, ...tch, ...adm];
   const location = useLocation();
   const userid = location.state;
   const userf = user.find((el) => el._id === userid);
   const classroom = useSelector((state) => {
+    console.log({state})
     return state.admin.classrooms.classes;
   });
   const extractSubjects = (classes) => {

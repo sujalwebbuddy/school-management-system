@@ -66,7 +66,7 @@ const EditAccount = () => {
           () => {
             setLoading(false);
             dispatch(getUserInfo(userInfo));
-            navigate("/teacherDashboard/app");
+            navigate("/teacherDashboard");
           }
         );
       })

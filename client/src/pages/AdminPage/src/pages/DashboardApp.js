@@ -1,4 +1,3 @@
-import { faker } from "@faker-js/faker";
 // @mui
 import { useTheme } from "@mui/material/styles";
 import { Grid, Container, Typography } from "@mui/material";
@@ -8,8 +7,6 @@ import Iconify from "../components/Iconify";
 // sections
 import {
   AppTasks,
-  AppNewsUpdate,
-  AppOrderTimeline,
   AppCurrentVisits,
   AppWebsiteVisits,
   AppTrafficBySite,
@@ -38,7 +35,7 @@ export default function DashboardApp() {
     return state.admin.usersApproved;
   });
 
-  const allUsers = users?.student?.concat(users?.teacher || [], users?.parent || [], users?.admin || []) || [];
+  const allUsers = users?.student?.concat(users?.teacher || [], users?.admin || []) || [];
 
   const handleOpenTaskDialog = (task = null) => {
     setEditingTask(task);
@@ -75,14 +72,6 @@ export default function DashboardApp() {
             />
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary
-              title="Parents"
-              total={users?.parent?.length}
-              color="warning"
-              icon={"ri:parent-line"}
-            />
-          </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
             <AppWidgetSummary
