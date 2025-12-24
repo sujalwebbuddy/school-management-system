@@ -1,0 +1,177 @@
+<body>
+<h2>Overview</h2>
+<p>SchoolHub Platform is a comprehensive, production-ready Learning Management System (LMS) that enables educational institutions to manage students, teachers, classes, and assessments through a modern, multi-tenant SaaS architecture. Built with React 18, Node.js, and TypeScript, this platform provides a seamless experience for operating educational institutions with advanced AI features, real-time communication, and enterprise-grade security. The platform includes everything needed to run a complete educational business, from user management to payment processing and analytics.</p>
+<h2>⚠️ Important: External Service Costs Disclaimer</h2>
+<p><strong>Please note that this application requires external services to function at full capacity, and you will incur costs based on your usage of these services.</strong></p>
+<p>This application integrates with several third-party services that charge fees based on usage:</p>
+<ul>
+<li><strong>AWS S3</strong> - Charges for storage and data transfer. Free tier includes 5GB storage and 20,000 GET requests. Additional usage incurs costs based on storage volume and transfer amounts.</li>
+<li><strong>Stripe</strong> - Charges a transaction fee of 2.9% plus $0.30 per successful subscription payment. Monthly fees may apply for advanced features.</li>
+<li><strong>MongoDB Atlas</strong> - Free tier available for development (512MB), but production use requires paid plans based on storage, performance, and usage requirements.</li>
+<li><strong>Socket.io Services</strong> - Free for basic usage, but high-traffic deployments may require premium plans for unlimited connections.</li>
+</ul>
+<p><strong>You are responsible for all costs associated with these external services.</strong> The purchase price of this application includes only the source code and does not include any service subscriptions or usage fees. Before deploying this application, please review the pricing pages of all required services to understand the costs you will incur based on your expected usage volume.</p>
+<p>While many services offer free tiers suitable for development and testing, production use with multiple organizations will require paid plans. Ensure you have budgeted for ongoing infrastructure costs based on your expected user base and feature usage.</p>
+<h2>Key Features</h2>
+<h3>AI Logo Generation</h3>
+<p>Generate professional logos using advanced AI models powered by Nebius AI. The application supports multiple AI models including Flux Schnell and Flux Dev, allowing users to choose the best option for their needs. Each logo generation takes seconds and produces high-quality, unique designs suitable for commercial use.</p>
+<h3>Six Design Styles</h3>
+<p>Users can choose from six professional design styles to match their brand identity:</p>
+<ul>
+<li>Minimal - Simple, timeless designs with negative space and flat design principles</li>
+<li>Technology - Detailed, sharp, cinematic designs with clean lines and minimalist aesthetics</li>
+<li>Corporate - Modern, forward-thinking designs with geometric shapes and professional appeal</li>
+<li>Creative - Playful designs with bright colors, rounded shapes, and lively aesthetics</li>
+<li>Abstract - Artistic designs with unique shapes, patterns, and visually interesting textures</li>
+<li>Flashy - Attention-grabbing designs with bold, futuristic elements and vibrant neon colors</li>
+</ul>
+<h3>Cloud Infrastructure & File Management</h3>
+<p>Enterprise-grade file storage and management system:</p>
+<ul>
+<li>AWS S3 integration with pre-signed URLs for secure uploads</li>
+<li>Automatic file optimization and format conversion</li>
+<li>Organization-based file access control and permissions</li>
+<li>Global CDN delivery for fast content access</li>
+<li>Comprehensive file validation and security measures</li>
+</ul>
+<h3>Six-Step Generation Wizard</h3>
+<p>The application features an intuitive step-by-step wizard that guides users through the logo creation process:</p>
+<ol>
+<li>Brand Name Input - Enter company or brand name</li>
+<li>Style Selection - Choose from six design styles</li>
+<li>Colors and Model - Customize colors and select AI model</li>
+<li>Size and Quality - Select output dimensions and quality level</li>
+<li>Additional Details - Provide optional brand personality and preferences</li>
+<li>Generated Logo - View, download, or regenerate the logo</li>
+</ol>
+<h3>Advanced Analytics & Reporting</h3>
+<p>Comprehensive analytics dashboard with interactive visualizations:</p>
+<ul>
+<li>Student performance tracking and progress analytics</li>
+<li>Attendance monitoring with automated reporting</li>
+<li>Class performance insights and comparative analysis</li>
+<li>Teacher workload analytics and assignment tracking</li>
+<li>Organization-wide usage statistics and trends</li>
+<li>Interactive charts powered by Syncfusion components</li>
+</ul>
+<h3>Subscription Management System</h3>
+<p>Tiered subscription model with automatic billing and feature access:</p>
+<ul>
+<li>Primary Tier - $29/month for small institutions (100 users)</li>
+<li>High School Tier - $79/month for secondary education (500 users)</li>
+<li>University Tier - $199/month for higher education (2000 users)</li>
+</ul>
+<p>Each tier includes specific features and user limits with automatic scaling options. Free trial period available for new organizations.</p>
+<h3>Payment Processing & Billing</h3>
+<p>Complete Stripe integration for subscription management with automated billing, webhooks, and payment processing. The system handles recurring payments, failed payment recovery, and usage-based billing.</p>
+<h3>Task & Project Management</h3>
+<p>Kanban-style task management system for efficient workflow organization:</p>
+<ul>
+<li>Drag-and-drop task boards with customizable columns</li>
+<li>Priority-based task assignment and deadline tracking</li>
+<li>Progress monitoring with status updates</li>
+<li>Team collaboration and task sharing</li>
+<li>Automated notifications and reminder systems</li>
+</ul>
+<h3>Security & Access Control</h3>
+<p>Enterprise-grade security with comprehensive access control and data protection. JWT-based authentication, role-based permissions, input validation, and secure API endpoints ensure data safety and compliance.</p>
+<h2>Technical Specifications</h2>
+<h3>Technology Stack</h3>
+<ul>
+<li>Frontend: React 18 with Material-UI and Syncfusion components</li>
+<li>Backend: Node.js 16+ with Express.js framework</li>
+<li>Language: JavaScript with modern ES6+ features</li>
+<li>Database: MongoDB with Mongoose ODM</li>
+<li>Authentication: JWT with bcrypt password hashing</li>
+<li>Payments: Stripe with webhook processing</li>
+<li>AI/ML: TensorFlow.js for person detection and content analysis</li>
+<li>Real-time: Socket.io for instant messaging</li>
+<li>Storage: AWS S3 with pre-signed URLs and CDN</li>
+<li>State Management: Redux Toolkit</li>
+<li>UI Framework: Bootstrap and custom responsive design</li>
+</ul>
+<h3>System Requirements</h3>
+<ul>
+<li>Node.js 16 or higher</li>
+<li>npm package manager</li>
+<li>MongoDB database (local or MongoDB Atlas)</li>
+<li>AWS account for S3 storage (optional but recommended)</li>
+<li>Stripe account for payment processing</li>
+</ul>
+<h3>Deployment Options</h3>
+<p>The application can be deployed on:</p>
+<ul>
+<li>Vercel + AWS EC2 (recommended for scalability)</li>
+<li>AWS EC2 (full control with auto-scaling)</li>
+<li>Heroku or DigitalOcean (managed hosting)</li>
+<li>Any VPS or dedicated server supporting Node.js</li>
+</ul>
+<h2>Service and Infrastructure Requirements</h2>
+<p>To run this application at full capacity, you will need to create accounts and configure the following services. Many services offer free tiers suitable for development and small-scale production use.</p>
+<h3>Required Services</h3>
+<h4>MongoDB Database</h4>
+<p>MongoDB provides the database for storing all application data. The free tier (M0 Sandbox) includes 512MB storage, suitable for development. Production use requires paid plans based on storage and performance needs. MongoDB Atlas recommended for cloud hosting.</p>
+<h4>Stripe</h4>
+<p>Stripe handles subscription payments and billing. Free tier available for testing. Production use incurs 2.9% + $0.30 per transaction. Required for subscription management and payment processing.</p>
+<h4>AWS Account (Recommended)</h4>
+<p>AWS S3 provides secure file storage and CDN delivery. Free tier includes 5GB storage and 20,000 GET requests per month. Additional usage incurs costs based on storage volume and data transfer.</p>
+<h3>Optional but Recommended Services</h3>
+<h4>Domain Registration</h4>
+<p>Custom domains for each organization. Required for production multi-tenant deployments. Various registrars available (Namecheap, GoDaddy, etc.).</p>
+<h4>Email Service Provider</h4>
+<p>For automated notifications and password resets. Services like SendGrid, Mailgun, or Amazon SES can be integrated. Many offer free tiers for low-volume usage.</p>
+<h4>SSL Certificate</h4>
+<p>Let's Encrypt provides free SSL certificates. Required for HTTPS in production environments.</p>
+<h3>Development-Only Services</h3>
+<h4>Local MongoDB</h4>
+<p>For local development, you can install MongoDB Community Edition locally instead of using MongoDB Atlas. Free and suitable for development environments.</p>
+<h2>Installation and Setup</h2>
+<p>The application includes comprehensive documentation covering:</p>
+<ul>
+<li>Environment variable configuration for all services</li>
+<li>MongoDB database setup and schema creation</li>
+<li>JWT authentication and security setup</li>
+<li>Stripe subscription and webhook configuration</li>
+<li>AWS S3 storage and CDN setup</li>
+<li>TensorFlow.js AI feature configuration</li>
+<li>Deployment guides for Vercel and AWS EC2</li>
+<li>Frontend customization and theming guide</li>
+<li>Multi-tenant organization setup guide</li>
+<li>API documentation and integration examples</li>
+</ul>
+<p>All setup instructions are provided in detailed HTML documentation files included with the purchase. The documentation includes step-by-step guides with code examples, screenshots, and troubleshooting tips.</p>
+<h2>What's Included</h2>
+<ul>
+<li>Complete MERN stack application source code</li>
+<li>React 18 frontend with Material-UI components</li>
+<li>Node.js/Express backend with comprehensive APIs</li>
+<li>MongoDB database schemas and models</li>
+<li>JWT authentication and role-based access control</li>
+<li>Stripe payment processing and subscription management</li>
+<li>AWS S3 file storage integration</li>
+<li>TensorFlow.js AI person detection middleware</li>
+<li>Socket.io real-time communication system</li>
+<li>Syncfusion analytics and data visualization</li>
+<li>Comprehensive HTML documentation suite</li>
+<li>Environment configuration templates</li>
+<li>Deployment scripts and configuration files</li>
+<li>Database seeding and admin setup scripts</li>
+</ul>
+<h2>Customization & Extensibility</h2>
+<p>The application is fully customizable and extensible:</p>
+<ul>
+<li>Modify subscription pricing and feature tiers</li>
+<li>Customize UI themes and branding</li>
+<li>Add custom user roles and permissions</li>
+<li>Integrate additional AI/ML features</li>
+<li>Extend assessment types and question formats</li>
+<li>Add custom analytics and reporting features</li>
+<li>Implement additional payment gateways</li>
+<li>Customize email templates and notifications</li>
+<li>Add third-party integrations (Zoom, Google Classroom, etc.)</li>
+<li>Implement custom business logic and workflows</li>
+</ul>
+<h2>Support and Updates</h2>
+<p>This is a complete, enterprise-ready Learning Management System. The code follows Node.js best practices, security standards, and Envato submission requirements. All code is well-structured, thoroughly documented, and production-ready for immediate deployment.</p>
+</body>
+
