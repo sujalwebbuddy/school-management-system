@@ -5,7 +5,8 @@ import Iconify from "../../components/Iconify";
 
 const getIcon = (name) => <Iconify icon={name} width={22} height={22} />;
 
-const navConfig = [
+const navConfig = (userInfo) => {
+  const baseConfig = [
   {
     title: "dashboard",
     path: "/studentDashboard",
@@ -47,5 +48,22 @@ const navConfig = [
     icon: getIcon("eva:message-circle-fill"),
   },
 ];
+
+  // Filter out features if not available
+  const features = userInfo?.organization?.features || [];
+
+  return baseConfig.filter(item => {
+    if (item.title === 'Chat' && !features.includes('chat')) {
+      return false;
+    }
+    if (item.title === 'Exams' && !features.includes('exams')) {
+      return false;
+    }
+    if (item.title === 'Homeworks' && !features.includes('homework')) {
+      return false;
+    }
+    return true;
+  });
+};
 
 export default navConfig;

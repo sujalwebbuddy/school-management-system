@@ -53,9 +53,9 @@ const FeaturesSection = () => {
     },
     {
       icon: percentageIcon,
-      title: 'Absolutely Free',
+      title: 'Flexible Pricing',
       description:
-        'SchoolHub is an absolutely 100% free school management software for a lifetime with no limitations. No need to buy anything. Just Sign Up',
+        'SchoolHub offers a free plan for primary schools with essential features, plus affordable paid plans for high schools and universities with advanced capabilities.',
     },
   ];
 

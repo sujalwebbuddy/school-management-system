@@ -1,9 +1,14 @@
 const Messages = require("../models/messageModel");
 const Chat = require("../models/chatModel");
+const User = require("../models/userModel");
 const mongoose = require("mongoose");
 
 module.exports.getMessages = async (req, res, next) => {
   try {
+    if (!req.organization) {
+      return res.status(403).json({ msg: "Organization context required" });
+    }
+
     const { chatId, userId } = req.body;
 
     if (!chatId || !userId) {
@@ -15,8 +20,18 @@ module.exports.getMessages = async (req, res, next) => {
       return res.status(400).json({ msg: "Invalid chatId or userId" });
     }
 
-    // Check if user is participant in the chat
-    const chat = await Chat.findById(chatId);
+    const user = await User.findOne({
+      _id: userId,
+      organizationId: req.organization._id
+    });
+    if (!user) {
+      return res.status(404).json({ msg: "User not found in your organization" });
+    }
+
+    const chat = await Chat.findOne({
+      _id: chatId,
+      organizationId: req.organization._id
+    });
     if (!chat) {
       return res.status(404).json({ msg: "Chat not found" });
     }
@@ -58,6 +73,10 @@ module.exports.getMessages = async (req, res, next) => {
 // should primarily be created through socket events
 module.exports.addMessage = async (req, res, next) => {
   try {
+    if (!req.organization) {
+      return res.status(403).json({ msg: "Organization context required" });
+    }
+
     const { chatId, senderId, message, messageType = "text" } = req.body;
     
     if (!chatId || !senderId || !message) {
@@ -69,8 +88,18 @@ module.exports.addMessage = async (req, res, next) => {
       return res.status(400).json({ msg: "Invalid chatId or senderId" });
     }
 
-    // Check if user is participant in the chat
-    const chat = await Chat.findById(chatId);
+    const sender = await User.findOne({
+      _id: senderId,
+      organizationId: req.organization._id
+    });
+    if (!sender) {
+      return res.status(404).json({ msg: "Sender not found in your organization" });
+    }
+
+    const chat = await Chat.findOne({
+      _id: chatId,
+      organizationId: req.organization._id
+    });
     if (!chat) {
       return res.status(404).json({ msg: "Chat not found" });
     }
@@ -86,8 +115,13 @@ module.exports.addMessage = async (req, res, next) => {
       messageType: messageType,
     });
 
-    // Update chat's last message
-    await Chat.findByIdAndUpdate(chatId, { lastMessage: data._id });
+    await Chat.findOneAndUpdate(
+      {
+        _id: chatId,
+        organizationId: req.organization._id
+      },
+      { lastMessage: data._id }
+    );
 
     if (data) return res.json({ msg: "Message added successfully." });
     else return res.json({ msg: "Failed to add message to the database" });

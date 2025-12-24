@@ -16,6 +16,12 @@ const ChatSchema = mongoose.Schema(
       enum: ["direct", "group"],
       default: "direct",
     },
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+      index: true,
+    },
     participants: [
       {
         user: {
@@ -54,9 +60,9 @@ const ChatSchema = mongoose.Schema(
 );
 
 // Compound indexes for efficient queries
-ChatSchema.index({ participants: 1 });
-ChatSchema.index({ "participants.user": 1 });
-ChatSchema.index({ createdBy: 1 });
+ChatSchema.index({ organizationId: 1, participants: 1 });
+ChatSchema.index({ organizationId: 1, "participants.user": 1 });
+ChatSchema.index({ organizationId: 1, createdBy: 1 });
 
 // Virtual for participant count
 ChatSchema.virtual("participantCount").get(function () {

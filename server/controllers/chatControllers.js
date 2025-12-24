@@ -4,6 +4,10 @@ const mongoose = require("mongoose");
 
 module.exports.createChat = async (req, res, next) => {
   try {
+    if (!req.organization) {
+      return res.status(403).json({ msg: "Organization context required" });
+    }
+
     const { name, description, type = "direct", participantIds } = req.body;
     const createdBy = req.userId; // Assuming auth middleware sets req.user
 
@@ -19,23 +23,27 @@ module.exports.createChat = async (req, res, next) => {
     // Add creator to participants
     const allParticipants = [...participantIds, createdBy];
 
-    // Validate all participant IDs
+    // Validate all participant IDs and ensure they belong to the same organization
     for (const participantId of allParticipants) {
       if (!mongoose.Types.ObjectId.isValid(participantId)) {
         return res.status(400).json({ msg: `Invalid participant ID: ${participantId}` });
       }
 
-      // Check if user exists
-      const user = await User.findById(participantId);
+      // Check if user exists and belongs to the organization
+      const user = await User.findOne({
+        _id: participantId,
+        organizationId: req.organization._id
+      });
       if (!user) {
-        return res.status(404).json({ msg: `User not found: ${participantId}` });
+        return res.status(404).json({ msg: `User not found in your organization: ${participantId}` });
       }
     }
 
-    // For direct chats, check if chat already exists between these users
+    // For direct chats, check if chat already exists between these users in the organization
     if (type === "direct") {
       const existingChat = await Chat.findOne({
         type: "direct",
+        organizationId: req.organization._id,
         participants: {
           $all: allParticipants,
           $size: allParticipants.length
@@ -67,6 +75,7 @@ module.exports.createChat = async (req, res, next) => {
         role: userId.toString() === createdBy.toString() ? "admin" : "member"
       })),
       createdBy,
+      organizationId: req.organization._id,
     });
 
     await chat.populate('participants.user', 'firstName lastName username role');
@@ -83,12 +92,17 @@ module.exports.createChat = async (req, res, next) => {
 
 module.exports.getUserChats = async (req, res, next) => {
   try {
+    if (!req.organization) {
+      return res.status(403).json({ msg: "Organization context required" });
+    }
+
     const userId = req.userId; // Assuming auth middleware sets req.user
 
     const chats = await Chat.find({
       participants: {
         $elemMatch: { user: userId }
       },
+      organizationId: req.organization._id,
       isActive: true
     })
     .populate('participants.user', 'firstName lastName username role avatarImage')
@@ -107,6 +121,10 @@ module.exports.getUserChats = async (req, res, next) => {
 
 module.exports.getChatById = async (req, res, next) => {
   try {
+    if (!req.organization) {
+      return res.status(403).json({ msg: "Organization context required" });
+    }
+
     const { chatId } = req.params;
     const userId = req.userId;
 
@@ -114,7 +132,10 @@ module.exports.getChatById = async (req, res, next) => {
       return res.status(400).json({ msg: "Invalid chat ID" });
     }
 
-    const chat = await Chat.findById(chatId)
+    const chat = await Chat.findOne({
+      _id: chatId,
+      organizationId: req.organization._id
+    })
       .populate('participants.user', 'firstName lastName username role avatarImage')
       .populate('lastMessage')
       .populate('createdBy', 'firstName lastName username');
@@ -138,6 +159,10 @@ module.exports.getChatById = async (req, res, next) => {
 
 module.exports.addParticipant = async (req, res, next) => {
   try {
+    if (!req.organization) {
+      return res.status(403).json({ msg: "Organization context required" });
+    }
+
     const { chatId } = req.params;
     const { userId, role = "member" } = req.body;
     const requesterId = req.userId;
@@ -146,7 +171,10 @@ module.exports.addParticipant = async (req, res, next) => {
       return res.status(400).json({ msg: "Invalid chat ID or user ID" });
     }
 
-    const chat = await Chat.findById(chatId);
+    const chat = await Chat.findOne({
+      _id: chatId,
+      organizationId: req.organization._id
+    });
     if (!chat) {
       return res.status(404).json({ msg: "Chat not found" });
     }
@@ -157,10 +185,13 @@ module.exports.addParticipant = async (req, res, next) => {
       return res.status(403).json({ msg: "Only chat admins can add participants" });
     }
 
-    // Check if user exists
-    const user = await User.findById(userId);
+    // Check if user exists and belongs to the organization
+    const user = await User.findOne({
+      _id: userId,
+      organizationId: req.organization._id
+    });
     if (!user) {
-      return res.status(404).json({ msg: "User not found" });
+      return res.status(404).json({ msg: "User not found in your organization" });
     }
 
     // Add participant
@@ -183,6 +214,10 @@ module.exports.addParticipant = async (req, res, next) => {
 
 module.exports.removeParticipant = async (req, res, next) => {
   try {
+    if (!req.organization) {
+      return res.status(403).json({ msg: "Organization context required" });
+    }
+
     const { chatId, userId } = req.params;
     const requesterId = req.userId;
 
@@ -190,9 +225,21 @@ module.exports.removeParticipant = async (req, res, next) => {
       return res.status(400).json({ msg: "Invalid chat ID or user ID" });
     }
 
-    const chat = await Chat.findById(chatId);
+    const chat = await Chat.findOne({
+      _id: chatId,
+      organizationId: req.organization._id
+    });
     if (!chat) {
       return res.status(404).json({ msg: "Chat not found" });
+    }
+
+    // Verify the user being removed belongs to the organization
+    const user = await User.findOne({
+      _id: userId,
+      organizationId: req.organization._id
+    });
+    if (!user) {
+      return res.status(404).json({ msg: "User not found in your organization" });
     }
 
     // Check if requester is admin or removing themselves

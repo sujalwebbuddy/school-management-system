@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Install on Vercel – SchoolHub Platform Docs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="./script.js"></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="./screenshots/logo.svg" alt="Logo" />
+        <div>
+          <h1>SchoolHub Platform</h1>
+          <p>Installation</p>
+        </div>
+      </div>
+      <nav>
+        <a href="./index.html">Welcome</a>
+        <a href="./how-to-use.html">User Guide</a>
+        <a href="./push-to-github.html">How to push to GitHub</a>
+        <a class="active" href="./install-vercel.html">How to install on Vercel</a>
+        <a href="./install-aws-ec2.html">How to install on AWS EC2</a>
+        <a href="./database.html">How to setup Authentication</a>
+        <a href="./mongodb-setup.html">How to create MongoDB Database</a>
+        <a href="./env-setup.html">Environment Variables </a>
+        <a href="./frontend-updates.html">Frontend Customization</a>
+        <a href="./pricing-and-validations.html">Edit pricing & validations</a>
+      </nav>
+      <footer>
+        <small>How to install on Vercel recommended</small>
+      </footer>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <h2>Install on Vercel</h2>
+      </header>
+      <section class="prose">
+        <div class="callout">
+          <strong>Prerequisite:</strong> Make sure you've completed the <a href="./push-to-github.html">How to push to GitHub</a> before proceeding with How to install on Vercel.
+        </div>
+
+        <div class="steps">
+          <div class="step"><strong>1.</strong> Ensure your project is pushed to GitHub (see <a href="./push-to-github.html">How to push to GitHub guide</a>).</div>
+          <div class="step"><strong>2.</strong> In Vercel, click <em>New Project → Import</em> your repository.</div>
+          <div class="step"><strong>3.</strong> Framework preset: <code>Create React App</code> or <code>Other</code>. Build command: <code>npm run build</code> and output directory: <code>build</code>.</div>
+          <div class="step"><strong>4.</strong> Add all environment variables from the <a href="./env-setup.html">Environment Variables </a> page (REACT_APP_API_URL, etc.).</div>
+          <div class="step"><strong>5.</strong> Deploy. After deploy, update <code>REACT_APP_API_URL</code> with your backend API URL.</div>
+        </div>
+
+        <h3>Notes</h3>
+        <ul>
+          <li>This deploys only the React frontend. Backend must be deployed separately (AWS EC2, Heroku, etc.).</li>
+          <li>Configure REACT_APP_API_URL to point to your backend server URL.</li>
+          <li>MongoDB connection is configured on the backend server, not in Vercel.</li>
+          <li>Backend API routes are served from your Node.js server, not from Vercel.</li>
+        </ul>
+
+        <div class="callout info">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> AI/ML Requirements:</strong> SchoolHub Platform includes advanced AI features using TensorFlow.js. Ensure your backend hosting provider supports Node.js 16+ and has sufficient resources for AI processing. AWS EC2 or similar providers are recommended for optimal AI/ML performance.
+        </div>
+
+        <div class="callout">
+          This is a MERN stack application with AI/ML capabilities. The frontend (React) is deployed on Vercel, while the backend (Node.js/Express) must be deployed separately on a Node.js hosting service like AWS EC2, Heroku, or DigitalOcean. The backend requires additional system dependencies for TensorFlow.js and AI processing.
+        </div>
+      </section>
+    </main>
+  </body>
+  </html>
+
+

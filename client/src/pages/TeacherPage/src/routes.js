@@ -15,6 +15,7 @@ import Homework from "./pages/Homework";
 import EditAccount from "./pages/EditProfile";
 import ChatPage from "../../../features/chat/pages/ChatPage";
 import { TaskPage } from "../../../features/tasks";
+import FeatureGuard from "../../../components/FeatureGuard";
 
 // ----------------------------------------------------------------------
 
@@ -27,9 +28,9 @@ export default function Router({ isAuth, role }) {
         { path: "", element: <DashboardApp /> },
         { path: "students", element: <MyStudents /> },
         { path: "attendance", element: <Attendance /> },
-        { path: "exam", element: <Exam /> },
-        { path: "marks", element: <Marks /> },
-        { path: "homework", element: <Homework /> },
+        { path: "exam", element: <FeatureGuard feature="exams"><Exam /></FeatureGuard> },
+        { path: "marks", element: <FeatureGuard feature="exams"><Marks /></FeatureGuard> },
+        { path: "homework", element: <FeatureGuard feature="homework"><Homework /></FeatureGuard> },
         { path: "editprofile", element: <EditAccount /> },
         { path: "chat", element: <ChatPage /> },
         { path: "tasks", element: <TaskPage /> },

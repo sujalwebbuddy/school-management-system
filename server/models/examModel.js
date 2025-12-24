@@ -29,6 +29,12 @@ const examSchema = mongoose.Schema(
       required: true,
       index: true,
     },
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+      index: true,
+    },
     marks: {
       type: Map,
       of: {
@@ -53,8 +59,8 @@ const examSchema = mongoose.Schema(
   }
 );
 
-examSchema.index({ subjectId: 1, classId: 1 });
-examSchema.index({ classId: 1, dateOf: -1 });
+examSchema.index({ organizationId: 1, subjectId: 1, classId: 1 });
+examSchema.index({ organizationId: 1, classId: 1, dateOf: -1 });
 
 examSchema.pre("save", function (next) {
   if (this.marks && this.marks instanceof Map) {

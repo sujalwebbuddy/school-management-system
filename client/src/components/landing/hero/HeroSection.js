@@ -26,7 +26,7 @@ const HeroSection = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (email.trim()) {
-      navigate('/register', { state: { email } });
+      navigate('/register-org', { state: { email } });
     }
   };
 
@@ -75,8 +75,9 @@ const HeroSection = () => {
                 }}
               >
                 Now you can manage your school, college, or any educational
-                center with SchoolHub Platform. It's 100% free for a lifetime
-                with no limitations.
+                center with SchoolHub Platform. Start with our free plan for primary
+                schools, or upgrade to access advanced features like chat, exams,
+                and homework management.
               </Typography>
 
               <Box

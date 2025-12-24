@@ -38,6 +38,12 @@ const taskSchema = mongoose.Schema(
       required: true,
       index: true,
     },
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+      index: true,
+    },
     tags: {
       type: [String],
       default: [],
@@ -65,10 +71,10 @@ const taskSchema = mongoose.Schema(
 );
 
 // Indexes for efficient querying
-taskSchema.index({ status: 1, priority: 1 });
-taskSchema.index({ assignee: 1, status: 1 });
-taskSchema.index({ createdBy: 1 });
-taskSchema.index({ createdAt: -1 });
-taskSchema.index({ dueDate: 1 });
+taskSchema.index({ organizationId: 1, status: 1, priority: 1 });
+taskSchema.index({ organizationId: 1, assignee: 1, status: 1 });
+taskSchema.index({ organizationId: 1, createdBy: 1 });
+taskSchema.index({ organizationId: 1, createdAt: -1 });
+taskSchema.index({ organizationId: 1, dueDate: 1 });
 
 module.exports = mongoose.model("Task", taskSchema);

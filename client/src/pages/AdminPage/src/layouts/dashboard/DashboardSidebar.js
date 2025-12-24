@@ -6,11 +6,9 @@ import { styled } from "@mui/material/styles";
 import {
   Box,
   Link,
-  Button,
   Drawer,
   Typography,
   Avatar,
-  Stack,
 } from "@mui/material";
 // hooks
 import useResponsive from "../../hooks/useResponsive";
@@ -67,14 +65,17 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
 
   const renderContent = (
     <>
-      <Box sx={{ px: 2.5, py: 3, display: "inline-flex" }}>
+      <Box sx={{ px: 2.5, py: 3, display: "flex", alignItems: "center", gap: 2 }}>
         <Logo />
+        <Typography variant="h4" sx={{ color: "text.primary" }}>
+          { profileInfo?.organization?.name || "SchoolHub"}
+        </Typography>
       </Box>
 
       <Box sx={{ mb: 5, mx: 2.5 }}>
         <Link underline="none" component={RouterLink} to="#">
           <AccountStyle>
-            <Avatar src={''} alt="photoURL" />
+            <Avatar src={profileInfo?.profileImage || ''} alt="photoURL" />
             <Box sx={{ ml: 2 }}>
               <Typography variant="subtitle2" sx={{ color: "text.primary" }}>
                 {usename}
@@ -87,7 +88,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
         </Link>
       </Box>
 
-      <NavSection navConfig={navConfig} />
+      <NavSection navConfig={navConfig(profileInfo)} />
 
       <Box sx={{ flexGrow: 1 }} />
     </>

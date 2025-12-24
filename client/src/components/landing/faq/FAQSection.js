@@ -24,7 +24,12 @@ const FAQSection = () => {
     {
       question: 'Is SchoolHub Platform free ?',
       answer:
-        'Yes, there is a free plan for primary schools. SchoolHub offers a completely free plan for primary schools with no limitations.',
+        'Yes, we offer a free plan for primary schools with up to 100 users and essential features like attendance tracking. For advanced features like chat, exams, homework, and analytics, you can upgrade to our High School ($37.99/month) or University ($57.99/month) plans.',
+    },
+    {
+      question: 'What are the differences between the plans?',
+      answer:
+        'Primary School (Free): Up to 100 users with attendance tracking. High School ($37.99/month): Up to 500 users with chat, exams, homework management, and analytics. University ($57.99/month): Up to 2,000 users with all features including advanced reports and premium support.',
     },
     {
       question: 'What kind of payment methods do you accept ?',

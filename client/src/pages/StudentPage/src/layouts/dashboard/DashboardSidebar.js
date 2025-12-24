@@ -6,17 +6,14 @@ import { styled } from "@mui/material/styles";
 import {
   Box,
   Link,
-  Button,
   Drawer,
   Typography,
   Avatar,
-  Stack,
 } from "@mui/material";
 // hooks
 import useResponsive from "../../hooks/useResponsive";
 // components
 import Logo from "../../components/Logo";
-import Scrollbar from "../../components/Scrollbar";
 import NavSection from "../../components/NavSection";
 //
 import navConfig from "./NavConfig";
@@ -70,6 +67,9 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
     <>
       <Box sx={{ px: 2.5, py: 3, display: "inline-flex" }}>
         <Logo />
+        <Typography variant="h4" sx={{ color: "text.primary" }}>
+          { profileInfo?.organization?.name || "SchoolHub"}
+        </Typography>
       </Box>
 
       <Box sx={{ mb: 5, mx: 2.5 }}>
@@ -88,7 +88,7 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }) {
         </Link>
       </Box>
 
-      <NavSection navConfig={navConfig} />
+      <NavSection navConfig={navConfig(profileInfo)} />
 
       <Box sx={{ flexGrow: 1 }} />
     </>

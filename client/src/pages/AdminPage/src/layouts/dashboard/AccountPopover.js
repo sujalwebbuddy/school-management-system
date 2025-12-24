@@ -23,27 +23,16 @@ import { logoutUser } from "../../../../../slices/userSlice";
 
 const MENU_OPTIONS = [
   {
-    label: "Home",
-    icon: "eva:home-fill",
-    linkTo: "/",
-  },
-  {
     label: "Profile",
     icon: "eva:person-fill",
-    linkTo: "#",
+    linkTo: "/dashboard/profile",
   },
   {
     label: "Settings",
     icon: "eva:settings-2-fill",
-    linkTo: "#",
+    linkTo: "/dashboard/settings",
   },
 ];
-
-const account = {
-  photoURL: "https://via.placeholder.com/150",
-}
-
-// ----------------------------------------------------------------------
 
 export default function AccountPopover() {
   const profileInfo = useSelector((state) => {
@@ -90,7 +79,7 @@ export default function AccountPopover() {
           }),
         }}
       >
-        <Avatar src={profileInfo?.photoURL || account.photoURL} alt="photoURL" />
+        <Avatar src={profileInfo?.profileImage || ''} alt="photoURL" />
       </IconButton>
 
       <MenuPopover
@@ -132,17 +121,6 @@ export default function AccountPopover() {
         </Stack>
 
         <Divider sx={{ borderStyle: "dashed" }} />
-
-        <MenuItem sx={{ m: 1 }}>
-          <a
-            href={process.env.REACT_APP_CHAT_APP_URL || "http://localhost:3001"}
-            rel="noreferrer"
-            target="_blank"
-            style={{ textDecoration: "none", color: "black" }}
-          >
-            Chat App
-          </a>
-        </MenuItem>
 
         <MenuItem onClick={handleLogout} sx={{ m: 1 }}>
           Logout

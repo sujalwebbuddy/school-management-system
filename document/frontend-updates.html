@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Frontend Customization – SchoolHub Platform Docs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="./script.js"></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="./screenshots/logo.svg" alt="SchoolHub Platform Logo" />
+        <div>
+          <h1>SchoolHub Platform</h1>
+          <p>Documentation v1.0</p>
+        </div>
+      </div>
+      <nav>
+        <a href="./index.html">Welcome</a>
+        <a href="./how-to-use.html">User Guide</a>
+        <a href="./push-to-github.html">How to push to GitHub</a>
+        <a href="./install-vercel.html">How to install on Vercel</a>
+        <a href="./install-aws-ec2.html">How to install on AWS EC2</a>
+        <a href="./database.html">How to setup Authentication</a>
+        <a href="./mongodb-setup.html">How to create MongoDB Database</a>
+        <a href="./env-setup.html">Environment Variables</a>
+        <a class="active" href="./frontend-updates.html">Frontend Customization</a>
+        <a href="./pricing-and-validations.html">Edit pricing & validations</a>
+      </nav>
+      <footer>
+        <small>Built with MERN Stack (MongoDB, Express, React, Node.js)</small>
+      </footer>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <h2>Frontend Customization</h2>
+      </header>
+
+      <section class="prose">
+        <div class="callout info">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M6 6l-2 2M18 6l2 2M12 22v-4M6 18l-2-2M18 18l2-2M2 12h4M18 12h4"/></svg> Frontend Customization Guide:</strong> Learn how to customize the SchoolHub Platform frontend, including branding, styling, components, pages, and configuration options.
+        </div>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg> Frontend Structure</h2>
+
+        <p>The frontend is built with React.js using Material-UI components and Redux for state management. All code is located in the <code>client/src/</code> directory:</p>
+
+        <div class="code"><pre><code>schoolhub-platform/
+├── client/
+│   ├── package.json              # Frontend dependencies
+│   ├── public/                   # Static assets
+│   │   ├── index.html
+│   │   └── static/
+│   └── src/
+│       ├── App.js                # Main app component
+│       ├── index.js              # Entry point
+│       ├── components/           # React components
+│       │   ├── landing/          # Landing page components
+│       │   ├── Auth.js           # Login/Registration
+│       │   ├── UserCard.js       # User display
+│       │   └── ...
+│       ├── pages/                # Page components
+│       │   ├── LandingPage.js    # Homepage
+│       │   ├── AdminPage/        # Admin dashboard
+│       │   ├── TeacherPage/      # Teacher dashboard
+│       │   └── StudentPage/      # Student dashboard
+│       ├── features/             # Feature modules
+│       │   ├── chat/             # Chat feature
+│       │   └── tasks/            # Task management
+│       ├── slices/               # Redux slices
+│       │   ├── userSlice.js      # User state
+│       │   ├── adminSlice.js     # Admin state
+│       │   └── ...
+│       ├── store.js              # Redux store
+│       └── utils/
+│           └── api.js            # API utilities
+├── server/                       # Backend (Node.js/Express)
+│   ├── package.json
+│   ├── server.js                 # Server entry
+│   ├── controllers/              # Route controllers
+│   ├── models/                   # Mongoose models
+│   ├── routes/                   # API routes
+│   └── middlewares/              # Auth middleware
+└── document/                     # Documentation</code></pre></div>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M6 6l-2 2M18 6l2 2M12 22v-4M6 18l-2-2M18 18l2-2M2 12h4M18 12h4"/></svg> Branding & Customization</h2>
+
+        <h3>1. Site Configuration</h3>
+        <p>Update site metadata and branding in <code>src/config/site.ts</code>:</p>
+        
+        <div class="code"><pre><code>export const siteConfig: SiteConfig = {
+  title: "School Management System | SchoolHub Platform",
+  name: "SchoolHub Platform",
+  description: "Complete school management system for administrators, teachers, and students...",
+  url: site_url,
+  ogImage: `${site_url}/_static/og.jpg`,
+  links: {
+    twitter: "https://twitter.com/schoolhub-platform",
+    github: "https://github.com/schoolhub-platform",
+  },
+  mailSupport: "support@schoolhub-platform.com",
+  // ... more configuration
+};</code></pre></div>
+
+        <h3>2. Logo and Images</h3>
+        <ul>
+          <li><strong>Logo:</strong> Update logo in <code>public/</code> directory</li>
+          <li><strong>Favicon:</strong> Update <code>public/favicon.ico</code> and related icon files</li>
+          <li><strong>OG Image:</strong> Update <code>public/_static/og.jpg</code> for social media previews</li>
+          <li><strong>Style Images:</strong> Style preview images are hosted externally (see Image Sources section)</li>
+        </ul>
+
+        <h3>3. Footer Links</h3>
+        <p>Update footer links in <code>src/config/site.ts</code>:</p>
+        
+        <div class="code"><pre><code>export const footerLinks: SidebarNavItem[] = [
+  {
+    title: "Company",
+    items: [
+      { title: "About", href: "/about" },
+      { title: "Terms", href: "/terms" },
+      { title: "Privacy", href: "/privacy" },
+    ],
+  },
+  {
+    title: "Products",
+    items: [
+      { title: "SchoolHub Platform", href: "https://schoolhub.com" },
+    ],
+  },
+  {
+    title: "Resources",
+    items: [
+      { title: "Features", href: "/#features" },
+      { title: "About", href: "/#about" },
+    ],
+  },
+];</code></pre></div>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Key Pages</h2>
+
+        <h3>Homepage (Landing Page)</h3>
+        <ul>
+          <li><strong>File:</strong> <code>src/app/[locale]/(marketing)/page.tsx</code></li>
+          <li><strong>Components:</strong>
+            <ul>
+              <li><code>HeroLanding</code> - Hero section with main CTA</li>
+              <li><code>ReimagineSection</code> - Style showcase section</li>
+              <li><code>UseCasesSection</code> - Use cases and benefits</li>
+              <li><code>InfoLanding</code> - Information section</li>
+              <li><code>Testimonials</code> - Customer testimonials</li>
+              <li><code>PricingFaq</code> - Pricing FAQ section</li>
+            </ul>
+          </li>
+          <li><strong>Customization:</strong> Update hero text, features, testimonials, and call-to-action sections</li>
+        </ul>
+
+        <h3>Authentication Pages</h3>
+        <ul>
+          <li><strong>Login:</strong> <code>src/app/[locale]/(auth)/login/page.tsx</code></li>
+          <li><strong>Register:</strong> <code>src/app/[locale]/(auth)/register/page.tsx</code></li>
+          <li><strong>Components:</strong> <code>UserAuthForm</code> component handles both login and registration</li>
+          <li><strong>Customization:</strong> Update form styling, validation messages, and Google OAuth button</li>
+        </ul>
+
+        <h3>Dashboard Pages</h3>
+        <ul>
+          <li><strong>Dashboard Home:</strong> <code>src/app/[locale]/(protected)/dashboard/page.tsx</code>
+            <ul>
+              <li>Displays dashboard overview for the user's role</li>
+              <li>Shows recent activity, assignments, and notifications</li>
+              <li>Quick access to main features based on role</li>
+            </ul>
+          </li>
+          <li><strong>User Management:</strong> <code>client/src/pages/AdminPage/src/pages/UserPage.js</code>
+            <ul>
+              <li>View and approve user registrations</li>
+              <li>Manage user roles and permissions</li>
+              <li>User account management</li>
+            </ul>
+          </li>
+          <li><strong>Class Management:</strong> <code>client/src/pages/AdminPage/src/pages/ClassPage.js</code>
+            <ul>
+              <li>Create and manage classes</li>
+              <li>Assign students to classes</li>
+              <li>Class-subject relationships</li>
+            </ul>
+          </li>
+          <li><strong>Homework Management:</strong> <code>client/src/pages/TeacherPage/src/pages/HomeworkPage.js</code>
+            <ul>
+              <li>Create homework assignments</li>
+              <li>View and grade submissions</li>
+              <li>Assignment tracking</li>
+            </ul>
+          </li>
+          <li><strong>Settings:</strong> <code>src/app/[locale]/(protected)/dashboard/settings/page.tsx</code>
+            <ul>
+              <li>User profile settings</li>
+              <li>Account management</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h3>Landing Page</h3>
+        <ul>
+          <li><strong>File:</strong> <code>client/src/pages/LandingPage.js</code></li>
+          <li><strong>Components:</strong>
+            <ul>
+              <li><code>HeroSection</code> - Main hero with call-to-action</li>
+              <li><code>FeaturesSection</code> - Platform features showcase</li>
+              <li><code>PricingSection</code> - Free platform information</li>
+              <li><code>FAQSection</code> - Frequently asked questions</li>
+            </ul>
+          </li>
+          <li><strong>Customization:</strong> Update content, features, and styling</li>
+        </ul>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg> Component Structure</h2>
+
+        <h3>Landing Page Components</h3>
+        <p>Located in <code>client/src/components/landing/</code>:</p>
+        <ul>
+          <li><strong>HeroSection</strong> - Main hero section with headline and CTA</li>
+          <li><strong>FeaturesSection</strong> - Platform features showcase</li>
+          <li><strong>ProfessionalsSection</strong> - About section</li>
+          <li><strong>GetStartedSteps</strong> - Getting started guide</li>
+          <li><strong>PrinciplesSection</strong> - Core principles</li>
+          <li><strong>PricingSection</strong> - Free platform information</li>
+          <li><strong>TestimonialsSection</strong> - User testimonials</li>
+          <li><strong>FAQSection</strong> - Frequently asked questions</li>
+          <li><strong>CTABanner</strong> - Call-to-action banner</li>
+          <li><strong>Footer</strong> - Site footer</li>
+        </ul>
+
+        <h3>Dashboard Components</h3>
+        <p>Located in <code>client/src/pages/</code>:</p>
+        <ul>
+          <li><strong>AdminPage</strong> - Complete admin dashboard with user, class, and subject management</li>
+          <li><strong>TeacherPage</strong> - Teacher dashboard with homework and student management</li>
+          <li><strong>StudentPage</strong> - Student dashboard with assignments and submissions</li>
+          <li><strong>DashboardApp</strong> - Main dashboard wrapper for each role</li>
+        </ul>
+
+        <h3>Form Components</h3>
+        <p>Located in <code>client/src/components/</code>:</p>
+        <ul>
+          <li><strong>Auth.js</strong> - Login/Registration form</li>
+          <li><strong>AddUserForm.js</strong> - User creation form (admin)</li>
+          <li><strong>EditAccount.js</strong> - Account editing form</li>
+          <li><strong>UserInfo.js</strong> - User information display</li>
+        </ul>
+
+        <h3>Feature Components</h3>
+        <p>Located in <code>client/src/features/</code>:</p>
+        <ul>
+          <li><strong>chat/</strong> - Real-time chat components</li>
+          <li><strong>tasks/</strong> - Task management components</li>
+        </ul>
+
+        <h3>Layout Components</h3>
+        <p>Located in <code>src/components/layout/</code>:</p>
+        <ul>
+          <li><strong>Navbar</strong> - Main navigation bar</li>
+          <li><strong>MobileNav</strong> - Mobile navigation menu</li>
+          <li><strong>DashboardSidebar</strong> - Dashboard sidebar navigation</li>
+          <li><strong>SiteFooter</strong> - Site footer with links</li>
+          <li><strong>UserAccountNav</strong> - User account dropdown</li>
+          <li><strong>UserCard</strong> - User information display component</li>
+        </ul>
+
+        <h3>UI Components (Shadcn/ui)</h3>
+        <p>Located in <code>src/components/ui/</code>:</p>
+        <ul>
+          <li>All Shadcn/ui components (Button, Card, Dialog, Table, etc.)</li>
+          <li>Custom components like <code>RainbowButton</code>, <code>BorderBeam</code></li>
+          <li>These are pre-built, customizable UI primitives</li>
+        </ul>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M6 6l-2 2M18 6l2 2M12 22v-4M6 18l-2-2M18 18l2-2M2 12h4M18 12h4"/></svg> Styling & Theming</h2>
+
+        <h3>Material-UI Theme Configuration</h3>
+        <p>The project uses Material-UI (MUI) for styling. Configure in <code>client/src/pages/LandingPage.js</code>:</p>
+        
+        <div class="code"><pre><code>import { createTheme, ThemeProvider } from '@mui/material';
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#6415ff',
+      light: '#7c3fff',
+      dark: '#5a0fe6',
+      contrastText: '#ffffff',
+    },
+    text: {
+      primary: '#1f2937',
+      secondary: '#6b7280',
+    },
+    background: {
+      default: '#ffffff',
+      paper: '#ffffff',
+    },
+  },
+  typography: {
+    fontFamily: [
+      '-apple-system',
+      'BlinkMacSystemFont',
+      '"Segoe UI"',
+      'Roboto',
+      '"Helvetica Neue"',
+      'Arial',
+      'sans-serif',
+    ].join(','),
+  },
+});</code></pre></div>
+
+        <h3>Global Styles</h3>
+        <ul>
+          <li><strong>Global CSS:</strong> <code>client/src/globalStyles.css</code> - Global styles and resets</li>
+          <li><strong>Component Styles:</strong> Individual CSS files for components (e.g., <code>AddUserForm.css</code>)</li>
+          <li><strong>Custom Styles:</strong> Add custom CSS classes and utilities as needed</li>
+        </ul>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Feature Configuration</h2>
+
+        <h3>Update User Roles</h3>
+        <p>User roles are configured in the backend models:</p>
+
+        <h4>1. User Model (Backend)</h4>
+        <p>Update roles in <code>server/models/userModel.js</code>:</p>
+        
+        <div class="code"><pre><code>role: {
+  type: String,
+  required: true,
+  enum: ["teacher", "student", "admin"],
+  index: true,
+}</code></pre></div>
+
+        <h4>2. Frontend Role Checks</h4>
+        <p>Role-based UI rendering in React components:</p>
+        
+        <div class="code"><pre><code>// Example: Role-based component rendering
+import { useSelector } from 'react-redux';
+
+const Dashboard = () => {
+  const { userInfo } = useSelector((state) => state.user);
+  
+  return (
+    <>
+      {userInfo.role === 'admin' && <AdminDashboard />}
+      {userInfo.role === 'teacher' && <TeacherDashboard />}
+      {userInfo.role === 'student' && <StudentDashboard />}
+    </>
+  );
+};
+
+// Example: Protected route component
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const { userInfo, isAuth } = useSelector((state) => state.user);
+  
+  if (!isAuth) {
+    return <Navigate to="/login" />;
+  }
+  
+  if (!allowedRoles.includes(userInfo.role)) {
+    return <Navigate to="/" />;
+  }
+  
+  return children;
+};</code></pre></div>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> Internationalization (i18n)</h2>
+
+        <h3>API Integration</h3>
+        <p>SchoolHub Platform uses Axios or Fetch API for backend communication. API utilities are in <code>client/src/utils/api.js</code>:</p>
+        
+        <ul>
+          <li><strong>API Base URL:</strong> Configured via <code>REACT_APP_API_URL</code> environment variable</li>
+          <li><strong>Authentication:</strong> JWT tokens sent in Authorization header</li>
+          <li><strong>Error Handling:</strong> Centralized error handling in API utility functions</li>
+          <li><strong>Request Interceptors:</strong> Automatically add auth tokens to requests</li>
+        </ul>
+
+        <h3>Adding New Translations</h3>
+        <ol>
+          <li>Add translation keys to <code>locales/en.json</code></li>
+          <li>Add translations to other language files</li>
+          <li>Use in components: <code>const t = useTranslations('SectionName'); t('key')</code></li>
+        </ol>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> Responsive Design</h2>
+
+        <h3>Mobile Optimization</h3>
+        <ul>
+          <li><strong>Responsive Design:</strong> Uses Material-UI responsive breakpoints and Grid system</li>
+          <li><strong>Mobile Navigation:</strong> Responsive navigation bars and sidebars</li>
+          <li><strong>Touch Interactions:</strong> Optimized for touch gestures and mobile interactions</li>
+          <li><strong>File Upload:</strong> Mobile-friendly file upload for homework and assignments</li>
+        </ul>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg> Common Customizations</h2>
+
+        <h3>Change Brand Colors</h3>
+        <ol>
+          <li>Update theme colors in <code>client/src/pages/LandingPage.js</code> (Material-UI theme)</li>
+          <li>Modify CSS files in <code>client/src/components/</code> for component-specific styles</li>
+          <li>Update global styles in <code>client/src/globalStyles.css</code></li>
+        </ol>
+
+        <h3>Modify Navigation</h3>
+        <ul>
+          <li><strong>Landing Navigation:</strong> Update links in <code>client/src/components/landing/header/Navigation.js</code></li>
+          <li><strong>Footer:</strong> Update links in <code>client/src/components/landing/footer/Footer.js</code></li>
+          <li><strong>Dashboard Navigation:</strong> Update routes in <code>client/src/pages/*/src/routes.js</code></li>
+          <li><strong>Sidebar:</strong> Update navigation items in dashboard components</li>
+        </ul>
+
+        <h3>Customize Dashboard Pages</h3>
+        <ul>
+          <li><strong>Admin Dashboard:</strong> Modify <code>client/src/pages/AdminPage/src/pages/</code></li>
+          <li><strong>Teacher Dashboard:</strong> Modify <code>client/src/pages/TeacherPage/src/pages/</code></li>
+          <li><strong>Student Dashboard:</strong> Modify <code>client/src/pages/StudentPage/src/pages/</code></li>
+          <li><strong>Homework Management:</strong> Update homework components and forms</li>
+        </ul>
+
+        <h3>Update Landing Page Sections</h3>
+        <ul>
+          <li><strong>Hero Section:</strong> Edit <code>client/src/components/landing/hero/HeroSection.js</code></li>
+          <li><strong>Features Section:</strong> Edit <code>client/src/components/landing/features/FeaturesSection.js</code></li>
+          <li><strong>Pricing Section:</strong> Edit <code>client/src/components/landing/pricing/PricingSection.js</code></li>
+          <li><strong>Testimonials:</strong> Edit <code>client/src/components/landing/testimonials/TestimonialsSection.js</code></li>
+          <li><strong>FAQ:</strong> Edit <code>client/src/components/landing/faq/FAQSection.js</code></li>
+        </ul>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Build and Deployment</h2>
+
+        <h3>Development</h3>
+        <p>Run frontend and backend separately:</p>
+        <div class="code"><pre><code># Start backend server (from server/ directory)
+cd server
+npm start
+# Backend runs on http://localhost:5000
+
+# Start frontend (from client/ directory, in new terminal)
+cd client
+npm start
+# Frontend runs on http://localhost:3000</code></pre></div>
+
+        <h3>Production Build</h3>
+        <div class="code"><pre><code># Build frontend (from client/ directory)
+cd client
+npm run build
+
+# Build creates optimized production files in client/build/
+# Serve the build folder with a static file server or deploy to hosting service
+
+# Backend production (from server/ directory)
+cd server
+npm start
+# Or use PM2: pm2 start npm --name "schoolhub" -- start</code></pre></div>
+
+        <div class="callout info">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Note:</strong> This is a MERN stack application. Frontend (React) and backend (Node.js/Express) are separate applications. Frontend makes API calls to the backend server.
+        </div>
+
+        <h3>Environment Variables</h3>
+        <p>Create <code>.env</code> files in respective directories:</p>
+        
+        <div class="code"><pre><code># Backend Environment Variables (server/.env)
+MONGODB_URI=mongodb://localhost:27017/schoolhub
+JWT_SECRET=your_jwt_secret_here
+PORT=5000
+
+# Frontend Environment Variables (client/.env)
+REACT_APP_API_URL=http://localhost:5000/api
+REACT_APP_SOCKET_URL=http://localhost:5000
+
+# See env-setup.html for the complete variable list</code></pre></div>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Troubleshooting</h2>
+
+        <div class="callout warning">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Common Issues:</strong>
+          <ul>
+            <li><strong>API Connection Failed:</strong> Check REACT_APP_API_URL is set correctly in client/.env</li>
+            <li><strong>Backend Not Responding:</strong> Verify backend server is running and accessible</li>
+            <li><strong>Build Errors:</strong> Check for JavaScript errors and ensure all dependencies are installed</li>
+            <li><strong>Styling Issues:</strong> Ensure Material-UI theme is properly configured</li>
+            <li><strong>Authentication Fails:</strong> Verify JWT_SECRET matches between frontend and backend</li>
+            <li><strong>CORS Errors:</strong> Check backend CORS configuration allows frontend origin</li>
+            <li><strong>File Upload Issues:</strong> Check file upload middleware and storage configuration</li>
+          </ul>
+        </div>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Next Steps</h2>
+
+        <div class="callout success">
+          <strong><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Customization Complete!</strong> After making frontend changes:
+          <ul>
+            <li>Test changes in development mode (<code>npm start</code> in client directory)</li>
+            <li>Check for JavaScript errors and fix them</li>
+            <li>Ensure backend server is running for API calls</li>
+            <li>Build for production to check for errors (<code>npm run build</code> in client directory)</li>
+            <li>Deploy frontend to hosting platform (Vercel, Netlify, or static hosting)</li>
+            <li>Deploy backend separately (AWS EC2, Heroku, or Node.js hosting)</li>
+            <li>Update environment variables in production for both frontend and backend</li>
+          </ul>
+        </div>
+
+        <div style="text-align: center; margin: 2rem 0;">
+          <a href="./pricing-and-validations.html" class="btn">User Roles & Permissions →</a>
+          <a href="./env-setup.html" class="btn secondary">Environment Setup →</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

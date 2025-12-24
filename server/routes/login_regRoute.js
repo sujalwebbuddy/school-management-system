@@ -2,11 +2,13 @@ const {
   register,
   login,
   getUserData,
+  getActiveOrganizations,
 } = require("../controllers/userControllers");
 
 const { body, validationResult } = require("express-validator");
 const express = require("express");
 const authMiddleware = require("../middlewares/authMiddleware");
+const tenantMiddleware = require("../middlewares/tenantMiddleware");
 const router = express.Router();
 
 router.post(
@@ -15,6 +17,7 @@ router.post(
   register
 );
 router.post("/login", login);
-router.get("/", authMiddleware, getUserData);
+router.get("/organizations", getActiveOrganizations);
+router.get("/", authMiddleware, tenantMiddleware, getUserData);
 
 module.exports = router;

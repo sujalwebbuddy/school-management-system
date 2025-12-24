@@ -5,15 +5,20 @@ const subjectSchema = mongoose.Schema(
     name: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
       index: true,
     },
     code: {
       type: String,
-      unique: true,
       trim: true,
       sparse: true,
+      index: true,
+    },
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+      index: true,
     },
     description: {
       type: String,
@@ -24,6 +29,9 @@ const subjectSchema = mongoose.Schema(
     timestamps: true,
   }
 );
+
+subjectSchema.index({ organizationId: 1, name: 1 }, { unique: true });
+subjectSchema.index({ organizationId: 1, code: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model("Subject", subjectSchema);
 

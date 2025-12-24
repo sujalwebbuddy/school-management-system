@@ -17,6 +17,12 @@ const MessageSchema = mongoose.Schema(
       required: true,
       index: true,
     },
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+      index: true,
+    },
     readBy: [{
       user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -39,7 +45,7 @@ const MessageSchema = mongoose.Schema(
 );
 
 // Compound indexes for efficient queries
-MessageSchema.index({ chat: 1, createdAt: -1 });
-MessageSchema.index({ sender: 1, createdAt: -1 });
+MessageSchema.index({ organizationId: 1, chat: 1, createdAt: -1 });
+MessageSchema.index({ organizationId: 1, sender: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Message", MessageSchema);

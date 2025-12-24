@@ -12,6 +12,14 @@ const mongoose = require("mongoose");
 const connectDB = require("./config/connectDB");
 connectDB();
 
+// Stripe webhook route (must be before express.json() middleware)
+// Stripe requires raw body for signature verification
+app.post(
+  '/api/v1/webhooks/stripe',
+  express.raw({ type: 'application/json' }),
+  require('./controllers/stripeWebhookController').handleStripeWebhook
+);
+
 // general middlewares
 app.use(express.json());
 app.use(cors());
@@ -25,6 +33,7 @@ app.use("/api/v1/messages", require("./routes/messageRoute"));
 app.use("/api/v1/authmsg", require("./routes/messageAuth"));
 app.use("/api/v1/chats", require("./routes/chatRoute"));
 app.use("/api/v1/tasks", require("./routes/taskRoute"));
+app.use("/api/v1/organizations", require("./routes/organizationRoute"));
 
 app.use("/uploads", express.static("./uploads"));
 

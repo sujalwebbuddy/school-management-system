@@ -32,6 +32,17 @@ const config = {
   S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID,
   S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY,
   
+  // Stripe Configuration
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+  STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+  
+  // Subscription Pricing (in cents)
+  SUBSCRIPTION_PRICES: {
+    primary: 0,        // Free
+    high_school: 3799,  // $37.99
+    university: 5799     // $57.99
+  },
+  
   // Environment
   NODE_ENV: process.env.NODE_ENV || 'development',
 };

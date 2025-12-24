@@ -9,13 +9,17 @@ const Admin = React.lazy(() => import("./pages/AdminPage/src/Admin"));
 const Student = React.lazy(() => import("./pages/StudentPage/src/Student"));
 const Teacher = React.lazy(() => import("./pages/TeacherPage/src/Teacher"));
 const LandingPage = React.lazy(() => import("./pages/LandingPage"));
+const OrganizationSignup = React.lazy(() => import("./pages/OrganizationSignup"));
+const SubscriptionManagement = React.lazy(() => import("./pages/SubscriptionManagement"));
 const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = React.lazy(() => import("./pages/TermsOfService"));
 
 const App = () => {
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(getUserData());
+    if(localStorage.getItem("token")){
+      dispatch(getUserData());
+    }
   }, [dispatch]);
   const { isAuth, userInfo } = useSelector((state) => state.user);
   return (
@@ -25,6 +29,8 @@ const App = () => {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Auth />} />
           <Route path="/register" element={<Auth />} />
+          <Route path="/register-org" element={<OrganizationSignup />} />
+          <Route path="/subscription" element={<SubscriptionManagement />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
         </Routes>

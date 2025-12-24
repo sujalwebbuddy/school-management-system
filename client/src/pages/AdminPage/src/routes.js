@@ -1,14 +1,8 @@
-import { Navigate, useRoutes } from "react-router-dom";
-// layouts
+import {  useRoutes } from "react-router-dom";
 import DashboardLayout from "./layouts/dashboard";
-
-//
-
 import User from "./pages/User";
-
-
 import Students from "./pages/Students";
-import DashboardApp from "./pages/DashboardApp";
+import Dashboard from "./pages/DashboardApp";
 import Page404 from "./pages/Page404";
 import AddUserForm from "../../../components/AddUserForm";
 import Teachers from "./pages/Teachers";
@@ -21,8 +15,8 @@ import EditAccount from "../../../components/EditAccount";
 import Attendance from "./pages/Attendance";
 import { TaskPage } from "../../../features/tasks";
 import ChatPage from "../../../features/chat/pages/ChatPage";
-
-// ----------------------------------------------------------------------
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 
 export default function Router({ isAuth, role }) {
   return useRoutes([
@@ -30,8 +24,7 @@ export default function Router({ isAuth, role }) {
       path: "/dashboard",
       element: isAuth && role === "admin" ? <DashboardLayout /> : <Page404 />,
       children: [
-        { element: <Navigate to="/dashboard/user" replace />, index: true },
-        { path: "", element: <DashboardApp /> },
+        { path: "", element: <Dashboard /> },
         { path: "user", element: <User /> },
         { path: "students", element: <Students /> },
 
@@ -48,6 +41,8 @@ export default function Router({ isAuth, role }) {
         { path: "markattendance", element: <Attendance /> },
         { path: "tasks", element: <TaskPage /> },
         { path: "chat", element: <ChatPage /> },
+        { path: "profile", element: <Profile /> },
+        { path: "settings", element: <Settings /> },
         { path: "*", element: <Page404 /> },
       ],
     },

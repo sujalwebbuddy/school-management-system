@@ -16,6 +16,7 @@ const {
 
 // Import middleware
 const authMiddleware = require("../middlewares/authMiddleware");
+const tenantMiddleware = require("../middlewares/tenantMiddleware");
 
 // Validation rules
 const taskValidationRules = [
@@ -60,6 +61,7 @@ const taskValidationRules = [
 
 // Routes
 router.use(authMiddleware); // All task routes require authentication
+router.use(tenantMiddleware); // All task routes require organization context
 
 // GET /api/tasks - Get all tasks with optional filters
 router.get("/", getAllTasks);

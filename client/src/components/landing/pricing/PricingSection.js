@@ -1,6 +1,6 @@
 'use strict';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Container,
@@ -12,68 +12,119 @@ import {
   List,
   ListItem,
   ListItemText,
+  Chip,
 } from '@mui/material';
+import { useSelector, useDispatch } from 'react-redux';
+import { getUserData } from '../../../slices/userSlice';
+import { getAllPlans, getPlanById } from '../../../constants/subscriptionPlans';
 
 const PricingSection = () => {
-  const plans = [
-    {
-      name: 'PRIMARY SCHOOL',
-      price: '$0,00',
-      billing: 'MONTHLY',
-      features: [
-        { text: 'For Schools', bold: true },
-        { text: '1 Admin' },
-        { text: '2 Roles' },
-        { text: 'Chat App' },
-        { text: 'Basic Assistance' },
-      ],
-      buttonColor: '#14b8a6',
-      buttonTextColor: '#ffffff',
-      borderColor: '#14b8a6',
-      backgroundColor: '#ffffff',
-      textColor: '#1f2937',
-      featured: false,
-    },
-    {
-      name: 'HIGH SCHOOL',
-      price: '$37.99',
-      billing: 'MONTHLY',
-      features: [
-        { text: 'For High School', bold: true },
-        { text: '2 Admins' },
-        { text: '3 User roles' },
-        { text: 'Chat App and online meetings' },
-        { text: 'Priority Assistance' },
-      ],
-      buttonColor: '#ffffff',
-      buttonTextColor: '#6415ff',
-      borderColor: '#6415ff',
-      backgroundColor: '#6415ff',
-      textColor: '#ffffff',
-      featured: true,
-    },
-    {
-      name: 'UNIVERSITY',
-      price: '$57.99',
-      billing: 'MONTHLY',
-      features: [
-        { text: 'For Universities', bold: true },
-        { text: 'Multiple admins' },
-        { text: '6 User roles' },
-        { text: 'All features' },
-        { text: 'Personal Assistance' },
-      ],
-      buttonColor: '#ef4444',
-      buttonTextColor: '#ffffff',
-      borderColor: '#ef4444',
-      backgroundColor: '#ffffff',
-      textColor: '#1f2937',
-      featured: false,
-    },
-  ];
+  const dispatch = useDispatch();
+  const { userInfo, isAuth } = useSelector((state) => state.user);
 
-  const handleBuyNow = (planName) => {
-    window.location.href = '/register';
+  // Ensure user data is loaded
+  useEffect(() => {
+    if (isAuth && (!userInfo?.organization || !userInfo?.organization?.subscriptionTier)) {
+      dispatch(getUserData());
+    }
+  }, [isAuth, userInfo, dispatch]);
+
+  // Transform plans from constants to component format
+  const basePlans = getAllPlans().map(plan => ({
+    name: plan.name.toUpperCase(),
+    tier: plan.id,
+    price: plan.priceDisplay,
+    billing: plan.billing,
+    features: [
+      { text: plan.name, bold: true },
+      ...plan.features.map(feature => ({ text: feature, bold: false }))
+    ],
+    buttonColor: plan.buttonColor,
+    buttonTextColor: plan.buttonTextColor,
+    borderColor: plan.borderColor,
+    backgroundColor: plan.backgroundColor,
+    textColor: plan.textColor,
+    featured: plan.featured,
+  }));
+
+  // Determine user's current plan and available actions
+  const userPlan = userInfo?.organization?.subscriptionTier;
+  const isOnTrial = userInfo?.organization?.subscriptionStatus === 'trial';
+
+  console.log('PricingSection - isAuth:', isAuth);
+
+  const getPlanStatus = (planTier) => {
+    // If not authenticated or organization data not loaded, show signup
+    if (!isAuth || !userInfo?.organization?.subscriptionTier) return 'signup';
+
+    const currentPlan = userInfo.organization.subscriptionTier;
+    const tierHierarchy = { primary: 0, high_school: 1, university: 2 };
+    const currentTierLevel = tierHierarchy[currentPlan] || 0;
+    const planTierLevel = tierHierarchy[planTier] || 0;
+
+    if (planTier === currentPlan) return 'current';
+    if (planTierLevel > currentTierLevel) return 'upgrade';
+    if (planTierLevel < currentTierLevel) return 'downgrade';
+    return 'signup';
+  };
+
+  const getButtonText = (planTier) => {
+    const status = getPlanStatus(planTier);
+    switch (status) {
+      case 'current':
+        return isOnTrial ? 'Activate Plan' : 'Current Plan';
+      case 'upgrade':
+        return 'Upgrade';
+      case 'downgrade':
+        return 'Downgrade';
+      default:
+        return 'Get Started';
+    }
+  };
+
+  const getButtonColor = (planTier, originalButtonColor) => {
+    const status = getPlanStatus(planTier);
+    if (status === 'current') return '#10b981'; // Green for current plan
+    if (status === 'upgrade') return '#f59e0b'; // Amber for upgrade
+    return originalButtonColor;
+  };
+
+  // Enhanced plans with user-specific data
+  const plans = basePlans.map(plan => {
+    const currentPlan = userInfo?.organization?.subscriptionTier;
+    const isCurrentPlan = plan.tier === currentPlan;
+    const userCount = userInfo?.organization?.userCount || 0;
+    const maxUsers = userInfo?.organization?.maxUsers || 0;
+
+    return {
+      ...plan,
+      status: getPlanStatus(plan.tier),
+      buttonColor: getButtonColor(plan.tier, plan.buttonColor),
+      buttonText: getButtonText(plan.tier),
+      isCurrentPlan,
+      userCount: isCurrentPlan ? userCount : null,
+      maxUsers: isCurrentPlan ? maxUsers : null,
+    };
+  });
+
+  const handleBuyNow = (plan) => {
+    const status = plan.status;
+
+    if (status === 'current') {
+      if (isOnTrial) {
+        // For trial users, redirect to subscription management to activate
+        window.location.href = '/subscription';
+      } else {
+        // For active users, redirect to dashboard
+        window.location.href = '/dashboard';
+      }
+    } else if (status === 'upgrade' || status === 'downgrade') {
+      // For upgrades/downgrades, redirect to subscription management
+      window.location.href = `/subscription?plan=${plan.tier}&action=${status}`;
+    } else {
+      // For signup (not logged in users)
+      window.location.href = '/register-org';
+    }
   };
 
   return (
@@ -114,9 +165,9 @@ const PricingSection = () => {
               mb: 2,
             }}
           >
-            Reasonable & Flexible{' '}
+            {isAuth && userInfo?.organization?.subscriptionTier ? 'Manage Your' : 'Reasonable & Flexible'}{' '}
             <Box component="span" sx={{ color: 'primary.main' }}>
-              Plans.
+              {isAuth && userInfo?.organization?.subscriptionTier ? 'Subscription' : 'Plans.'}
             </Box>
           </Typography>
 
@@ -130,8 +181,16 @@ const PricingSection = () => {
               lineHeight: 1.7,
             }}
           >
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            {isAuth && userInfo?.organization?.subscriptionTier
+              ? `You're currently on the ${userInfo.organization.subscriptionTier?.replace('_', ' ')} plan. ${
+                  userInfo.organization.subscriptionTier === 'primary' || userInfo.organization.subscriptionTier === 'high_school'
+                    ? 'Upgrade to access more features and higher user limits.'
+                    : 'You have access to all features.'
+                }`
+              : isAuth
+              ? 'Loading your subscription information...'
+              : 'Choose the perfect plan for your educational institution. Start with our free plan or upgrade to access advanced features.'
+            }
           </Typography>
         </Box>
 
@@ -144,15 +203,22 @@ const PricingSection = () => {
                   display: 'flex',
                   flexDirection: 'column',
                   backgroundColor: plan.backgroundColor,
-                  borderTop: `4px solid ${plan.borderColor}`,
+                  borderTop: plan.isCurrentPlan
+                    ? '4px solid #10b981'
+                    : `4px solid ${plan.borderColor}`,
                   borderRadius: 2,
-                  boxShadow: plan.featured
+                  boxShadow: plan.isCurrentPlan
+                    ? '0 10px 40px rgba(16, 185, 129, 0.3)'
+                    : plan.featured
                     ? '0 10px 40px rgba(100, 21, 255, 0.2)'
                     : '0 4px 20px rgba(0,0,0,0.1)',
                   transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                  position: 'relative',
                   '&:hover': {
                     transform: 'translateY(-4px)',
-                    boxShadow: plan.featured
+                    boxShadow: plan.isCurrentPlan
+                      ? '0 15px 50px rgba(16, 185, 129, 0.4)'
+                      : plan.featured
                       ? '0 15px 50px rgba(100, 21, 255, 0.3)'
                       : '0 8px 30px rgba(0,0,0,0.15)',
                   },
@@ -166,19 +232,32 @@ const PricingSection = () => {
                     flexDirection: 'column',
                   }}
                 >
-                  <Typography
-                    variant="h6"
-                    component="h3"
-                    sx={{
-                      fontSize: { xs: '1rem', md: '1.125rem' },
-                      fontWeight: 'bold',
-                      color: plan.textColor,
-                      textTransform: 'uppercase',
-                      mb: 2,
-                    }}
-                  >
-                    {plan.name}
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                    <Typography
+                      variant="h6"
+                      component="h3"
+                      sx={{
+                        fontSize: { xs: '1rem', md: '1.125rem' },
+                        fontWeight: 'bold',
+                        color: plan.textColor,
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      {plan.name}
+                    </Typography>
+                    {plan.isCurrentPlan && (
+                      <Chip
+                        label={isOnTrial ? "Trial" : "Current Plan"}
+                        size="small"
+                        sx={{
+                          backgroundColor: '#10b981',
+                          color: 'white',
+                          fontWeight: 'bold',
+                          fontSize: '0.7rem',
+                        }}
+                      />
+                    )}
+                  </Box>
 
                   <Box sx={{ mb: 1 }}>
                     <Typography
@@ -204,6 +283,20 @@ const PricingSection = () => {
                     >
                       {plan.billing}
                     </Typography>
+                    {plan.isCurrentPlan && plan.userCount !== null && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '0.7rem',
+                          color: plan.textColor,
+                          opacity: 0.8,
+                          display: 'block',
+                          mt: 0.5,
+                        }}
+                      >
+                        {plan.userCount} / {plan.maxUsers} users
+                      </Typography>
+                    )}
                   </Box>
 
                   <List
@@ -234,7 +327,8 @@ const PricingSection = () => {
                   <Button
                     variant="contained"
                     fullWidth
-                    onClick={() => handleBuyNow(plan.name)}
+                    onClick={() => handleBuyNow(plan)}
+                    disabled={plan.status === 'current' && !isOnTrial}
                     sx={{
                       backgroundColor: plan.buttonColor,
                       color: plan.buttonTextColor,
@@ -247,9 +341,13 @@ const PricingSection = () => {
                         backgroundColor: plan.buttonColor,
                         opacity: 0.9,
                       },
+                      '&:disabled': {
+                        backgroundColor: plan.buttonColor,
+                        opacity: 0.6,
+                      },
                     }}
                   >
-                    Buy Now
+                    {plan.buttonText}
                   </Button>
                 </CardContent>
               </Card>

@@ -2,23 +2,61 @@ const User = require("../models/userModel");
 const Classroom = require("../models/classModel");
 const Exam = require("../models/examModel");
 const Homework = require("../models/homeworkModel");
+const Organization = require("../models/organizationModel");
 const mongoose = require("mongoose");
+
+class StudentControllerError extends Error {
+  constructor(message, code = "STUDENT_ERROR", statusCode = 400) {
+    super(message);
+    this.name = "StudentControllerError";
+    this.code = code;
+    this.statusCode = statusCode;
+  }
+}
 
 exports.studentClass = async (req, res) => {
   try {
-    let classr = null;
-    if (mongoose.Types.ObjectId.isValid(req?.query?.classn)) {
-      classr = await Classroom.findById(req.query.classn).populate("subjects");
-    } else {
-      classr = await Classroom.findOne({
-        className: req?.query?.classn,
-      }).populate("subjects");
+    if (!req.organization) {
+      throw new StudentControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
     }
-    if (!classr) return res.status(404).json({ msg: "Classroom not found" });
-    res.status(200).json({ classr });
+
+    let classroom = null;
+    if (mongoose.Types.ObjectId.isValid(req?.query?.classn)) {
+      classroom = await Classroom.findOne({
+        _id: req.query.classn,
+        organizationId: req.organization._id
+      }).populate("subjects", "name code");
+    } else {
+      classroom = await Classroom.findOne({
+        className: req?.query?.classn,
+        organizationId: req.organization._id
+      }).populate("subjects", "name code");
+    }
+
+    if (!classroom) {
+      throw new StudentControllerError("Classroom not found in your organization", "CLASSROOM_NOT_FOUND", 404);
+    }
+
+    res.json({
+      success: true,
+      classroom,
+      organization: req.organization.name
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json("something went wrong");
+    if (error instanceof StudentControllerError) {
+      return res.status(error.statusCode).json({
+        msg: error.message,
+        code: error.code,
+      });
+    }
+
+    const wrappedError = new StudentControllerError("Failed to retrieve student class", "GET_STUDENT_CLASS_ERROR", 500);
+    wrappedError.originalError = error;
+
+    res.status(wrappedError.statusCode).json({
+      msg: wrappedError.message,
+      code: wrappedError.code,
+    });
   }
 };
 

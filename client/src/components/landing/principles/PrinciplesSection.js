@@ -24,9 +24,9 @@ const PrinciplesSection = () => {
   const principles = [
     {
       icon: AttachMoneyIcon,
-      title: 'Free online live Chat',
+      title: 'Integrated Communication',
       description:
-        "Stop using third-party apps to conduct online chat. Use our most powerful and easy-to-use platform to conduct your online chat with users. It's 100% free.",
+        "Built-in chat and messaging system for seamless communication between administrators, teachers, and students. Available in our High School and University plans.",
       iconColor: '#10b981',
       iconBgColor: 'rgba(16, 185, 129, 0.1)',
     },
@@ -124,13 +124,12 @@ const PrinciplesSection = () => {
                   maxWidth: '36rem',
                 }}
               >
-                SchoolHub is a completely free online school management software,
-                it has more school management features than any other online
-                school management system in the market. It does not end here,
-                SchoolHub is still enhancing features. You will be automatically
-                updated as a new feature will be a part of our free school
-                management software. Some main school management features are
-                given below.
+                SchoolHub offers flexible school management solutions with both
+                free and premium features. Start with essential tools for primary
+                schools, then upgrade to access advanced capabilities like exams,
+                homework management, analytics, and integrated communication.
+                Our platform continuously evolves with regular feature updates
+                across all plans.
               </Typography>
 
               <Grid container spacing={3} sx={{ mt: 2 }}>

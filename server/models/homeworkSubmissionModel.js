@@ -14,6 +14,12 @@ const homeworkSubmissionSchema = mongoose.Schema(
       required: true,
       index: true,
     },
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+      index: true,
+    },
     answers: {
       type: Map,
       of: String,
@@ -41,8 +47,8 @@ const homeworkSubmissionSchema = mongoose.Schema(
   }
 );
 
-homeworkSubmissionSchema.index({ homeworkId: 1, studentId: 1 }, { unique: true });
-homeworkSubmissionSchema.index({ studentId: 1, submittedAt: -1 });
+homeworkSubmissionSchema.index({ organizationId: 1, homeworkId: 1, studentId: 1 }, { unique: true });
+homeworkSubmissionSchema.index({ organizationId: 1, studentId: 1, submittedAt: -1 });
 
 module.exports = mongoose.model("HomeworkSubmission", homeworkSubmissionSchema);
 

@@ -96,7 +96,7 @@ export default function User() {
   const filteredUsers = applySortFilter(users, getComparator(order, orderBy), filterName);
 
   return (
-    <Page title="Pending Users">
+    <Page title="Users">
       <Container maxWidth="xl">
         <Stack spacing={3} sx={{ mb: 3 }}>
           <Stack
@@ -107,7 +107,7 @@ export default function User() {
             gap={2}
           >
             <Typography variant="h4" sx={{ fontWeight: 600 }}>
-              Pending Users
+              Users
             </Typography>
             <Chip label={`Total: ${users.length}`} color="primary" variant="outlined" />
           </Stack>

@@ -48,15 +48,22 @@ const userSlice = createSlice({
       state.token = action.payload.token;
       localStorage.setItem("token", action.payload.token);
       localStorage.setItem("isAuth", true);
-      state.userInfo = action.payload.userInfo;
-
+      // Merge userInfo and organization into userInfo state
+      state.userInfo = {
+        ...action.payload.userInfo,
+        organization: action.payload.organization
+      };
       state.errors = null;
     },
     [loginUser.rejected]: (state, action) => {
       state.errors = action.payload;
     },
     [getUserData.fulfilled]: (state, action) => {
-      state.userInfo = action.payload;
+      // API returns { user, organization }, merge into userInfo
+      state.userInfo = {
+        ...action.payload.user,
+        organization: action.payload.organization
+      };
       state.errors = null;
     },
     [getUserData.rejected]: (state, action) => {

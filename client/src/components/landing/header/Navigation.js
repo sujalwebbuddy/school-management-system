@@ -1,7 +1,7 @@
 'use strict';
 
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   AppBar,
@@ -20,6 +20,7 @@ const Navigation = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
 
   const { isAuth, userInfo } = useSelector((state) => state.user);
@@ -46,6 +47,29 @@ const Navigation = () => {
   const handleLogout = () => {
     dispatch(logoutUser());
     navigate('/');
+  };
+
+  const handleSectionScroll = (sectionId) => {
+    if (location.pathname === '/') {
+      const element = document.querySelector(sectionId);
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }
+    } else {
+      navigate('/');
+      setTimeout(() => {
+        const element = document.querySelector(sectionId);
+        if (element) {
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }
+      }, 100);
+    }
   };
 
   return (
@@ -95,8 +119,7 @@ const Navigation = () => {
             }}
           >
             <Button
-              component={Link}
-              to="#about"
+              onClick={() => handleSectionScroll('#about')}
               sx={{
                 color: 'text.primary',
                 fontWeight: 500,
@@ -107,8 +130,7 @@ const Navigation = () => {
               About
             </Button>
             <Button
-              component={Link}
-              to="#features"
+              onClick={() => handleSectionScroll('#features')}
               sx={{
                 color: 'text.primary',
                 fontWeight: 500,
@@ -119,8 +141,7 @@ const Navigation = () => {
               Features
             </Button>
             <Button
-              component={Link}
-              to="#pricing"
+              onClick={() => handleSectionScroll('#pricing')}
               sx={{
                 color: 'text.primary',
                 fontWeight: 500,
@@ -131,8 +152,7 @@ const Navigation = () => {
               Pricing
             </Button>
             <Button
-              component={Link}
-              to="#contact"
+              onClick={() => handleSectionScroll('#contact')}
               sx={{
                 color: 'text.primary',
                 fontWeight: 500,

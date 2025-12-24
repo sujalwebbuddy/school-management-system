@@ -8,7 +8,7 @@ const CTABanner = () => {
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
-    navigate('/register');
+    navigate('/register-org');
   };
 
   const handleContactUs = () => {

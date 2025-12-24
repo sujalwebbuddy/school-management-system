@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SchoolHub Platform – Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="./script.js"></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="./screenshots/logo.svg" alt="SchoolHub Logo" />
+        <div>
+          <h1>SchoolHub Platform</h1>
+          <p>Documentation v1.0</p>
+        </div>
+      </div>
+      <nav>
+        <a class="active" href="./index.html">Welcome</a>
+        <a href="./how-to-use.html">User Guide</a>
+        <a href="./technical-overview.html">Technical Overview</a>
+        <a href="./api-documentation.html">API Documentation</a>
+        <a href="./push-to-github.html">How to push to GitHub</a>
+        <a href="./install-vercel.html">How to install on Vercel</a>
+        <a href="./install-aws-ec2.html">How to install on AWS EC2</a>
+        <a href="./database.html">How to setup Authentication</a>
+        <a href="./mongodb-setup.html">How to create MongoDB Database</a>
+        <a href="./env-setup.html">Environment Variables</a>
+        <a href="./frontend-updates.html">Frontend Customization</a>
+        <a href="./pricing-and-validations.html">User Roles & Permissions</a>
+      </nav>
+      <footer>
+        <small>Built with MERN Stack (MongoDB, Express, React, Node.js)</small>
+      </footer>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <h2>Welcome to SchoolHub Platform</h2>
+      </header>
+
+      <section class="prose">
+        <div class="version-info">
+          <div class="version">Version 1.0</div>
+          <div class="date">Updated December 2025</div>
+        </div>
+
+        <div class="callout info">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Welcome to SchoolHub Platform v1.0!</strong> This comprehensive documentation will guide you through setting up and deploying your complete school management system. Manage students, teachers, classes, homework, and communication all in one unified platform.
+        </div>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Overview</h2>
+
+        <p><strong>SchoolHub Platform</strong> is a comprehensive school management system designed to streamline educational administration. Whether you're managing a small school, college, or educational center, SchoolHub provides all the tools you need to manage students, teachers, classes, homework, exams, and communication in one unified platform. It's completely free with lifetime access and no limitations.</p>
+        
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h3><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Multi-Tenant Organizations</h3>
+            <p>Complete multi-tenant architecture supporting multiple educational institutions with isolated data, custom domains, and tiered subscription plans.</p>
+          </div>
+
+          <div class="feature-card">
+            <h3><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> AI-Powered Features</h3>
+            <p>Advanced AI/ML capabilities including person detection, automated content analysis, and intelligent assessment tools using TensorFlow.js.</p>
+          </div>
+
+          <div class="feature-card">
+            <h3><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Comprehensive Assessment</h3>
+            <p>Complete exam and homework management with multiple choice questions, automated grading, submission tracking, and performance analytics.</p>
+          </div>
+
+          <div class="feature-card">
+            <h3><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-4M8 7H4M16 17h-4M8 17H4M12 7v10M7 12h10"/></svg> Real-time Collaboration</h3>
+            <p>Advanced chat system with real-time messaging, file sharing, group discussions, and Socket.io-powered instant communication.</p>
+          </div>
+
+          <div class="feature-card">
+            <h3><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M6 6l-2 2M18 6l2 2M12 22v-4M6 18l-2-2M18 18l2-2M2 12h4M18 12h4"/></svg> Kanban Task Management</h3>
+            <p>Professional project management with Kanban boards, task prioritization, deadline tracking, and workflow automation.</p>
+          </div>
+
+          <div class="feature-card">
+            <h3><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6l3 3m0 0l3-3m-3 3V3m3 13l-3-3m0 0l-3 3m3-3v6"/></svg> Payment Integration</h3>
+            <p>Complete Stripe integration with webhook handling, subscription management, automated billing, and payment processing.</p>
+          </div>
+
+          <div class="feature-card">
+            <h3><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg> Advanced Analytics</h3>
+            <p>Comprehensive dashboards with interactive charts, performance metrics, attendance tracking, and detailed reporting using Syncfusion components.</p>
+          </div>
+
+          <div class="feature-card">
+            <h3><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> 100% Free Forever</h3>
+            <p>Completely free enterprise LMS with lifetime access, unlimited users, all premium features included, and no hidden costs or limitations.</p>
+          </div>
+        </div>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><circle cx="12" cy="16" r="1"/><path d="M12 12v4"/></svg> System Architecture</h2>
+
+        <div class="callout success">
+          <strong>Enterprise Tech Stack:</strong>
+          <ul>
+            <li><strong>Frontend:</strong> React.js with Material-UI, Syncfusion, and Bootstrap components</li>
+            <li><strong>Backend:</strong> Node.js with Express.js and comprehensive middleware architecture</li>
+            <li><strong>Database:</strong> MongoDB with Mongoose ODM and multi-tenant data isolation</li>
+            <li><strong>Authentication:</strong> JWT with bcrypt, role-based access control, and secure approval workflows</li>
+            <li><strong>AI/ML:</strong> TensorFlow.js with COCO-SSD for person detection and intelligent features</li>
+            <li><strong>State Management:</strong> Redux Toolkit with advanced async handling</li>
+            <li><strong>File Storage:</strong> AWS S3 with pre-signed URLs and automatic upload processing</li>
+            <li><strong>Real-time Communication:</strong> Socket.io with advanced chat and notification systems</li>
+            <li><strong>Payment Processing:</strong> Stripe integration with webhook handling and subscription management</li>
+            <li><strong>UI Components:</strong> ApexCharts, Syncfusion grids, calendars, and rich text editors</li>
+            <li><strong>Email Services:</strong> Nodemailer for automated notifications and communications</li>
+            <li><strong>Deployment:</strong> Vercel (frontend) and AWS EC2/VPS (backend) with Docker support</li>
+          </ul>
+        </div>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Key Features</h2>
+
+        <h3>Enterprise Core Features</h3>
+        <ul>
+          <li><strong>Multi-Tenant Architecture:</strong> Complete organization isolation with custom domains and subscription tiers</li>
+          <li><strong>AI-Powered Person Detection:</strong> TensorFlow.js integration for automated person detection and security</li>
+          <li><strong>Advanced User Management:</strong> Comprehensive role-based access with Admin, Teacher, and Student roles</li>
+          <li><strong>Cloud File Storage:</strong> AWS S3 integration with secure uploads, pre-signed URLs, and global CDN</li>
+          <li><strong>Real-time Collaboration:</strong> Socket.io-powered chat system with instant messaging and file sharing</li>
+          <li><strong>Kanban Project Management:</strong> Professional task tracking with drag-and-drop Kanban boards</li>
+        </ul>
+
+        <h3>Advanced Educational Features</h3>
+        <ul>
+          <li><strong>Comprehensive Assessment System:</strong> Exams and homework with multiple choice questions and automated grading</li>
+          <li><strong>Attendance Tracking:</strong> Daily attendance management with detailed reporting and analytics</li>
+          <li><strong>Subject & Class Management:</strong> Flexible subject assignment and class organization</li>
+          <li><strong>Performance Analytics:</strong> Interactive dashboards with charts, metrics, and detailed insights</li>
+          <li><strong>Calendar & Scheduling:</strong> Syncfusion calendar integration for deadlines and events</li>
+          <li><strong>Rich Text Editing:</strong> Advanced WYSIWYG editors for content creation and assignments</li>
+        </ul>
+
+        <h3>Business & Infrastructure</h3>
+        <ul>
+          <li><strong>Stripe Payment Integration:</strong> Complete subscription management with automated billing</li>
+          <li><strong>Email Notification System:</strong> Automated emails for approvals, notifications, and communications</li>
+          <li><strong>Webhook Processing:</strong> Secure Stripe webhook handling for payment events</li>
+          <li><strong>Advanced Security:</strong> JWT authentication, bcrypt hashing, and secure API endpoints</li>
+          <li><strong>Responsive Design:</strong> Mobile-first design with Material-UI and Bootstrap integration</li>
+          <li><strong>Data Visualization:</strong> ApexCharts and Syncfusion components for comprehensive analytics</li>
+        </ul>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> User Roles & Permissions</h2>
+
+        <div class="callout info">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> User Roles:</strong>
+          <p>SchoolHub Platform supports three distinct user roles with different permissions and access levels:</p>
+          <ul>
+            <li><strong>Administrator:</strong> Full system access - manage users, classes, subjects, approve registrations, system configuration</li>
+            <li><strong>Teacher:</strong> Class management, homework assignment, student grading, communication with students and admin</li>
+            <li><strong>Student:</strong> View assignments, submit homework, participate in class discussions, communicate with teachers</li>
+          </ul>
+          <p><strong>Note:</strong> All user registrations require admin approval before accounts become active. This ensures secure and controlled access to the platform.</p>
+        </div>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Prerequisites</h2>
+
+        <div class="callout warning">
+          <strong>Before you begin, ensure you have:</strong>
+          <ul>
+            <li>Node.js 16+ installed on your system</li>
+            <li>MongoDB database (local installation or MongoDB Atlas cloud)</li>
+            <li>Basic knowledge of JavaScript/React for customization</li>
+            <li>Web server or hosting platform (Vercel, AWS EC2, or similar)</li>
+            <li>Git for version control (optional but recommended)</li>
+          </ul>
+        </div>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Quick Start</h2>
+
+        <ol>
+          <li><strong>Clone:</strong> Get the SchoolHub repository from GitHub</li>
+          <li><strong>Install Backend:</strong> Navigate to <code>server/</code> and run <code>npm install</code></li>
+          <li><strong>Install Frontend:</strong> Navigate to <code>client/</code> and run <code>npm install</code></li>
+          <li><strong>Setup Database:</strong> Configure MongoDB connection in environment variables</li>
+          <li><strong>Environment Config:</strong> Set up all required environment variables</li>
+          <li><strong>Start Backend:</strong> Run <code>npm start</code> in server directory</li>
+          <li><strong>Start Frontend:</strong> Run <code>npm start</code> in client directory</li>
+          <li><strong>Create Admin:</strong> Use the admin creation script to set up your first admin account</li>
+        </ol>
+
+        <div class="callout info">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Pro Tip:</strong> Start with the local development setup first. Once everything is working locally, follow our deployment guides for production hosting.
+        </div>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> 100% Free Forever</h2>
+
+        <div class="callout success">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> No Hidden Costs, No Limitations:</strong>
+          <p>SchoolHub Platform is completely free with lifetime access. Unlike other educational software that charge per student or per feature, we believe quality education management should be accessible to everyone.</p>
+
+          <h4>What You Get - Completely Free:</h4>
+          <ul>
+            <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Unlimited users (students, teachers, administrators)</li>
+            <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Unlimited classes and subjects</li>
+            <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Full homework management system</li>
+            <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Real-time chat and communication</li>
+            <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Task management and scheduling</li>
+            <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> File upload and storage capabilities</li>
+            <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Mobile-responsive design</li>
+            <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Regular updates and support</li>
+          </ul>
+        </div>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Documentation Sections</h2>
+        
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h3><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> User Guide</h3>
+            <p>Complete end-user documentation for managing users, classes, homework, and using all SchoolHub Platform features.</p>
+          </div>
+          
+          <div class="feature-card">
+            <h3><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Deployment</h3>
+            <p>Step-by-step guides for deploying to Vercel (recommended) or AWS EC2.</p>
+          </div>
+          
+          <div class="feature-card">
+            <h3><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/></svg> Configuration</h3>
+            <p>Environment setup, API integration, and system configuration options.</p>
+          </div>
+          
+          <div class="feature-card">
+            <h3><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Customization</h3>
+            <p>Frontend modifications, theming, and feature customization guides.</p>
+          </div>
+        </div>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Support & Resources</h2>
+
+        <div class="callout">
+          <strong>Need Help?</strong>
+          <ul>
+            <li><strong>Documentation:</strong> Comprehensive guides for setup, deployment, and usage</li>
+            <li><strong>GitHub Repository:</strong> Access the source code and report issues</li>
+            <li><strong>Community:</strong> Join our community discussions for tips and best practices</li>
+            <li><strong>Self-Hosted:</strong> Complete control with our open-source solution</li>
+          </ul>
+        </div>
+
+        <p><strong>Ready to get started?</strong> SchoolHub Platform is completely free and open-source. Follow our detailed guides to set up your school management system today.</p>
+
+        <div style="text-align: center; margin: 2rem 0;">
+          <a href="./how-to-use.html" class="btn">Start with User Guide →</a>
+          <a href="./install-vercel.html" class="btn secondary">Quick Installation →</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

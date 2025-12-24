@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>User Roles & Permissions – SchoolHub Platform Docs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="./script.js"></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="./screenshots/logo.svg" alt="SchoolHub Logo" />
+        <div>
+          <h1>SchoolHub Platform</h1>
+          <p>Documentation v1.0</p>
+        </div>
+      </div>
+      <nav>
+        <a href="./index.html">Welcome</a>
+        <a href="./how-to-use.html">User Guide</a>
+        <a href="./technical-overview.html">Technical Overview</a>
+        <a href="./api-documentation.html">API Documentation</a>
+        <a href="./push-to-github.html">How to push to GitHub</a>
+        <a href="./install-vercel.html">How to install on Vercel</a>
+        <a href="./install-aws-ec2.html">How to install on AWS EC2</a>
+        <a href="./database.html">How to setup Authentication</a>
+        <a href="./mongodb-setup.html">How to create MongoDB Database</a>
+        <a href="./env-setup.html">Environment Variables</a>
+        <a href="./frontend-updates.html">Frontend Customization</a>
+        <a class="active" href="./pricing-and-validations.html">User Roles & Permissions</a>
+      </nav>
+      <footer>
+        <small>Built with MERN Stack (MongoDB, Express, React, Node.js)</small>
+      </footer>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <h2>User Roles & Permissions</h2>
+      </header>
+
+      <section class="prose">
+        <div class="callout info">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Role-Based Access Control:</strong> SchoolHub Platform implements comprehensive role-based permissions to ensure secure and appropriate access to features. Each user role has specific capabilities and restrictions designed for educational workflows.
+        </div>
+
+        <h2><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> User Roles Overview</h2>
+
+        <h3>Role Hierarchy</h3>
+        <p>SchoolHub Platform supports three distinct user roles with escalating permissions:</p>
+
+        <div class="callout success">
+          <h4><svg class="icon-inline" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Administrator (Highest Level)</h4>
+          <ul>
+            <li><strong>Full System Access:</strong> Complete control over all platform features</li>
+            <li><strong>User Management:</strong> Approve/reject user registrations, manage all accounts</li>
+            <li><strong>Class Management:</strong> Create/edit/delete classes, assign students and teachers</li>
+            <li><strong>Subject Management:</strong> Create subjects, assign teachers to subjects</li>
+            <li><strong>System Configuration:</strong> Modify system settings and configurations</li>
+            <li><strong>Reports & Analytics:</strong> Access to all system reports and analytics</li>
+            <li><strong>Security Controls:</strong> Manage permissions and access controls</li>
+          </ul>
+        </div>
+
+        <div class="callout info">
+          <h4><svg class="icon-inline" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Teacher (Mid Level)</h4>
+          <ul>
+            <li><strong>Subject Management:</strong> Manage assigned subjects and related content</li>
+            <li><strong>Homework Creation:</strong> Create, edit, and delete homework assignments</li>
+            <li><strong>Student Assessment:</strong> Grade submissions, provide feedback</li>
+            <li><strong>Class Communication:</strong> Send messages to students and administrators</li>
+            <li><strong>Progress Tracking:</strong> Monitor student performance in assigned subjects</li>
+            <li><strong>Resource Sharing:</strong> Upload and share educational materials</li>
+            <li><strong>Limited User Management:</strong> View students in assigned classes</li>
+          </ul>
+        </div>
+
+        <div class="callout warning">
+          <h4><svg class="icon-inline" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h.01M16 20h.01M8 20H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1"/></svg> Student (Base Level)</h4>
+          <ul>
+            <li><strong>Assignment Access:</strong> View and download homework assignments</li>
+            <li><strong>Submission Management:</strong> Submit completed work with file attachments</li>
+            <li><strong>Grade Viewing:</strong> Access grades and teacher feedback</li>
+            <li><strong>Class Communication:</strong> Send/receive messages from teachers</li>
+            <li><strong>Profile Management:</strong> Update personal information and avatar</li>
+            <li><strong>Resource Access:</strong> Download shared educational materials</li>
+            <li><strong>Progress Tracking:</strong> View personal academic progress</li>
+          </ul>
+        </div>
+
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2zm10-10V7a4 4 0 0 0-8 0v4h8z"/></svg> Permission Matrix</h2>
+
+        <h3>Access Control Matrix</h3>
+        <p>The following table outlines specific permissions for each user role:</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Administrator</th>
+              <th>Teacher</th>
+              <th>Student</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>User Registration Approval</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>Create/Edit Classes</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>Create Homework</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>Grade Submissions</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>View All Users</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>System Reports</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>Real-time Chat</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>File Upload (AWS S3)</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>Exam Management</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>Attendance Tracking</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>Kanban Task Management</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>AI Person Detection</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>Advanced Analytics</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>Stripe Payment Integration</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>Organization Management</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6l3 3m0 0l3-3m-3 3V3m3 13l-3-3m0 0l-3 3m3-3v6"/></svg> Subscription Tiers & Pricing</h2>
+
+        <h3>Organization-Based Multi-Tenant Pricing</h3>
+        <p>SchoolHub Platform offers three comprehensive subscription tiers designed for different educational institutions, each with specific features and user limits:</p>
+
+        <div class="pricing-grid">
+          <div class="pricing-card featured">
+            <h3><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Primary Schools</h3>
+            <div class="price">$29<span>/month</span></div>
+            <p>Perfect for small educational institutions and primary schools</p>
+            <ul>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Up to 100 users</li>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Basic features (attendance, homework)</li>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Real-time chat</li>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> File storage (5GB)</li>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Email support</li>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Basic analytics</li>
+            </ul>
+          </div>
+
+          <div class="pricing-card popular">
+            <div class="badge">Most Popular</div>
+            <h3><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> High Schools</h3>
+            <div class="price">$79<span>/month</span></div>
+            <p>Ideal for secondary education and high schools</p>
+            <ul>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Up to 500 users</li>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Standard features + exams, homework</li>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> AI-powered person detection</li>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Kanban task management</li>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> File storage (25GB)</li>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Priority support</li>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Advanced analytics & reports</li>
+            </ul>
+          </div>
+
+          <div class="pricing-card">
+            <h3><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Universities</h3>
+            <div class="price">$199<span>/month</span></div>
+            <p>Complete solution for higher education institutions</p>
+            <ul>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Up to 2,000 users</li>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> All premium features</li>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Advanced AI & ML features</li>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Custom integrations</li>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> File storage (100GB)</li>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 24/7 premium support</li>
+              <li><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Enterprise analytics & custom reports</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Feature Comparison Matrix</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Primary</th>
+              <th>High School</th>
+              <th>University</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Max Users</td>
+              <td>100</td>
+              <td>500</td>
+              <td>2,000</td>
+            </tr>
+            <tr>
+              <td>User Management</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>Attendance Tracking</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>Homework Management</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>Exam Management</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>AI Person Detection</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>Kanban Task Management</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>AWS S3 Cloud Storage</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>Advanced Analytics</td>
+              <td>Basic</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>Stripe Payment Integration</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+            <tr>
+              <td>24/7 Support</td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></td>
+              <td><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Organization Management</h3>
+        <p>Each organization gets its own isolated environment with custom domains and settings:</p>
+        <ul>
+          <li><strong>Custom Domains:</strong> Each organization can have unique domain names</li>
+          <li><strong>Data Isolation:</strong> Complete separation of data between organizations</li>
+          <li><strong>Feature Gating:</strong> Subscription-based feature availability</li>
+          <li><strong>Usage Tracking:</strong> Monitor resource usage and limits</li>
+          <li><strong>Admin Controls:</strong> Organization-level administrators with full control</li>
+          <li><strong>Billing Management:</strong> Automated invoicing and payment processing</li>
+        </ul>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Security Best Practices</h2>
+
+        <h3>User Authentication</h3>
+        <ul>
+          <li><strong>JWT Tokens:</strong> Secure token-based authentication with expiration</li>
+          <li><strong>Password Hashing:</strong> Bcrypt encryption for all passwords</li>
+          <li><strong>Role Validation:</strong> Server-side role verification on all requests</li>
+          <li><strong>Session Management:</strong> Automatic logout on token expiration</li>
+        </ul>
+
+        <h3>Data Protection</h3>
+        <ul>
+          <li><strong>Input Validation:</strong> All user inputs validated and sanitized</li>
+          <li><strong>File Upload Security:</strong> Restricted file types and size limits</li>
+          <li><strong>Database Security:</strong> Proper indexing and query optimization</li>
+          <li><strong>API Rate Limiting:</strong> Protection against abuse and DDoS attacks</li>
+        </ul>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Role Configuration</h2>
+
+        <h3>User Role Assignment</h3>
+        <p>User roles are assigned during registration and can be modified by administrators:</p>
+
+        <pre><code>// User Model Schema (server/models/userModel.js)
+role: {
+  type: String,
+  required: true,
+  enum: ["teacher", "student", "admin"],
+  index: true,
+}</code></pre>
+
+        <h3>Role-Based Route Protection</h3>
+        <p>Routes are protected based on user roles using middleware:</p>
+
+        <pre><code>// Middleware example (server/middlewares/authMiddleware.js)
+const authMiddleware = async (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ msg: 'No token provided' });
+  }
+  
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  req.userId = decoded.sub;
+  req.userRole = decoded.role;
+  next();
+};
+
+// Role-based access control
+const adminOnly = (req, res, next) => {
+  if (req.userRole !== 'admin') {
+    return res.status(403).json({ msg: 'Admin access required' });
+  }
+  next();
+};</code></pre>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Permission Implementation</h2>
+
+        <h3>Frontend Role Checks</h3>
+        <p>Frontend components check user roles before rendering features:</p>
+
+        <pre><code>// React component example
+const { userInfo } = useSelector((state) => state.user);
+
+{userInfo.role === 'admin' && (
+  <AdminPanel />
+)}
+
+{userInfo.role === 'teacher' && (
+  <TeacherDashboard />
+)}
+
+{userInfo.role === 'student' && (
+  <StudentDashboard />
+)}</code></pre>
+
+        <h3>Backend Permission Validation</h3>
+        <p>All sensitive operations validate permissions server-side:</p>
+
+        <pre><code>// Controller example
+exports.createClass = async (req, res) => {
+  if (req.userRole !== 'admin') {
+    return res.status(403).json({ 
+      msg: 'Only administrators can create classes' 
+    });
+  }
+  // ... create class logic
+};</code></pre>
+
+        <h2>🚨 Troubleshooting</h2>
+
+        <h3>Common Permission Issues</h3>
+        <div class="callout warning">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Permission Issues:</strong>
+          <ul>
+            <li><strong>Access Denied Errors:</strong> Verify user role is correctly set in database and JWT token</li>
+            <li><strong>Features Not Showing:</strong> Check frontend role checks match user's actual role</li>
+            <li><strong>Unauthorized Actions:</strong> Ensure backend middleware validates roles before processing requests</li>
+            <li><strong>Role Not Updating:</strong> Verify admin has permission to change user roles</li>
+            <li><strong>Token Expiration:</strong> Check JWT token expiration and refresh mechanism</li>
+          </ul>
+        </div>
+
+        <h2>📝 Best Practices</h2>
+
+        <div class="callout success">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><path d="M5.64 5.64l1.41 1.41M16.95 16.95l1.41 1.41M1 12h2M21 12h2M5.64 18.36l1.41-1.41M16.95 7.05l1.41-1.41"/><circle cx="12" cy="12" r="5"/></svg> Security Best Practices:</strong>
+          <ul>
+            <li>Always validate permissions on the backend, never rely solely on frontend checks</li>
+            <li>Use middleware to protect routes based on user roles</li>
+            <li>Implement proper JWT token validation for all authenticated requests</li>
+            <li>Log all permission-related actions for audit purposes</li>
+            <li>Regularly review and update role permissions as needed</li>
+            <li>Test role-based access control thoroughly before deployment</li>
+            <li>Keep role definitions consistent between frontend and backend</li>
+            <li>Document all role permissions and access levels clearly</li>
+          </ul>
+        </div>
+
+        <div style="text-align: center; margin: 2rem 0;">
+          <a href="./how-to-use.html" class="btn">User Guide →</a>
+          <a href="./env-setup.html" class="btn secondary">Environment Setup →</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

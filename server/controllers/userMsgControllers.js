@@ -19,7 +19,14 @@ module.exports.login = async (req, res, next) => {
 
 module.exports.getAllUsers = async (req, res, next) => {
   try {
-    const users = await User.find({ _id: { $ne: req.params.id } }).select([
+    if (!req.organization) {
+      return res.status(403).json({ msg: "Organization context required" });
+    }
+
+    const users = await User.find({
+      _id: { $ne: req.params.id },
+      organizationId: req.organization._id
+    }).select([
       "email",
       "firstName",
       "lastName",
@@ -36,16 +43,29 @@ module.exports.getAllUsers = async (req, res, next) => {
 
 module.exports.setAvatar = async (req, res, next) => {
   try {
+    if (!req.organization) {
+      return res.status(403).json({ msg: "Organization context required" });
+    }
+
     const userId = req.params.id;
     const avatarImage = req.body.image;
-    const userData = await User.findByIdAndUpdate(
-      userId,
+
+    const userData = await User.findOneAndUpdate(
+      {
+        _id: userId,
+        organizationId: req.organization._id
+      },
       {
         isAvatarImageSet: true,
         avatarImage,
       },
       { new: true }
     );
+
+    if (!userData) {
+      return res.status(404).json({ msg: "User not found in your organization" });
+    }
+
     return res.json({
       isSet: userData.isAvatarImageSet,
       image: userData.avatarImage,

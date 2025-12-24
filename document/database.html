@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Authentication Setup – SchoolHub Platform Docs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="./script.js"></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="./screenshots/logo.svg" alt="SchoolHub Logo" />
+        <div>
+          <h1>SchoolHub Platform</h1>
+          <p>Documentation v1.0</p>
+        </div>
+      </div>
+      <nav>
+        <a href="./index.html">Welcome</a>
+        <a href="./how-to-use.html">User Guide</a>
+        <a href="./push-to-github.html">How to push to GitHub</a>
+        <a href="./install-vercel.html">How to install on Vercel</a>
+        <a href="./install-aws-ec2.html">How to install on AWS EC2</a>
+        <a class="active" href="./database.html">How to setup Authentication</a>
+        <a href="./mongodb-setup.html">How to create MongoDB Database</a>
+        <a href="./env-setup.html">Environment Variables</a>
+        <a href="./frontend-updates.html">Frontend Customization</a>
+        <a href="./pricing-and-validations.html">User Roles & Permissions</a>
+      </nav>
+      <footer>
+        <small>Built with MERN Stack (MongoDB, Express, React, Node.js)</small>
+      </footer>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <h2>Authentication Setup</h2>
+      </header>
+
+      <section class="prose">
+        <div class="callout info">
+          <strong>🔐 Authentication System:</strong> SchoolHub Platform uses JWT (JSON Web Tokens) for authentication with bcrypt password hashing. MongoDB stores user accounts, roles, and authentication data. The system supports role-based access control for Admin, Teacher, and Student roles.
+        </div>
+
+        <h2>Authentication Methods</h2>
+
+        <h3>1. JWT Authentication (Required)</h3>
+        <p>SchoolHub Platform uses JWT tokens for secure authentication. Users register and login with email and password. All passwords are hashed using bcrypt before storage.</p>
+        
+        <h4>Setup JWT Authentication</h4>
+        <ol class="steps">
+          <li class="step">Configure JWT secret in your <code>.env</code> file:
+            <div class="code"><pre><code>JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_EXPIRE=7d</code></pre></div>
+          </li>
+          <li class="step">Generate a strong random secret key (run: <code>node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"</code>)</li>
+          <li class="step">The JWT secret is used to sign authentication tokens</li>
+          <li class="step">Token expiration is configurable (default: 7 days)</li>
+        </ol>
+
+        <h3>2. User Registration & Approval System</h3>
+        <p>SchoolHub uses an approval-based registration system. Users register with their details, and administrators must approve accounts before they can log in.</p>
+        
+        <h4>Registration Workflow</h4>
+        <ol class="steps">
+          <li class="step">User submits registration form with:
+            <ul>
+              <li>First name and last name</li>
+              <li>Email address</li>
+              <li>Phone number</li>
+              <li>Role selection (Teacher or Student)</li>
+            </ul>
+          </li>
+          <li class="step">Account is created with <code>isApproved: false</code> status</li>
+          <li class="step">Administrator reviews and approves the registration</li>
+          <li class="step">Admin sets password for the approved user</li>
+          <li class="step">User can now log in with provided credentials</li>
+        </ol>
+
+        <div class="callout info">
+          <strong>📝 Note:</strong> All user registrations require admin approval. This ensures only legitimate users can access the platform. Teachers and students must be assigned to classes/subjects after approval.
+        </div>
+
+        <h3>3. Password Security</h3>
+        <p>User passwords are securely hashed using bcrypt before storing in the database. Passwords are only set after admin approval.</p>
+        
+        <div class="callout success">
+          <strong>🔒 Security Features:</strong>
+          <ul>
+            <li><strong>bcrypt Hashing:</strong> Passwords are hashed with bcrypt (12 rounds) before storage</li>
+            <li><strong>JWT Tokens:</strong> Secure token-based authentication with expiration</li>
+            <li><strong>Token Management:</strong> Configurable token expiration (default: 7 days)</li>
+            <li><strong>Protected Routes:</strong> Routes protected with JWT middleware</li>
+            <li><strong>Role-Based Access:</strong> Access control based on user roles (Admin/Teacher/Student)</li>
+          </ul>
+        </div>
+
+        <h2>Where Authentication is Used</h2>
+
+        <h3>Authentication Files (MERN Stack)</h3>
+        <ul>
+          <li><code>server/middlewares/authMiddleware.js</code> – JWT authentication middleware</li>
+          <li><code>server/controllers/userControllers.js</code> – Login and registration controllers</li>
+          <li><code>server/routes/login_regRoute.js</code> – Authentication routes</li>
+          <li><code>client/src/components/Auth.js</code> – Login/Registration component</li>
+          <li><code>client/src/slices/userSlice.js</code> – Redux slice for user state</li>
+          <li><code>server/models/userModel.js</code> – User model with role and approval fields</li>
+        </ul>
+
+        <h2>API Authentication</h2>
+        
+        <h3>Protected Routes</h3>
+        <p>Most API routes require authentication. JWT tokens are validated using middleware:</p>
+        
+        <div class="code"><pre><code>// Example: Using JWT authentication in Express route
+const authMiddleware = require('../middlewares/authMiddleware');
+
+router.get('/protected-route', authMiddleware, async (req, res) => {
+  // req.userId contains the authenticated user's ID
+  // req.userRole contains the user's role (admin/teacher/student)
+  // ... your protected route logic
+});</code></pre></div>
+
+        <h3>Authentication Endpoints</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Endpoint</th>
+              <th>Method</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>/api/user/login</code></td>
+              <td>POST</td>
+              <td>User login with email and password</td>
+            </tr>
+            <tr>
+              <td><code>/api/user/register</code></td>
+              <td>POST</td>
+              <td>User registration (requires admin approval)</td>
+            </tr>
+            <tr>
+              <td><code>/api/user/getUserData</code></td>
+              <td>GET</td>
+              <td>Get current user data (requires authentication)</td>
+            </tr>
+            <tr>
+              <td><code>/api/admin/approveUser</code></td>
+              <td>POST</td>
+              <td>Approve user registration (admin only)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>Environment Variables</h2>
+        
+            <div class="code"><pre><code># JWT Configuration (Required)
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_EXPIRE=7d
+
+# Database (Required)
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/schoolhub?retryWrites=true&w=majority
+
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+
+# Client Configuration
+REACT_APP_API_URL=http://localhost:5000/api</code></pre></div>
+
+        <h2>Troubleshooting</h2>
+        
+        <div class="callout warning">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg> Common Issues:</strong>
+          <ul>
+            <li><strong>Token Not Working:</strong> Check JWT_SECRET is set correctly and matches between server restarts</li>
+            <li><strong>Login Fails:</strong> Verify user account is approved by administrator</li>
+            <li><strong>Unauthorized Access:</strong> Ensure JWT token is included in Authorization header</li>
+            <li><strong>Database Connection:</strong> Verify MONGODB_URI is correct and database is accessible</li>
+            <li><strong>Token Expired:</strong> User needs to log in again</li>
+            <li><strong>Email Already Exists:</strong> User with this email already registered</li>
+            <li><strong>Account Not Approved:</strong> Contact administrator to approve your account</li>
+          </ul>
+        </div>
+
+        <h3>Token Management</h3>
+        <p>JWT tokens are managed client-side. Tokens are stored and sent with each API request in the Authorization header.</p>
+
+        <div class="callout info">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><path d="M5.64 5.64l1.41 1.41M16.95 16.95l1.41 1.41M1 12h2M21 12h2M5.64 18.36l1.41-1.41M16.95 7.05l1.41-1.41"/><circle cx="12" cy="12" r="5"/></svg> Token Management:</strong>
+          <ul>
+            <li>Tokens are generated on successful login</li>
+            <li>Tokens are stored in client-side state (Redux)</li>
+            <li>Tokens are sent in Authorization header: <code>Bearer &lt;token&gt;</code></li>
+            <li>Tokens expire after configured time (default: 7 days)</li>
+            <li>Users must log in again after token expiration</li>
+          </ul>
+        </div>
+
+        <div class="callout success">
+          <strong><svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Authentication is now configured!</strong> Users can register, wait for admin approval, and then log in to access SchoolHub Platform. All protected routes require valid JWT tokens.
+        </div>
+      </section>
+    </main>
+  </body>
+  </html>
+
+

@@ -76,6 +76,12 @@ const userSchema = mongoose.Schema(
         return this.role === "teacher" && this.isApproved === true;
       },
     },
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+      index: true,
+    },
     profileImage: {
       type: String,
       default: config.DEFAULT_PROFILE_IMAGE_URL,
@@ -97,6 +103,8 @@ const userSchema = mongoose.Schema(
 userSchema.index({ role: 1, isApproved: 1 });
 userSchema.index({ classIn: 1, role: 1 });
 userSchema.index({ subject: 1, role: 1 });
+userSchema.index({ organizationId: 1, email: 1 }, { unique: true });
+userSchema.index({ organizationId: 1, role: 1 });
 
 // userSchema.pre("validate", function (next) {
 //   if (this.role === "student" && !this.classIn) {

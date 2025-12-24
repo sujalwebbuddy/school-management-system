@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import {
   Box,
   Grid,
@@ -13,6 +12,7 @@ import { SocketProvider, useSocketContext } from "../hooks/SocketContext";
 import { getUserChats } from "../../../slices/chatSlice";
 import ChatList from "../components/ChatList";
 import ChatContainer from "../components/ChatContainer";
+import FeatureGuard from "../../../components/FeatureGuard";
 
 const StyledContainer = styled(Box)(({ theme }) => ({
   height: "calc(100vh - 64px)", // Account for header
@@ -41,19 +41,13 @@ const WelcomePaper = styled(Paper)(({ theme }) => ({
 }));
 
 function ChatPageContent() {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useTheme();
-  const { isAuth, userInfo } = useSelector((state) => state.user);
+  const { userInfo } = useSelector((state) => state.user);
   const { currentChat, chats, loading } = useSelector((state) => state.chat);
   const { initializeSocket, disconnectSocket, addUserToSocket, joinChat, leaveChat } = useSocketContext();
 
   useEffect(() => {
-    if (!isAuth) {
-      navigate("/login");
-      return;
-    }
-
     // Initialize socket connection
     initializeSocket();
 
@@ -64,14 +58,14 @@ function ChatPageContent() {
     return () => {
       disconnectSocket();
     };
-  }, [isAuth, navigate, initializeSocket, disconnectSocket, dispatch]);
+  }, [initializeSocket, disconnectSocket, dispatch]);
 
   // Add user to socket when user is available and authenticated
   useEffect(() => {
-    if (userInfo?._id && isAuth) {
+    if (userInfo?._id) {
       addUserToSocket(userInfo._id);
     }
-  }, [userInfo, isAuth, addUserToSocket]);
+  }, [userInfo, addUserToSocket]);
 
   // Join/leave chat rooms when currentChat changes
   useEffect(() => {
@@ -82,10 +76,6 @@ function ChatPageContent() {
       };
     }
   }, [currentChat, joinChat, leaveChat]);
-
-  if (!isAuth) {
-    return null;
-  }
 
   if (loading && chats.length === 0) {
     return (
@@ -159,9 +149,11 @@ function ChatPageContent() {
 
 export default function ChatPage() {
   return (
+    <FeatureGuard feature="chat">
     <SocketProvider>
       <ChatPageContent />
     </SocketProvider>
+    </FeatureGuard>
   );
 }
 

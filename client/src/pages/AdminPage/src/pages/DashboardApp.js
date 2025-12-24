@@ -1,6 +1,6 @@
 // @mui
 import { useTheme } from "@mui/material/styles";
-import { Grid, Container, Typography } from "@mui/material";
+import { Grid, Container, Typography, Card, CardContent, Button, Alert, Chip, Stack } from "@mui/material";
 // components
 import Page from "../components/Page";
 import Iconify from "../components/Iconify";
@@ -16,24 +16,33 @@ import {
 } from "../sections/@dashboard/app";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { getApprovedUsers } from "../../../../slices/adminSlice";
+import { useNavigate } from "react-router-dom";
+import { getApprovedUsers, getDashboardAnalytics, getUserRegistrationTrends } from "../../../../slices/adminSlice";
 import { TaskDialog } from "../../../../features/tasks";
 
 // ----------------------------------------------------------------------
 
 export default function DashboardApp() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
   useEffect(() => {
     dispatch(getApprovedUsers());
+    dispatch(getDashboardAnalytics());
+    dispatch(getUserRegistrationTrends(30));
   }, [dispatch]);
 
   const theme = useTheme();
   const users = useSelector((state) => {
     return state.admin.usersApproved;
   });
+  const analytics = useSelector((state) => state.admin.dashboardAnalytics);
+  const registrationTrends = useSelector((state) => state.admin.registrationTrends);
+  const loading = useSelector((state) => state.admin.loading);
+
+  const { userInfo } = useSelector((state) => state.user);
 
   const allUsers = users?.student?.concat(users?.teacher || [], users?.admin || []) || [];
 
@@ -50,73 +59,121 @@ export default function DashboardApp() {
   return (
     <Page title="Dashboard">
       <Container maxWidth="xl">
-        <Typography variant="h4" sx={{ mb: 5 }}>
+        <Typography variant="h4" sx={{ mb: 3 }}>
           Hi, Welcome back
         </Typography>
+
+        {/* Quick Actions & Alerts */}
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          {analytics?.pendingUsers > 0 && (
+            <Grid item xs={12} md={6}>
+              <Alert severity="warning" sx={{ mb: 2 }}>
+                <Typography variant="body2">
+                  You have <strong>{analytics.pendingUsers}</strong> pending user approval{analytics.pendingUsers > 1 ? 's' : ''}.
+                  <Button size="small" sx={{ ml: 1 }} onClick={() => navigate('/dashboard/users')}>
+                    Review Now
+                  </Button>
+                </Typography>
+              </Alert>
+            </Grid>
+          )}
+
+          {analytics?.quickStats?.utilizationRate > 80 && (
+            <Grid item xs={12} md={6}>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                <Typography variant="body2">
+                  Your organization is at <strong>{analytics.quickStats.utilizationRate}%</strong> user capacity.
+                  Consider upgrading your plan for more users.
+                </Typography>
+              </Alert>
+            </Grid>
+          )}
+
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Quick Actions
+                </Typography>
+                <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+                  <Button variant="outlined" size="small" onClick={() => navigate('/dashboard/users')}>
+                    Manage Users
+                  </Button>
+                  <Button variant="outlined" size="small" onClick={() => navigate('/dashboard/classes')}>
+                    View Classes
+                  </Button>
+                  <Button variant="outlined" size="small" onClick={() => navigate('/settings')}>
+                    Organization Settings
+                  </Button>
+                  <Button variant="outlined" size="small" onClick={() => navigate('/subscription')}>
+                    Manage Subscription
+                  </Button>
+                  <Chip
+                    label={`Plan: ${userInfo?.organization?.subscriptionTier?.replace('_', ' ') || 'Unknown'}`}
+                    color="primary"
+                    variant="outlined"
+                  />
+                  <Chip
+                    label={`Users: ${analytics?.quickStats?.totalUsers || 0}/${userInfo?.organization?.maxUsers || 0}`}
+                    color={analytics?.quickStats?.utilizationRate > 80 ? "warning" : "success"}
+                    variant="outlined"
+                  />
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
 
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Students"
-              total={users?.student?.length}
+              title="Total Users"
+              total={analytics?.quickStats?.totalUsers || users?.student?.length + users?.teacher?.length + users?.admin?.length}
               icon={"icons8:student"}
             />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Teachers"
-              total={users?.teacher?.length}
+              title="Active Users"
+              total={analytics?.quickStats?.activeUsers || 0}
               color="info"
               icon={"fa-solid:chalkboard-teacher"}
             />
           </Grid>
 
+          <Grid item xs={12} sm={6} md={3}>
+            <AppWidgetSummary
+              title="Pending Approvals"
+              total={analytics?.pendingUsers || 0}
+              color="warning"
+              icon={"material-symbols:admin-panel-settings-outline"}
+            />
+          </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
             <AppWidgetSummary
-              title="Admin"
-              total={users?.admin?.length}
-              color="error"
+              title="Utilization Rate"
+              total={`${analytics?.quickStats?.utilizationRate || 0}%`}
+              color="success"
               icon={"material-symbols:admin-panel-settings-outline"}
             />
           </Grid>
 
           <Grid item xs={12} md={6} lg={8}>
             <AppWebsiteVisits
-              title="Website Visits"
-              subheader="(+43%) than last year"
-              chartLabels={[
-                "01/01/2003",
-                "02/01/2003",
-                "03/01/2003",
-                "04/01/2003",
-                "05/01/2003",
-                "06/01/2003",
-                "07/01/2003",
-                "08/01/2003",
-                "09/01/2003",
-                "10/01/2003",
-                "11/01/2003",
-              ]}
+              title="User Registration Trends"
+              subheader={`Last ${registrationTrends?.length || 30} days`}
+              chartLabels={registrationTrends?.map(trend => {
+                const date = new Date(trend.date);
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+              }) || []}
               chartData={[
                 {
-                  name: "Team A",
-                  type: "column",
-                  fill: "solid",
-                  data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30],
-                },
-                {
-                  name: "Team B",
+                  name: "New Registrations",
                   type: "area",
                   fill: "gradient",
-                  data: [44, 55, 41, 67, 22, 43, 21, 41, 56, 27, 43],
-                },
-                {
-                  name: "Team C",
-                  type: "line",
-                  fill: "solid",
-                  data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39],
+                  data: registrationTrends?.map(trend => trend.registrations) || [],
                 },
               ]}
             />
@@ -124,116 +181,97 @@ export default function DashboardApp() {
 
           <Grid item xs={12} md={6} lg={4}>
             <AppCurrentVisits
-              title="Current Visits"
+              title="User Distribution"
               chartData={[
-                { label: "America", value: 4344 },
-                { label: "Asia", value: 5435 },
-                { label: "Europe", value: 1443 },
-                { label: "Africa", value: 4443 },
+                { label: "Students", value: users?.student?.length || 0 },
+                { label: "Teachers", value: users?.teacher?.length || 0 },
+                { label: "Admins", value: users?.admin?.length || 0 },
               ]}
               chartColors={[
                 theme.palette.primary.main,
                 theme.palette.chart.blue[0],
                 theme.palette.chart.violet[0],
-                theme.palette.chart.yellow[0],
               ]}
             />
           </Grid>
 
           <Grid item xs={12} md={6} lg={8}>
             <AppConversionRates
-              title="Conversion Rates"
-              subheader="(+43%) than last year"
+              title="Organization Performance"
+              subheader="Key metrics and utilization"
               chartData={[
-                { label: "Italy", value: 400 },
-                { label: "Japan", value: 430 },
-                { label: "China", value: 448 },
-                { label: "Canada", value: 470 },
-                { label: "France", value: 540 },
-                { label: "Germany", value: 580 },
-                { label: "South Korea", value: 690 },
-                { label: "Netherlands", value: 1100 },
-                { label: "United States", value: 1200 },
-                { label: "United Kingdom", value: 1380 },
+                {
+                  label: "Classes Created",
+                  value: analytics?.classCount || 0
+                },
+                {
+                  label: "Subjects Offered",
+                  value: analytics?.subjectCount || 0
+                },
+                {
+                  label: "User Capacity",
+                  value: userInfo?.organization?.maxUsers || 0
+                },
+                {
+                  label: "Active Users",
+                  value: analytics?.quickStats?.totalUsers || 0
+                },
               ]}
             />
           </Grid>
 
           <Grid item xs={12} md={6} lg={4}>
             <AppCurrentSubject
-              title="Current Subject"
-              chartLabels={[
-                "English",
-                "History",
-                "Physics",
-                "Geography",
-                "Chinese",
-                "Math",
-              ]}
+              title="Subject Popularity"
+              chartLabels={analytics?.subscription ? ["Primary", "High School", "University"] : ["Loading..."]}
               chartData={[
-                { name: "Series 1", data: [80, 50, 30, 40, 100, 20] },
-                { name: "Series 2", data: [20, 30, 40, 80, 20, 80] },
-                { name: "Series 3", data: [44, 76, 78, 13, 43, 10] },
+                {
+                  name: "Plan Distribution",
+                  data: analytics?.subscription ?
+                    [
+                      analytics.subscription.tierDistribution?.primary || 0,
+                      analytics.subscription.tierDistribution?.high_school || 0,
+                      analytics.subscription.tierDistribution?.university || 0
+                    ] : [0, 0, 0]
+                },
               ]}
-              chartColors={[...Array(6)].map(
-                () => theme.palette.text.secondary
+              chartColors={[...Array(3)].map(
+                () => theme.palette.primary.main
               )}
             />
           </Grid>
 
           <Grid item xs={12} md={6} lg={4}>
             <AppTrafficBySite
-              title="Traffic by Site"
-              list={[
-                {
-                  name: "FaceBook",
-                  value: 323234,
+              title="Recent Activity"
+              list={
+                analytics?.recentActivity?.slice(0, 4).map((user, index) => ({
+                  name: user.name,
+                  value: new Date(user.lastLogin).getTime(),
                   icon: (
                     <Iconify
-                      icon={"eva:facebook-fill"}
-                      color="#1877F2"
+                      icon={
+                        user.role === 'admin' ? "material-symbols:admin-panel-settings-outline" :
+                        user.role === 'teacher' ? "fa-solid:chalkboard-teacher" :
+                        "icons8:student"
+                      }
+                      color={
+                        user.role === 'admin' ? "#FF6B35" :
+                        user.role === 'teacher' ? "#4CAF50" :
+                        "#2196F3"
+                      }
                       width={32}
                       height={32}
                     />
                   ),
-                },
-                {
-                  name: "Google",
-                  value: 341212,
-                  icon: (
-                    <Iconify
-                      icon={"eva:google-fill"}
-                      color="#DF3E30"
-                      width={32}
-                      height={32}
-                    />
-                  ),
-                },
-                {
-                  name: "Linkedin",
-                  value: 411213,
-                  icon: (
-                    <Iconify
-                      icon={"eva:linkedin-fill"}
-                      color="#006097"
-                      width={32}
-                      height={32}
-                    />
-                  ),
-                },
-                {
-                  name: "Twitter",
-                  value: 443232,
-                  icon: (
-                    <Iconify
-                      icon={"eva:twitter-fill"}
-                      color="#1C9CEA"
-                      width={32}
-                      height={32}
-                    />
-                  ),
-                },
-              ]}
+                })) || [
+                  {
+                    name: "Loading...",
+                    value: 0,
+                    icon: <Iconify icon="eos-icons:loading" width={32} height={32} />,
+                  }
+                ]
+              }
             />
           </Grid>
 

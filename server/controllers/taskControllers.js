@@ -7,13 +7,28 @@ const { validationResult } = require("express-validator");
 // @access PRIVATE
 exports.getAllTasks = async (req, res) => {
   try {
+    if (!req.organization) {
+      return res.status(403).json({ msg: "Organization context required" });
+    }
+
     const { status, assignee, priority, page = 1, limit = 50 } = req.query;
 
     // Build filter object
-    const filter = {};
+    const filter = { organizationId: req.organization._id };
     if (status) filter.status = status;
     if (assignee) filter.assignee = assignee;
     if (priority) filter.priority = priority;
+
+    // Validate assignee belongs to organization if provided
+    if (assignee) {
+      const assigneeUser = await User.findOne({
+        _id: assignee,
+        organizationId: req.organization._id
+      });
+      if (!assigneeUser) {
+        return res.status(404).json({ msg: "Assignee not found in your organization" });
+      }
+    }
 
     const tasks = await Task.find(filter)
       .populate("assignee", "firstName lastName email role")
@@ -50,7 +65,14 @@ exports.getAllTasks = async (req, res) => {
 // @access PRIVATE
 exports.getTask = async (req, res) => {
   try {
-    const task = await Task.findById(req.params.id)
+    if (!req.organization) {
+      return res.status(403).json({ msg: "Organization context required" });
+    }
+
+    const task = await Task.findOne({
+      _id: req.params.id,
+      organizationId: req.organization._id
+    })
       .populate("assignee", "firstName lastName email role")
       .populate("createdBy", "firstName lastName email role");
 
@@ -80,6 +102,10 @@ exports.getTask = async (req, res) => {
 // @access PRIVATE
 exports.createTask = async (req, res) => {
   try {
+    if (!req.organization) {
+      return res.status(403).json({ msg: "Organization context required" });
+    }
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -90,19 +116,23 @@ exports.createTask = async (req, res) => {
 
     const { title, description, status, priority, assignee, tags, estimate, dueDate, color } = req.body;
 
-    // Verify assignee exists if provided
     if (assignee) {
-      const assigneeUser = await User.findById(assignee);
+      const assigneeUser = await User.findOne({
+        _id: assignee,
+        organizationId: req.organization._id
+      });
       if (!assigneeUser) {
         return res.status(400).json({
           success: false,
-          message: "Invalid assignee",
+          message: "Assignee not found in your organization",
         });
       }
     }
 
-    // Get the highest rankId for the status to place new task at the end
-    const maxRank = await Task.findOne({ status: status || "Open" })
+    const maxRank = await Task.findOne({
+      status: status || "Open",
+      organizationId: req.organization._id
+    })
       .sort({ rankId: -1 })
       .select("rankId");
 
@@ -120,6 +150,7 @@ exports.createTask = async (req, res) => {
       dueDate,
       rankId: newRankId,
       color: color || "#02897B",
+      organizationId: req.organization._id,
     });
 
     const populatedTask = await Task.findById(task._id)
@@ -146,6 +177,10 @@ exports.createTask = async (req, res) => {
 // @access PRIVATE
 exports.updateTask = async (req, res) => {
   try {
+    if (!req.organization) {
+      return res.status(403).json({ msg: "Organization context required" });
+    }
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -156,18 +191,23 @@ exports.updateTask = async (req, res) => {
 
     const { title, description, status, priority, assignee, tags, estimate, dueDate, color } = req.body;
 
-    // Verify assignee exists if provided
     if (assignee) {
-      const assigneeUser = await User.findById(assignee);
+      const assigneeUser = await User.findOne({
+        _id: assignee,
+        organizationId: req.organization._id
+      });
       if (!assigneeUser) {
         return res.status(400).json({
           success: false,
-          message: "Invalid assignee",
+          message: "Assignee not found in your organization",
         });
       }
     }
 
-    const task = await Task.findById(req.params.id);
+    const task = await Task.findOne({
+      _id: req.params.id,
+      organizationId: req.organization._id
+    });
 
     if (!task) {
       return res.status(404).json({
@@ -213,6 +253,10 @@ exports.updateTask = async (req, res) => {
 // @access PRIVATE
 exports.updateTaskStatus = async (req, res) => {
   try {
+    if (!req.organization) {
+      return res.status(403).json({ msg: "Organization context required" });
+    }
+
     const { status } = req.body;
 
     if (!status || !["Open", "InProgress", "Testing", "Close"].includes(status)) {
@@ -222,7 +266,10 @@ exports.updateTaskStatus = async (req, res) => {
       });
     }
 
-    const task = await Task.findById(req.params.id);
+    const task = await Task.findOne({
+      _id: req.params.id,
+      organizationId: req.organization._id
+    });
 
     if (!task) {
       return res.status(404).json({
@@ -258,7 +305,14 @@ exports.updateTaskStatus = async (req, res) => {
 // @access PRIVATE
 exports.deleteTask = async (req, res) => {
   try {
-    const task = await Task.findById(req.params.id);
+    if (!req.organization) {
+      return res.status(403).json({ msg: "Organization context required" });
+    }
+
+    const task = await Task.findOne({
+      _id: req.params.id,
+      organizationId: req.organization._id
+    });
 
     if (!task) {
       return res.status(404).json({
@@ -267,7 +321,10 @@ exports.deleteTask = async (req, res) => {
       });
     }
 
-    await Task.findByIdAndDelete(req.params.id);
+    await Task.findOneAndDelete({
+      _id: req.params.id,
+      organizationId: req.organization._id
+    });
 
     res.status(200).json({
       success: true,

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Push to GitHub – SchoolHub Platform Docs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="./script.js"></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="./screenshots/logo.svg" alt="Logo" />
+        <div>
+          <h1>SchoolHub Platform</h1>
+          <p>How to push to GitHub</p>
+        </div>
+      </div>
+      <nav>
+        <a href="./index.html">Welcome</a>
+        <a href="./how-to-use.html">User Guide</a>
+        <a class="active" href="./push-to-github.html">How to push to GitHub</a>
+        <a href="./install-vercel.html">How to install on Vercel</a>
+        <a href="./install-aws-ec2.html">How to install on AWS EC2</a>
+        <a href="./database.html">How to setup Authentication</a>
+        <a href="./mongodb-setup.html">How to create MongoDB Database</a>
+        <a href="./env-setup.html">Environment Variables </a>
+        <a href="./frontend-updates.html">Frontend Customization</a>
+        <a href="./pricing-and-validations.html">User Roles & Permissions</a>
+      </nav>
+      <footer>
+        <small>GitHub repository setup</small>
+      </footer>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <h2>Push Code to GitHub</h2>
+      </header>
+
+      <section class="prose">
+        <h3>Overview</h3>
+        <p>This guide will walk you through downloading the code from CodeCanyon, setting up a GitHub repository, and pushing your code to GitHub. This is a prerequisite step before deploying to Vercel or AWS EC2.</p>
+
+        <h3>Requirements</h3>
+        <ul>
+          <li>CodeCanyon purchase confirmation</li>
+          <li>GitHub account (free)</li>
+          <li>Git installed on your computer</li>
+          <li>Code editor (VS Code recommended)</li>
+        </ul>
+
+        <h3>Step 1: Download from CodeCanyon</h3>
+        <ol class="steps">
+          <li class="step">Log in to CodeCanyon and go to "Downloads"</li>
+          <li class="step">Download "SchoolHub Platform" ZIP file</li>
+          <li class="step">Extract the ZIP file to a folder</li>
+        </ol>
+
+        <h3>Step 2: Set Up Git</h3>
+        <div class="code"><pre><code># Install Git from: https://git-scm.com/downloads
+# Configure Git (first time only)
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"</code></pre></div>
+
+        <h3>Step 3: Create GitHub Repository</h3>
+        <ol class="steps">
+          <li class="step">Go to github.com and sign in</li>
+          <li class="step">Click "+" → "New repository"</li>
+          <li class="step">Name: "schoolhub-platform", set to Private, click "Create repository"</li>
+          <li class="step">Copy the repository URL (e.g., https://github.com/yourusername/schoolhub-platform.git)</li>
+        </ol>
+
+        <h3>Step 4: Push to GitHub (Command Line)</h3>
+        <div class="code"><pre><code># Navigate to your project folder
+cd /path/to/schoolhub-platform
+
+# Initialize Git and push to GitHub
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/yourusername/schoolhub-platform.git
+git push -u origin main</code></pre></div>
+
+        <h3>Step 5: Alternative - GitHub Desktop (Optional)</h3>
+        <ol class="steps">
+          <li class="step">Download and install <a href="https://desktop.github.com/" target="_blank" rel="noopener">GitHub Desktop</a></li>
+          <li class="step">Sign in to your GitHub account</li>
+          <li class="step">Click "Clone a repository from the Internet"</li>
+          <li class="step">Select your "schoolhub-platform" repository and choose a local path</li>
+          <li class="step">Click "Clone" to download the empty repository</li>
+          <li class="step">Copy all files from your extracted CodeCanyon folder to the cloned repository folder</li>
+          <li class="step">In GitHub Desktop, you'll see all files as "new files"</li>
+          <li class="step">Add a commit message: "Initial commit"</li>
+          <li class="step">Click "Commit to main" then "Push origin"</li>
+        </ol>
+
+        <h3>Step 6: Verify Upload</h3>
+        <ol class="steps">
+          <li class="step">Go to your GitHub repository page</li>
+          <li class="step">Verify all files are uploaded (package.json, app/, components/, etc.)</li>
+        </ol>
+
+        <h3>Next Steps</h3>
+        <p>Now that your code is on GitHub, you can proceed with deployment:</p>
+        <ul>
+          <li><a href="./install-vercel.html">Deploy to Vercel</a> (Recommended for beginners)</li>
+          <li><a href="./install-aws-ec2.html">Deploy to AWS EC2</a> (For advanced users)</li>
+        </ul>
+
+        <div class="callout">
+          <strong>Security Note:</strong> Never commit actual API keys to GitHub. Keep sensitive information in .env.local files.
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

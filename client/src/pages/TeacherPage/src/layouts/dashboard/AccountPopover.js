@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Link as RouterLink, Navigate, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 // @mui
 import { alpha } from "@mui/material/styles";
 import {
@@ -19,11 +19,6 @@ import { logoutUser } from "../../../../../slices/userSlice";
 // ----------------------------------------------------------------------
 
 const MENU_OPTIONS = [
-  {
-    label: "Home",
-    icon: "eva:home-fill",
-    linkTo: "/",
-  },
   {
     label: "Profile",
     icon: "eva:person-fill",
@@ -127,16 +122,6 @@ export default function AccountPopover() {
 
         <Divider sx={{ borderStyle: "dashed" }} />
 
-        <MenuItem sx={{ m: 1 }}>
-          <a
-            href={process.env.REACT_APP_CHAT_APP_URL || "http://localhost:3001"}
-            rel="noreferrer"
-            target="_blank"
-            style={{ textDecoration: "none", color: "black" }}
-          >
-            Chat App
-          </a>
-        </MenuItem>
         <MenuItem onClick={handleLogout} sx={{ m: 1 }}>
           Logout
         </MenuItem>

@@ -106,9 +106,9 @@ const ProfessionalsSection = () => {
                 SchoolHub is a complete and feature-rich school management
                 software for all educational institutes. It covers learning,
                 administration, and management activities in schools, colleges,
-                universities, tuition centers, or training centers. Our free
-                system manages everything from admission to attendance and exams
-                to result cards.
+                universities, tuition centers, or training centers. Start with our
+                free plan for attendance tracking, then upgrade to access exams,
+                homework management, analytics, and advanced communication tools.
               </Typography>
 
               <Box sx={{ mt: 2 }}>

@@ -24,6 +24,12 @@ const homeworkSchema = mongoose.Schema(
       required: true,
       index: true,
     },
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+      index: true,
+    },
     description: {
       type: String,
       required: true,
@@ -55,7 +61,7 @@ const homeworkSchema = mongoose.Schema(
   }
 );
 
-homeworkSchema.index({ subjectId: 1, classId: 1 });
-homeworkSchema.index({ classId: 1, dateOf: -1 });
+homeworkSchema.index({ organizationId: 1, subjectId: 1, classId: 1 });
+homeworkSchema.index({ organizationId: 1, classId: 1, dateOf: -1 });
 
 module.exports = mongoose.model("Homework", homeworkSchema);

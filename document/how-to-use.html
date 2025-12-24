@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>User Guide – SchoolHub Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="./script.js"></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="./screenshots/logo.svg" alt="SchoolHub Logo" />
+        <div>
+          <h1>SchoolHub Platform</h1>
+          <p>Documentation v1.0</p>
+        </div>
+      </div>
+      <nav>
+        <a href="./index.html">Welcome</a>
+        <a class="active" href="./how-to-use.html">User Guide</a>
+        <a href="./technical-overview.html">Technical Overview</a>
+        <a href="./api-documentation.html">API Documentation</a>
+        <a href="./push-to-github.html">How to push to GitHub</a>
+        <a href="./install-vercel.html">How to install on Vercel</a>
+        <a href="./install-aws-ec2.html">How to install on AWS EC2</a>
+        <a href="./database.html">How to setup Authentication</a>
+        <a href="./mongodb-setup.html">How to create MongoDB Database</a>
+        <a href="./env-setup.html">Environment Variables</a>
+        <a href="./frontend-updates.html">Frontend Customization</a>
+        <a href="./pricing-and-validations.html">User Roles & Permissions</a>
+      </nav>
+      <footer>
+        <small>Built with MERN Stack (MongoDB, Express, React, Node.js)</small>
+      </footer>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <h2>User Guide</h2>
+      </header>
+
+      <section class="prose">
+        <div class="callout info">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> Complete User Guide:</strong> Learn how to use SchoolHub Platform v1.0, from initial setup to managing users, classes, homework, and communication across all user roles (Admin, Teacher, Student).
+        </div>
+
+        <h2><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Getting Started</h2>
+
+        <h3>1. Platform Overview</h3>
+        <p>SchoolHub Platform is a comprehensive enterprise Learning Management System (LMS) with multi-tenant architecture supporting multiple educational institutions. The platform includes three primary user roles with extensive features:</p>
+        <ul>
+          <li><strong>Administrator:</strong> Full system access - manage organizations, users, classes, subjects, approve registrations, subscription management, and system analytics</li>
+          <li><strong>Teacher:</strong> Comprehensive teaching tools including homework creation, exam management, attendance tracking, grading, real-time chat, and performance analytics</li>
+          <li><strong>Student:</strong> Complete learning environment with homework submission, exam taking, attendance viewing, chat communication, and progress tracking</li>
+        </ul>
+
+        <h3>Advanced Features Overview</h3>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h3><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> AI-Powered</h3>
+            <p>Person detection, automated content analysis, and intelligent assessment features</p>
+          </div>
+
+          <div class="feature-card">
+            <h3><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6l3 3m0 0l3-3m-3 3V3m3 13l-3-3m0 0l-3 3m3-3v6"/></svg> Payment Integration</h3>
+            <p>Stripe-powered subscription management and automated billing</p>
+          </div>
+
+          <div class="feature-card">
+            <h3><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><circle cx="12" cy="16" r="1"/><path d="M12 12v4"/></svg> Cloud Storage</h3>
+            <p>AWS S3 integration for secure file uploads and global CDN delivery</p>
+          </div>
+
+          <div class="feature-card">
+            <h3><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg> Advanced Analytics</h3>
+            <p>Interactive dashboards with Syncfusion charts and comprehensive reporting</p>
+          </div>
+        </div>
+
+        <h3>2. Organization & User Registration Process</h3>
+
+        <h4>Organization Registration (For New Schools/Institutions)</h4>
+        <p>If you're setting up SchoolHub for a new educational institution:</p>
+        <ol>
+          <li><strong>Visit Homepage:</strong> Go to the SchoolHub Platform homepage</li>
+          <li><strong>Click "Register Organization":</strong> Choose the organization registration option</li>
+          <li><strong>Select Subscription Tier:</strong> Choose Primary ($29/month), High School ($79/month), or University ($199/month) plan</li>
+          <li><strong>Organization Details:</strong> Provide school name, domain, and administrator contact information</li>
+          <li><strong>Payment Setup:</strong> Complete Stripe payment setup for your chosen subscription</li>
+          <li><strong>Account Activation:</strong> Receive organization credentials and setup instructions</li>
+          <li><strong>First Admin Login:</strong> Log in with provided admin credentials to complete organization setup</li>
+        </ol>
+
+        <div class="callout info">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Organization Setup:</strong> Each organization gets its own isolated environment with custom domain, user limits, and feature access based on the subscription tier. The first user created is automatically assigned as the organization administrator.
+        </div>
+
+        <h4>User Registration (For Existing Organizations)</h4>
+        <p>If you're joining an existing SchoolHub organization:</p>
+        <ol>
+          <li><strong>Visit Homepage:</strong> Go to your organization's SchoolHub login page</li>
+          <li><strong>Click "Register":</strong> Select the user registration option</li>
+          <li><strong>Organization Domain:</strong> Use your organization's specific domain or select from available organizations</li>
+          <li><strong>Complete Registration:</strong> Fill in your personal details (name, email, role, phone number)</li>
+          <li><strong>Select Role:</strong> Choose your role (Teacher or Student) within the organization</li>
+          <li><strong>Wait for Approval:</strong> Organization admin must approve your account before you can access the platform</li>
+          <li><strong>Receive Credentials:</strong> Admin will provide your login credentials via email once approved</li>
+          <li><strong>First Login:</strong> Use provided credentials to log in and complete your profile setup</li>
+        </ol>
+
+        <div class="callout warning">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Approval Required:</strong> All user registrations require administrator approval to ensure secure and controlled access. Contact your organization's administrator if your account hasn't been approved within 24 hours.
+        </div>
+
+        <div class="callout warning">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Important:</strong> All user registrations require admin approval. Contact your school administrator if your account hasn't been approved yet.
+        </div>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Administrator Guide</h2>
+
+        <h3>Initial Setup</h3>
+        <ol>
+          <li><strong>Create Admin Account:</strong> Use the admin creation script (<code>npm run create-admin</code>) to set up your first administrator account</li>
+          <li><strong>Configure Environment:</strong> Set up MongoDB connection and environment variables</li>
+          <li><strong>Start Services:</strong> Launch both backend and frontend services</li>
+          <li><strong>Access Admin Panel:</strong> Log in with admin credentials to access the full admin dashboard</li>
+        </ol>
+
+        <h3>Managing Users</h3>
+        <ol>
+          <li><strong>View Pending Registrations:</strong> Go to Admin Dashboard → User Management → Pending Approvals</li>
+          <li><strong>Review Applications:</strong> Check user details, role, and contact information</li>
+          <li><strong>Approve/Reject:</strong> Approve legitimate registrations or reject inappropriate ones</li>
+          <li><strong>Assign Roles:</strong> Ensure correct roles are assigned (Teacher/Student)</li>
+          <li><strong>Set Credentials:</strong> Provide approved users with their login credentials</li>
+        </ol>
+
+        <h3>Creating Classes & Subjects</h3>
+        <ol>
+          <li><strong>Create Subjects:</strong> Admin Dashboard → Academic → Subjects → Add New Subject</li>
+          <li><strong>Assign Teachers:</strong> Link subjects to specific teachers</li>
+          <li><strong>Create Classes:</strong> Admin Dashboard → Academic → Classes → Create New Class</li>
+          <li><strong>Assign Students:</strong> Add approved students to appropriate classes</li>
+          <li><strong>Manage Assignments:</strong> Update class-subject-teacher relationships as needed</li>
+        </ol>
+
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Teacher Guide</h2>
+
+        <h3>Managing Your Classes</h3>
+        <ol>
+          <li><strong>Access Dashboard:</strong> Log in as a teacher to access your personalized dashboard</li>
+          <li><strong>View Assigned Subjects:</strong> See all subjects and classes assigned to you by the administrator</li>
+          <li><strong>Access Student Lists:</strong> View students enrolled in your classes</li>
+          <li><strong>Monitor Progress:</strong> Track student performance and attendance</li>
+        </ol>
+
+        <h3>Creating Homework Assignments</h3>
+        <ol>
+          <li><strong>Navigate to Homework:</strong> Go to Teacher Dashboard → Homework → Create New Assignment</li>
+          <li><strong>Select Class & Subject:</strong> Choose the target class and subject for the assignment</li>
+          <li><strong>Set Details:</strong> Enter assignment title, description, and instructions</li>
+          <li><strong>Set Deadline:</strong> Specify submission deadline and time</li>
+          <li><strong>Attach Files (Optional):</strong> Upload reference materials or assignment files</li>
+          <li><strong>Publish Assignment:</strong> Make the assignment visible to students</li>
+        </ol>
+
+        <div class="callout info">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Tip:</strong> Use clear, detailed instructions and consider attaching example files or rubrics to help students understand expectations.
+        </div>
+
+        <h3>Grading Homework Submissions</h3>
+        <ol>
+          <li><strong>View Submissions:</strong> Go to Teacher Dashboard → Homework → View Submissions</li>
+          <li><strong>Select Assignment:</strong> Choose the assignment you want to grade</li>
+          <li><strong>Review Submissions:</strong> Open each student's submission</li>
+          <li><strong>Download Files:</strong> Access submitted files and attachments</li>
+          <li><strong>Add Feedback:</strong> Write comments and suggestions for improvement</li>
+          <li><strong>Assign Grade:</strong> Enter numerical or letter grades</li>
+          <li><strong>Submit Grades:</strong> Save and publish grades to students</li>
+        </ol>
+
+        <h3>Communicating with Students</h3>
+        <ol>
+          <li><strong>Access Chat:</strong> Go to Teacher Dashboard → Communication → Messages</li>
+          <li><strong>Individual Chat:</strong> Start private conversations with specific students</li>
+          <li><strong>Class Announcements:</strong> Send messages to entire classes</li>
+          <li><strong>Real-time Communication:</strong> Use the chat system for instant messaging</li>
+          <li><strong>File Sharing:</strong> Share documents, resources, and study materials</li>
+        </ol>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h.01M16 20h.01M8 20H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1"/></svg> Student Guide</h2>
+
+        <h3>Accessing Your Dashboard</h3>
+        <ol>
+          <li><strong>Student Login:</strong> Use credentials provided by your administrator</li>
+          <li><strong>Dashboard Overview:</strong> View your classes, assignments, and recent activity</li>
+          <li><strong>Profile Settings:</strong> Update your personal information and avatar</li>
+          <li><strong>Navigation:</strong> Use the sidebar to access different sections</li>
+        </ol>
+
+
+        <h3>Viewing and Submitting Homework</h3>
+        <ol>
+          <li><strong>Access Assignments:</strong> Go to Student Dashboard → Homework → My Assignments</li>
+          <li><strong>View Assignment Details:</strong> Read instructions, deadlines, and requirements</li>
+          <li><strong>Download Materials:</strong> Access any attached files or reference materials</li>
+          <li><strong>Prepare Submission:</strong> Complete your work according to instructions</li>
+          <li><strong>Submit Assignment:</strong> Upload your completed work and any required files</li>
+          <li><strong>Check Submission Status:</strong> Monitor if your submission was received</li>
+          <li><strong>View Grades:</strong> Check grades and feedback once assignments are graded</li>
+        </ol>
+
+        <div class="callout warning">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Important:</strong> Always submit assignments before the deadline. Late submissions may not be accepted.
+        </div>
+
+        <h3>Participating in Class Communication</h3>
+        <ol>
+          <li><strong>Access Messages:</strong> Go to Student Dashboard → Communication → Messages</li>
+          <li><strong>Contact Teachers:</strong> Send messages to your teachers for questions or clarification</li>
+          <li><strong>Class Discussions:</strong> Participate in class-wide discussions and announcements</li>
+          <li><strong>Real-time Chat:</strong> Use instant messaging for quick communication</li>
+          <li><strong>Receive Notifications:</strong> Get notified about new assignments, grades, and messages</li>
+        </ol>
+
+        <h3>Account Settings</h3>
+        <ul>
+          <li><strong>Profile Management:</strong> Update your profile information and avatar</li>
+          <li><strong>Personal Information:</strong> Update name, email, phone number, and other details</li>
+          <li><strong>Password Security:</strong> Update password and security settings</li>
+          <li><strong>Class Information:</strong> View your assigned classes and subjects</li>
+        </ul>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M6 6l-2 2M18 6l2 2M12 22v-4M6 18l-2-2M18 18l2-2M2 12h4M18 12h4"/></svg> Advanced Features Guide</h2>
+
+        <h3>Kanban Task Management</h3>
+        <p>Professional project management with drag-and-drop Kanban boards for efficient workflow management:</p>
+        <ol>
+          <li><strong>Access Task Board:</strong> Navigate to Tasks → Kanban Board in your dashboard</li>
+          <li><strong>Create Tasks:</strong> Click "Add Task" to create new tasks with titles, descriptions, and priorities</li>
+          <li><strong>Set Priorities:</strong> Assign High, Normal, or Low priority levels to tasks</li>
+          <li><strong>Assign Team Members:</strong> Assign tasks to specific users within your organization</li>
+          <li><strong>Drag & Drop:</strong> Move tasks between columns (Open, In Progress, Testing, Close)</li>
+          <li><strong>Set Deadlines:</strong> Add due dates and track overdue tasks</li>
+          <li><strong>Track Progress:</strong> Monitor task completion and team productivity</li>
+        </ol>
+
+        <h3>Real-time Chat & Collaboration</h3>
+        <p>Advanced communication system with instant messaging and file sharing:</p>
+        <ol>
+          <li><strong>Access Chat:</strong> Go to Communication → Chat in your dashboard</li>
+          <li><strong>Start Conversations:</strong> Select contacts from your organization or search by name</li>
+          <li><strong>Join Chat Rooms:</strong> Participate in group discussions and class channels</li>
+          <li><strong>Send Messages:</strong> Use real-time messaging with emoji support and rich text</li>
+          <li><strong>File Sharing:</strong> Upload and share documents, images, and resources</li>
+          <li><strong>Online Status:</strong> See who's online and available for immediate communication</li>
+          <li><strong>Message History:</strong> Access complete conversation history and search messages</li>
+        </ol>
+
+        <h3>Exam Management System</h3>
+        <p>Comprehensive examination and assessment tools for teachers:</p>
+        <ol>
+          <li><strong>Create Exams:</strong> Go to Teacher Dashboard → Exams → Create New Exam</li>
+          <li><strong>Set Exam Details:</strong> Define exam name, subject, class, total marks, and date</li>
+          <li><strong>Grade Submissions:</strong> Access student submissions and enter marks</li>
+          <li><strong>View Results:</strong> Monitor class performance and individual student results</li>
+          <li><strong>Export Reports:</strong> Generate detailed exam reports and analytics</li>
+        </ol>
+
+        <h3>Attendance Tracking</h3>
+        <p>Automated attendance management for classes and students:</p>
+        <ol>
+          <li><strong>Mark Attendance:</strong> Teachers can mark daily attendance for their classes</li>
+          <li><strong>Bulk Updates:</strong> Mark entire class as present or absent with one click</li>
+          <li><strong>View Records:</strong> Students can view their attendance history</li>
+          <li><strong>Generate Reports:</strong> Export attendance reports for administrators</li>
+          <li><strong>Analytics:</strong> Track attendance patterns and identify at-risk students</li>
+        </ol>
+
+        <h3>AI-Powered Person Detection</h3>
+        <p>Advanced security feature using TensorFlow.js for automated person detection:</p>
+        <ul>
+          <li><strong>Automatic Detection:</strong> AI-powered person detection for security and monitoring</li>
+          <li><strong>Image Analysis:</strong> Real-time analysis of uploaded images and content</li>
+          <li><strong>Content Moderation:</strong> Automated content filtering and safety checks</li>
+          <li><strong>Privacy Protection:</strong> Secure processing with data protection compliance</li>
+        </ul>
+
+        <h3>Cloud File Storage (AWS S3)</h3>
+        <p>Enterprise-grade file storage with global CDN delivery:</p>
+        <ul>
+          <li><strong>Secure Uploads:</strong> Direct-to-S3 uploads with pre-signed URLs</li>
+          <li><strong>Global Access:</strong> Fast file access through worldwide CDN</li>
+          <li><strong>Automatic Backups:</strong> Redundant storage with automatic backups</li>
+          <li><strong>File Management:</strong> Organized storage with access controls</li>
+          <li><strong>Large File Support:</strong> Handle large files and media content</li>
+        </ul>
+
+        <h3>Payment & Subscription Management</h3>
+        <p>Complete Stripe integration for subscription handling:</p>
+        <ul>
+          <li><strong>Subscription Tiers:</strong> Primary, High School, and University plans</li>
+          <li><strong>Automated Billing:</strong> Recurring payments and invoice generation</li>
+          <li><strong>Webhook Processing:</strong> Real-time payment status updates</li>
+          <li><strong>Usage Tracking:</strong> Monitor feature usage and limits</li>
+          <li><strong>Upgrade/Downgrade:</strong> Seamless plan changes and prorated billing</li>
+        </ul>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg> Analytics & Reporting</h2>
+
+        <h3>Comprehensive Dashboard Analytics</h3>
+        <p>Advanced analytics with interactive charts and detailed insights:</p>
+        <ul>
+          <li><strong>Performance Metrics:</strong> Student grades, attendance rates, and progress tracking</li>
+          <li><strong>Interactive Charts:</strong> ApexCharts and Syncfusion-powered visualizations</li>
+          <li><strong>Class Analytics:</strong> Subject-wise performance and comparative analysis</li>
+          <li><strong>Teacher Insights:</strong> Assignment completion rates and student engagement</li>
+          <li><strong>Administrative Reports:</strong> Organization-wide statistics and usage analytics</li>
+          <li><strong>Export Capabilities:</strong> Generate PDF reports and data exports</li>
+        </ul>
+
+        <h3>Advanced Calendar Management</h3>
+        <p>Syncfusion-powered calendar with comprehensive scheduling:</p>
+        <ul>
+          <li><strong>Multi-view Calendar:</strong> Month, week, day, and agenda views</li>
+          <li><strong>Event Scheduling:</strong> Classes, exams, deadlines, and school events</li>
+          <li><strong>Recurring Events:</strong> Set up repeating schedules and reminders</li>
+          <li><strong>Resource Booking:</strong> Reserve classrooms and equipment</li>
+          <li><strong>Integration:</strong> Sync with external calendars and notifications</li>
+        </ul>
+
+        <h3>Rich Text Editing & Content Creation</h3>
+        <p>Advanced content creation tools for assignments and materials:</p>
+        <ul>
+          <li><strong>WYSIWYG Editor:</strong> Rich text editing with formatting options</li>
+          <li><strong>Media Embedding:</strong> Insert images, videos, and interactive content</li>
+          <li><strong>Template System:</strong> Pre-built templates for assignments and announcements</li>
+          <li><strong>Collaborative Editing:</strong> Real-time content collaboration</li>
+        </ul>
+
+        <h3>Multi-Organization Management</h3>
+        <p>Complete multi-tenant architecture for multiple institutions:</p>
+        <ul>
+          <li><strong>Organization Isolation:</strong> Complete data separation between organizations</li>
+          <li><strong>Custom Domains:</strong> Unique domains for each educational institution</li>
+          <li><strong>Tiered Subscriptions:</strong> Primary, High School, and University plans</li>
+          <li><strong>Feature Gating:</strong> Plan-based feature access and limitations</li>
+          <li><strong>Centralized Admin:</strong> Super-admin controls across all organizations</li>
+        </ul>
+
+        <h2><svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Troubleshooting</h2>
+
+        <h3>Common Issues</h3>
+        <div class="callout danger">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Frequent Problems:</strong>
+          <ul>
+            <li><strong>Login Issues:</strong> Ensure your account has been approved by an administrator</li>
+            <li><strong>Registration Pending:</strong> Wait for admin approval before accessing the platform</li>
+            <li><strong>File Upload Failed:</strong> Check file size limits and supported formats</li>
+            <li><strong>Chat Not Working:</strong> Ensure stable internet connection for real-time messaging</li>
+            <li><strong>Assignment Not Showing:</strong> Contact your teacher if assignments don't appear</li>
+          </ul>
+        </div>
+
+        <h3>Getting Help</h3>
+        <div class="callout info">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Support Options:</strong>
+          <ul>
+            <li><strong>Administrator:</strong> Contact your school administrator for account and access issues</li>
+            <li><strong>Technical Support:</strong> Check system status and server connectivity</li>
+            <li><strong>Documentation:</strong> Refer to this guide for detailed instructions</li>
+            <li><strong>Community:</strong> Join discussions with other SchoolHub users</li>
+          </ul>
+        </div>
+
+        <h3>Best Practices</h3>
+        <div class="callout success">
+          <strong><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Success Tips:</strong>
+          <ul>
+            <li><strong>Regular Communication:</strong> Use the chat system for effective teacher-student interaction</li>
+            <li><strong>Timely Submissions:</strong> Submit assignments before deadlines to avoid penalties</li>
+            <li><strong>Clear Instructions:</strong> Provide detailed homework instructions and expectations</li>
+            <li><strong>Organize Files:</strong> Use proper file naming and organization for easy access</li>
+            <li><strong>Stay Updated:</strong> Regularly check for new assignments and announcements</li>
+          </ul>
+        </div>
+
+        <div class="callout success">
+          <strong>🎉 Welcome to SchoolHub!</strong> You now have all the knowledge needed to effectively use SchoolHub Platform. Whether you're an administrator managing the system, a teacher creating engaging assignments, or a student learning and submitting work, SchoolHub provides all the tools you need for successful education management.
+        </div>
+
+        <div style="text-align: center; margin: 2rem 0;">
+          <a href="./install-vercel.html" class="btn">Quick Installation →</a>
+          <a href="./env-setup.html" class="btn secondary">Environment Setup →</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

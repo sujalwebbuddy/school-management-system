@@ -5,7 +5,8 @@ import Iconify from "../../components/Iconify";
 
 const getIcon = (name) => <Iconify icon={name} width={22} height={22} />;
 
-const navConfig = [
+const navConfig = (userInfo) => {
+  const baseConfig = [
   {
     title: "dashboard",
     path: "/dashboard",
@@ -58,5 +59,18 @@ const navConfig = [
     icon: getIcon("eva:message-circle-fill"),
   },
 ];
+
+  // Filter out chat if feature is not available or user is on primary plan
+  const subscriptionTier = userInfo?.organization?.subscriptionTier;
+  const hasChatFeature = userInfo?.organization?.features?.includes('chat');
+  const isPrimaryPlan = subscriptionTier === 'primary';
+
+  return baseConfig.filter(item => {
+    if (item.title === 'Chat' && (isPrimaryPlan || !hasChatFeature)) {
+      return false;
+    }
+    return true;
+  });
+};
 
 export default navConfig;

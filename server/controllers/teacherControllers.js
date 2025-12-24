@@ -3,93 +3,223 @@ const Classroom = require("../models/classModel");
 const Subject = require("../models/subjectModel");
 const Exam = require("../models/examModel");
 const Homework = require("../models/homeworkModel");
+const Organization = require("../models/organizationModel");
 const mongoose = require("mongoose");
 const config = require("../config/envConfig");
 
+class TeacherControllerError extends Error {
+  constructor(message, code = "TEACHER_ERROR", statusCode = 400) {
+    super(message);
+    this.name = "TeacherControllerError";
+    this.code = code;
+    this.statusCode = statusCode;
+  }
+}
+
 exports.getTeacherClass = async (req, res) => {
   try {
+    if (!req.organization) {
+      throw new TeacherControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
     let subjectId = null;
     if (req.query.subject) {
       if (mongoose.Types.ObjectId.isValid(req.query.subject)) {
         subjectId = req.query.subject;
+        const subject = await Subject.findOne({
+          _id: subjectId,
+          organizationId: req.organization._id
+        });
+        if (!subject) {
+          throw new TeacherControllerError("Subject not found in your organization", "SUBJECT_NOT_FOUND", 404);
+        }
       } else {
-        const foundSubject = await Subject.findOne({ name: req.query.subject });
+        const foundSubject = await Subject.findOne({
+          name: req.query.subject,
+          organizationId: req.organization._id
+        });
         if (!foundSubject) {
-          return res.status(404).json({ msg: "Subject not found" });
+          throw new TeacherControllerError("Subject not found in your organization", "SUBJECT_NOT_FOUND", 404);
         }
         subjectId = foundSubject._id;
       }
     }
-    const classro = await Classroom.findOne({ subjects: subjectId }).populate("subjects");
-    if (!classro) return res.status(404).json({ msg: "classroom not found" });
-    res.status(200).json({ classro });
+
+    const classroom = await Classroom.findOne({
+      subjects: subjectId,
+      organizationId: req.organization._id
+    }).populate("subjects", "name code");
+
+    if (!classroom) {
+      throw new TeacherControllerError("Classroom not found", "CLASSROOM_NOT_FOUND", 404);
+    }
+
+    res.json({
+      success: true,
+      classroom,
+      organization: req.organization.name
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json("something went wrong");
+    if (error instanceof TeacherControllerError) {
+      return res.status(error.statusCode).json({
+        msg: error.message,
+        code: error.code,
+      });
+    }
+
+    const wrappedError = new TeacherControllerError("Failed to retrieve teacher class", "GET_TEACHER_CLASS_ERROR", 500);
+    wrappedError.originalError = error;
+
+    res.status(wrappedError.statusCode).json({
+      msg: wrappedError.message,
+      code: wrappedError.code,
+    });
   }
 };
 
 exports.newExam = async (req, res) => {
   try {
+    if (!req.organization) {
+      throw new TeacherControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
     const { name, dateOf, totalMark, subject, subjectId, classname, className, classId } = req.body;
-    
+
+    if (!name || !name.trim()) {
+      throw new TeacherControllerError("Exam name is required", "MISSING_EXAM_NAME", 400);
+    }
+
+    if (!totalMark || totalMark <= 0) {
+      throw new TeacherControllerError("Total mark must be greater than 0", "INVALID_TOTAL_MARK", 400);
+    }
+
     const dateOfDate = dateOf ? new Date(dateOf) : new Date();
     if (isNaN(dateOfDate.getTime())) {
-      return res.status(400).json({ msg: "Invalid date format" });
+      throw new TeacherControllerError("Invalid date format", "INVALID_DATE", 400);
     }
-    
-    if (totalMark <= 0) {
-      return res.status(400).json({ msg: "Total mark must be greater than 0" });
-    }
-    
+
     let classIdObjectId = null;
     if (classId && mongoose.Types.ObjectId.isValid(classId)) {
       classIdObjectId = classId;
+      const foundClass = await Classroom.findOne({
+        _id: classId,
+        organizationId: req.organization._id
+      });
+      if (!foundClass) {
+        throw new TeacherControllerError("Class not found in your organization", "CLASS_NOT_FOUND", 404);
+      }
     } else if (classname || className) {
       const classToFind = classname || className;
-      const foundClass = await Classroom.findOne({ className: classToFind });
+      const foundClass = await Classroom.findOne({
+        className: classToFind,
+        organizationId: req.organization._id
+      });
       if (!foundClass) {
-        return res.status(404).json({ msg: `Class "${classToFind}" not found` });
+        throw new TeacherControllerError(`Class "${classToFind}" not found in your organization`, "CLASS_NOT_FOUND", 404);
       }
       classIdObjectId = foundClass._id;
     } else {
-      return res.status(400).json({ msg: "classId, classname, or className is required" });
+      throw new TeacherControllerError("classId, classname, or className is required", "MISSING_CLASS", 400);
     }
-    
+
     let subjectIdObjectId = null;
     if (subjectId && mongoose.Types.ObjectId.isValid(subjectId)) {
       subjectIdObjectId = subjectId;
-    } else if (subject) {
-      const foundSubject = await Subject.findOne({ name: subject });
+      const foundSubject = await Subject.findOne({
+        _id: subjectId,
+        organizationId: req.organization._id
+      });
       if (!foundSubject) {
-        return res.status(404).json({ msg: `Subject "${subject}" not found` });
+        throw new TeacherControllerError("Subject not found in your organization", "SUBJECT_NOT_FOUND", 404);
+      }
+    } else if (subject) {
+      const foundSubject = await Subject.findOne({
+        name: subject,
+        organizationId: req.organization._id
+      });
+      if (!foundSubject) {
+        throw new TeacherControllerError(`Subject "${subject}" not found in your organization`, "SUBJECT_NOT_FOUND", 404);
       }
       subjectIdObjectId = foundSubject._id;
     } else {
-      return res.status(400).json({ msg: "subjectId or subject is required" });
+      throw new TeacherControllerError("subjectId or subject is required", "MISSING_SUBJECT", 400);
     }
-    
-    await Exam.create({
-      name,
+
+    const exam = await Exam.create({
+      name: name.trim(),
       dateOf: dateOfDate,
       totalMark,
       subjectId: subjectIdObjectId,
       classId: classIdObjectId,
+      organizationId: req.organization._id,
     });
-    res.status(200).json({ msg: "Exam added successfully" });
+
+    res.json({
+      msg: "Exam added successfully",
+      exam: {
+        id: exam._id,
+        name: exam.name,
+        dateOf: exam.dateOf,
+        totalMark: exam.totalMark,
+        organization: req.organization.name
+      }
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ msg: "something went wrong", error: error.message });
+    if (error instanceof TeacherControllerError) {
+      return res.status(error.statusCode).json({
+        msg: error.message,
+        code: error.code,
+      });
+    }
+
+    const wrappedError = new TeacherControllerError("Failed to create exam", "CREATE_EXAM_ERROR", 500);
+    wrappedError.originalError = error;
+
+    res.status(wrappedError.statusCode).json({
+      msg: wrappedError.message,
+      code: wrappedError.code,
+    });
   }
 };
 
 exports.deleteExam = async (req, res) => {
   try {
-    const exam = await Exam.findByIdAndDelete(req.params.examId);
-    res.status(200).json({ msg: "exam deteted successfully", exam });
+    if (!req.organization) {
+      throw new TeacherControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
+    const exam = await Exam.findOneAndDelete({
+      _id: req.params.examId,
+      organizationId: req.organization._id
+    });
+
+    if (!exam) {
+      throw new TeacherControllerError("Exam not found in your organization", "EXAM_NOT_FOUND", 404);
+    }
+
+    res.json({
+      msg: "Exam deleted successfully",
+      exam: {
+        id: exam._id,
+        name: exam.name,
+        organization: req.organization.name
+      }
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json("something went wrong");
+    if (error instanceof TeacherControllerError) {
+      return res.status(error.statusCode).json({
+        msg: error.message,
+        code: error.code,
+      });
+    }
+
+    const wrappedError = new TeacherControllerError("Failed to delete exam", "DELETE_EXAM_ERROR", 500);
+    wrappedError.originalError = error;
+
+    res.status(wrappedError.statusCode).json({
+      msg: wrappedError.message,
+      code: wrappedError.code,
+    });
   }
 };
 

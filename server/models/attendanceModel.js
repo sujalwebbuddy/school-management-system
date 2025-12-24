@@ -20,6 +20,12 @@ const attendanceSchema = mongoose.Schema(
       ref: 'Class',
       index: true,
     },
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+      index: true,
+    },
     status: {
       type: String,
       enum: ['present', 'absent'],
@@ -36,9 +42,9 @@ const attendanceSchema = mongoose.Schema(
   }
 );
 
-attendanceSchema.index({ date: 1, studentId: 1 }, { unique: true });
-attendanceSchema.index({ classId: 1, date: -1 });
-attendanceSchema.index({ studentId: 1, date: -1 });
+attendanceSchema.index({ organizationId: 1, date: 1, studentId: 1 }, { unique: true });
+attendanceSchema.index({ organizationId: 1, classId: 1, date: -1 });
+attendanceSchema.index({ organizationId: 1, studentId: 1, date: -1 });
 
 module.exports = mongoose.model('Attendance', attendanceSchema);
 

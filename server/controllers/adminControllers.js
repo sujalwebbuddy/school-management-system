@@ -2,11 +2,31 @@ const User = require("../models/userModel");
 const classroom = require("../models/classModel");
 const Subject = require("../models/subjectModel");
 const Attendance = require("../models/attendanceModel");
+const Organization = require("../models/organizationModel");
 const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator");
 const nodemailer = require("nodemailer");
 const mongoose = require("mongoose");
 const config = require("../config/envConfig");
+const {
+  ANALYTICS_CONSTANTS,
+  MS_PER_DAY,
+  validateDaysParameter,
+  createDateRange,
+  fillMissingDates,
+  calculateOrganizationMetrics,
+  getUserCounts,
+  handleAnalyticsError
+} = require("../utils/analyticsUtils");
+
+class AdminControllerError extends Error {
+  constructor(message, code = "ADMIN_ERROR", statusCode = 400) {
+    super(message);
+    this.name = "AdminControllerError";
+    this.code = code;
+    this.statusCode = statusCode;
+  }
+}
 
 // nodemailer config
 let mailTransporter = nodemailer.createTransport({
@@ -17,38 +37,96 @@ let mailTransporter = nodemailer.createTransport({
   },
 });
 
-// @desc create a new admin account
+// @desc create a new admin account for an organization
 exports.addNewAdmin = async (req, res) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
-    const existUser = await User.findOne({ email });
-    if (existUser) return res.status(404).json({ msg: "Email already exists" });
+    const { firstName, lastName, email, password, organizationId } = req.body;
+
+    if (!firstName || !lastName || !email || !password || !organizationId) {
+      throw new AdminControllerError("All fields including organization ID are required", "MISSING_FIELDS", 400);
+    }
+
+    const organization = await Organization.findById(organizationId);
+    if (!organization) {
+      throw new AdminControllerError("Organization not found", "ORG_NOT_FOUND", 404);
+    }
+
+    if (!organization.isActive()) {
+      throw new AdminControllerError("Organization subscription is inactive", "ORG_INACTIVE", 403);
+    }
+
+    // Check user limit for the organization
+    const currentUserCount = await User.countDocuments({
+      organizationId: organization._id,
+      isApproved: true
+    });
+
+    if (currentUserCount >= organization.maxUsers) {
+      throw new AdminControllerError(
+        `User limit reached. Your ${organization.subscriptionTier.replace('_', ' ')} plan allows maximum ${organization.maxUsers} users. Please upgrade your plan to add more users.`,
+        "USER_LIMIT_EXCEEDED",
+        403
+      );
+    }
+
+    const existingUser = await User.findOne({
+      email,
+      organizationId: organization._id
+    });
+
+    if (existingUser) {
+      throw new AdminControllerError("Email already exists in this organization", "EMAIL_EXISTS", 409);
+    }
+
     const salt = bcrypt.genSaltSync(10);
-    const hash = await bcrypt.hashSync(password, salt);
+    const hash = await bcrypt.hash(password, salt);
+
     await User.create({
       firstName,
       lastName,
       email,
       password: hash,
       role: "admin",
+      organizationId: organization._id,
       isApproved: true,
     });
-    res.status(200).json({ msg: "new admin has been created successfully" });
+
+    res.status(200).json({
+      msg: "New admin has been created successfully",
+      organization: organization.name
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json("something went wrong");
+    if (error instanceof AdminControllerError) {
+      return res.status(error.statusCode).json({
+        msg: error.message,
+        code: error.code,
+      });
+    }
+
+    const wrappedError = new AdminControllerError("Failed to create admin", "CREATE_ADMIN_ERROR", 500);
+    wrappedError.originalError = error;
+
+    res.status(wrappedError.statusCode).json({
+      msg: wrappedError.message,
+      code: wrappedError.code,
+    });
   }
 };
 
-// @desc add new user
-// @params POST /api/v1/users/addUser
-// @access PRIVATE
+// @desc add new user within organization
+// @params POST /api/v1/admin/addUser
+// @access PRIVATE - Organization Admin Only
 exports.addNewUser = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
+
+    if (!req.organization) {
+      throw new AdminControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
     const {
       firstName,
       lastName,
@@ -60,42 +138,85 @@ exports.addNewUser = async (req, res) => {
       classIn,
       subject,
     } = req.body;
-    
+
+    if (!["teacher", "student"].includes(role)) {
+      throw new AdminControllerError("Invalid role specified", "INVALID_ROLE", 400);
+    }
+
+    // Check user limit for the organization
+    const currentUserCount = await User.countDocuments({
+      organizationId: req.organization._id,
+      isApproved: true
+    });
+
+    if (currentUserCount >= req.organization.maxUsers) {
+      throw new AdminControllerError(
+        `User limit reached. Your ${req.organization.subscriptionTier.replace('_', ' ')} plan allows maximum ${req.organization.maxUsers} users. Please upgrade your plan to add more users.`,
+        "USER_LIMIT_EXCEEDED",
+        403
+      );
+    }
+
     let classInObjectId = null;
     if (classIn) {
       if (mongoose.Types.ObjectId.isValid(classIn)) {
         classInObjectId = classIn;
-      } else {
-        const foundClass = await classroom.findOne({ className: classIn });
+        const foundClass = await classroom.findOne({
+          _id: classIn,
+          organizationId: req.organization._id
+        });
         if (!foundClass) {
-          return res.status(404).json({ msg: `Class "${classIn}" not found` });
+          throw new AdminControllerError("Class not found in your organization", "CLASS_NOT_FOUND", 404);
+        }
+      } else {
+        const foundClass = await classroom.findOne({
+          className: classIn,
+          organizationId: req.organization._id
+        });
+        if (!foundClass) {
+          throw new AdminControllerError(`Class "${classIn}" not found in your organization`, "CLASS_NOT_FOUND", 404);
         }
         classInObjectId = foundClass._id;
       }
     }
-    
+
     let subjectObjectId = null;
     if (subject) {
       if (mongoose.Types.ObjectId.isValid(subject)) {
         subjectObjectId = subject;
-      } else {
-        const foundSubject = await Subject.findOne({ name: subject });
+        const foundSubject = await Subject.findOne({
+          _id: subject,
+          organizationId: req.organization._id
+        });
         if (!foundSubject) {
-          return res.status(404).json({ msg: `Subject "${subject}" not found` });
+          throw new AdminControllerError("Subject not found in your organization", "SUBJECT_NOT_FOUND", 404);
+        }
+      } else {
+        const foundSubject = await Subject.findOne({
+          name: subject,
+          organizationId: req.organization._id
+        });
+        if (!foundSubject) {
+          throw new AdminControllerError(`Subject "${subject}" not found in your organization`, "SUBJECT_NOT_FOUND", 404);
         }
         subjectObjectId = foundSubject._id;
       }
     }
-    
-    const existUser = await User.findOne({ email });
-    if (existUser) {
-      if (existUser.isApproved) {
-        return res.status(404).json({ msg: "Email already exists and is approved" });
+
+    const existingUser = await User.findOne({ email, organizationId: req.organization._id });
+    if (existingUser) {
+      if (existingUser.isApproved) {
+        throw new AdminControllerError("Email already exists and is approved", "EMAIL_EXISTS", 409);
       }
+
       const salt = bcrypt.genSaltSync(10);
-      const hash = await bcrypt.hashSync(password, salt);
+      const hash = await bcrypt.hash(password, salt);
+
       const updatedUser = await User.findOneAndUpdate(
-        { email },
+        {
+          email,
+          organizationId: req.organization._id
+        },
         {
           firstName,
           lastName,
@@ -105,32 +226,42 @@ exports.addNewUser = async (req, res) => {
           gender,
           classIn: classInObjectId,
           subject: subjectObjectId,
+          organizationId: req.organization._id,
           isApproved: true,
         },
         { new: true }
       );
-      
 
       const mailDetails = {
-        from: "meleksebri25@gmail.com",
+        from: config.EMAIL_USER,
         to: email,
-        subject: "Your school account information",
-        text: `email : ${email}\npassword : ${password}`,
+        subject: `Your ${req.organization.name} account information`,
+        text: `Welcome to ${req.organization.name}!\n\nemail: ${email}\npassword: ${password}`,
       };
 
       mailTransporter.sendMail(mailDetails, function (err, data) {
         if (err) {
-          console.log(err);
+          console.error("Email sending failed:", err);
         } else {
           console.log("Email sent successfully");
         }
       });
 
-      return res.json({ msg: "user now approved", user: updatedUser });
+      return res.json({
+        msg: "User account approved and updated",
+        user: {
+          id: updatedUser._id,
+          firstName: updatedUser.firstName,
+          lastName: updatedUser.lastName,
+          email: updatedUser.email,
+          role: updatedUser.role,
+          organization: req.organization.name
+        }
+      });
     }
 
     const salt = bcrypt.genSaltSync(10);
-    const hash = await bcrypt.hashSync(password, salt);
+    const hash = await bcrypt.hash(password, salt);
 
     const newUser = await User.create({
       firstName,
@@ -142,43 +273,89 @@ exports.addNewUser = async (req, res) => {
       gender,
       classIn: classInObjectId,
       subject: subjectObjectId,
+      organizationId: req.organization._id,
       isApproved: true,
     });
 
-
     const mailDetails = {
-      from: "meleksebri25@gmail.com",
+      from: config.EMAIL_USER,
       to: email,
-      subject: "Your school account information",
-      text: `email : ${email}\npassword : ${password}`,
+      subject: `Your ${req.organization.name} account information`,
+      text: `Welcome to ${req.organization.name}!\n\nemail: ${email}\npassword: ${password}`,
     };
 
     mailTransporter.sendMail(mailDetails, function (err, data) {
       if (err) {
-        console.log(err);
+        console.error("Email sending failed:", err);
       } else {
         console.log("Email sent successfully");
       }
     });
 
-    res.json({ msg: "user now approved", user: newUser });
+    res.json({
+      msg: "New user created successfully",
+      user: {
+        id: newUser._id,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        email: newUser.email,
+        role: newUser.role,
+        organization: req.organization.name
+      }
+    });
   } catch (error) {
     console.log(error);
-    res.status(500).json("something went wrong");
+    if (error instanceof AdminControllerError) {
+      return res.status(error.statusCode).json({
+        msg: error.message,
+        code: error.code,
+      });
+    }
+
+    const wrappedError = new AdminControllerError("Failed to create user", "CREATE_USER_ERROR", 500);
+    wrappedError.originalError = error;
+
+    res.status(wrappedError.statusCode).json({
+      msg: wrappedError.message,
+      code: wrappedError.code,
+    });
   }
 };
 
-// @desc get pended users
-// @params GET /api/v1/users/pendedusers
-// @access PRIVATE
+// @desc get pending users in organization
+// @params GET /api/v1/admin/pendingUsers
+// @access PRIVATE - Organization Admin Only
 exports.getPendedUsers = async (req, res) => {
   try {
-    const pendedUsers = await User.find({ isApproved: false });
-    if (!pendedUsers) return res.json("no pended user");
-    res.status(200).json(pendedUsers);
+    if (!req.organization) {
+      throw new AdminControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
+    const pendingUsers = await User.find({
+      isApproved: false,
+      organizationId: req.organization._id
+    })
+    .select("-password")
+    .populate("classIn", "className")
+    .populate("subject", "name")
+    .sort({ createdAt: -1 });
+
+    res.json(pendingUsers);
   } catch (error) {
-    console.log(error);
-    res.status(500).json("something went wrong");
+    if (error instanceof AdminControllerError) {
+      return res.status(error.statusCode).json({
+        msg: error.message,
+        code: error.code,
+      });
+    }
+
+    const wrappedError = new AdminControllerError("Failed to retrieve pending users", "GET_PENDING_USERS_ERROR", 500);
+    wrappedError.originalError = error;
+
+    res.status(wrappedError.statusCode).json({
+      msg: wrappedError.message,
+      code: wrappedError.code,
+    });
   }
 };
 
@@ -202,14 +379,40 @@ exports.deletePendedUsers = async (req, res) => {
 // @access PRIVATE
 exports.getAllStudents = async (req, res) => {
   try {
+    if (!req.organization) {
+      throw new AdminControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
     const students = await User.find({
-      isApproved: true,
       role: "student",
-    }).populate("classIn");
-    res.status(200).json({ msg: "list of the students", students });
+      isApproved: true,
+      organizationId: req.organization._id
+    })
+    .select("-password")
+    .populate("classIn", "className")
+    .sort({ firstName: 1, lastName: 1 });
+
+    res.json({
+      success: true,
+      students,
+      count: students.length,
+      organization: req.organization.name
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json("something went wrong");
+    if (error instanceof AdminControllerError) {
+      return res.status(error.statusCode).json({
+        msg: error.message,
+        code: error.code,
+      });
+    }
+
+    const wrappedError = new AdminControllerError("Failed to retrieve students", "GET_STUDENTS_ERROR", 500);
+    wrappedError.originalError = error;
+
+    res.status(wrappedError.statusCode).json({
+      msg: wrappedError.message,
+      code: wrappedError.code,
+    });
   }
 };
 
@@ -218,14 +421,40 @@ exports.getAllStudents = async (req, res) => {
 // @access PRIVATE
 exports.getAllTeachers = async (req, res) => {
   try {
+    if (!req.organization) {
+      throw new AdminControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
     const teachers = await User.find({
-      isApproved: true,
       role: "teacher",
-    }).populate("subject");
-    res.status(200).json({ msg: "list of the teachers", teachers });
+      isApproved: true,
+      organizationId: req.organization._id
+    })
+    .select("-password")
+    .populate("subject", "name")
+    .sort({ firstName: 1, lastName: 1 });
+
+    res.json({
+      success: true,
+      teachers,
+      count: teachers.length,
+      organization: req.organization.name
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json("something went wrong");
+    if (error instanceof AdminControllerError) {
+      return res.status(error.statusCode).json({
+        msg: error.message,
+        code: error.code,
+      });
+    }
+
+    const wrappedError = new AdminControllerError("Failed to retrieve teachers", "GET_TEACHERS_ERROR", 500);
+    wrappedError.originalError = error;
+
+    res.status(wrappedError.statusCode).json({
+      msg: wrappedError.message,
+      code: wrappedError.code,
+    });
   }
 };
 
@@ -235,13 +464,34 @@ exports.getAllTeachers = async (req, res) => {
 // @access PRIVATE
 exports.getUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId)
+    if (!req.organization) {
+      throw new AdminControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
+    const user = await User.findOne({
+      _id: req.params.userId,
+      organizationId: req.organization._id
+    })
       .populate("classIn")
       .populate("subject");
-    res.status(200).json({ msg: "user found", user });
+
+    if (!user) {
+      throw new AdminControllerError("User not found in your organization", "USER_NOT_FOUND", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      msg: "user found",
+      user,
+      organization: req.organization.name
+    });
   } catch (error) {
     console.log(error);
-    res.status(500).json("something went wrong");
+    if (error instanceof AdminControllerError) {
+      res.status(error.statusCode).json({ msg: error.message });
+    } else {
+      res.status(500).json({ msg: "Something went wrong", error: error.message });
+    }
   }
 };
 
@@ -250,14 +500,37 @@ exports.getUser = async (req, res) => {
 // @access PRIVATE
 exports.deleteUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.userId);
-    if (!user) {
-      return res.status(404).json({ msg: "user not found" });
+    if (!req.organization) {
+      throw new AdminControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
     }
-    res.status(200).json({ msg: "user deleted successfully", user });
+
+    const user = await User.findOneAndDelete({
+      _id: req.params.userId,
+      organizationId: req.organization._id
+    });
+
+    if (!user) {
+      throw new AdminControllerError("User not found in your organization", "USER_NOT_FOUND", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      msg: "user deleted successfully",
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName
+      },
+      organization: req.organization.name
+    });
   } catch (error) {
     console.log(error);
-    res.status(500).json("something went wrong");
+    if (error instanceof AdminControllerError) {
+      res.status(error.statusCode).json({ msg: error.message });
+    } else {
+      res.status(500).json({ msg: "Something went wrong", error: error.message });
+    }
   }
 };
 
@@ -266,47 +539,88 @@ exports.deleteUser = async (req, res) => {
 // @access PRIVATE
 exports.updateUser = async (req, res) => {
   try {
+    if (!req.organization) {
+      throw new AdminControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
     let updateData = { ...req.body };
-    
+
     if (updateData.classIn) {
       if (mongoose.Types.ObjectId.isValid(updateData.classIn)) {
-        updateData.classIn = updateData.classIn;
-      } else {
-        const foundClass = await classroom.findOne({ className: updateData.classIn });
+        const foundClass = await classroom.findOne({
+          _id: updateData.classIn,
+          organizationId: req.organization._id
+        });
         if (!foundClass) {
-          return res.status(404).json({ msg: `Class "${updateData.classIn}" not found` });
+          throw new AdminControllerError("Class not found in your organization", "CLASS_NOT_FOUND", 404);
+        }
+        updateData.classIn = foundClass._id;
+      } else {
+        const foundClass = await classroom.findOne({
+          className: updateData.classIn,
+          organizationId: req.organization._id
+        });
+        if (!foundClass) {
+          throw new AdminControllerError(`Class "${updateData.classIn}" not found in your organization`, "CLASS_NOT_FOUND", 404);
         }
         updateData.classIn = foundClass._id;
       }
     }
-    
+
     if (updateData.subject) {
       if (mongoose.Types.ObjectId.isValid(updateData.subject)) {
-        updateData.subject = updateData.subject;
-      } else {
-        const foundSubject = await Subject.findOne({ name: updateData.subject });
+        const foundSubject = await Subject.findOne({
+          _id: updateData.subject,
+          organizationId: req.organization._id
+        });
         if (!foundSubject) {
-          return res.status(404).json({ msg: `Subject "${updateData.subject}" not found` });
+          throw new AdminControllerError("Subject not found in your organization", "SUBJECT_NOT_FOUND", 404);
+        }
+        updateData.subject = foundSubject._id;
+      } else {
+        const foundSubject = await Subject.findOne({
+          name: updateData.subject,
+          organizationId: req.organization._id
+        });
+        if (!foundSubject) {
+          throw new AdminControllerError(`Subject "${updateData.subject}" not found in your organization`, "SUBJECT_NOT_FOUND", 404);
         }
         updateData.subject = foundSubject._id;
       }
     }
-    
+
     if (req?.file?.s3Url) {
       updateData.profileImage = req.file.s3Url;
     }
-    
-    const user = await User.findByIdAndUpdate(
-      req.params.userId,
+
+    const user = await User.findOneAndUpdate(
+      {
+        _id: req.params.userId,
+        organizationId: req.organization._id
+      },
       updateData,
       {
         new: true,
       }
-    ).populate("classIn");
-    res.status(200).json({ msg: "user updated", user });
+    ).populate("classIn").populate("subject");
+
+    if (!user) {
+      throw new AdminControllerError("User not found in your organization", "USER_NOT_FOUND", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      msg: "user updated successfully",
+      user,
+      organization: req.organization.name
+    });
   } catch (error) {
     console.log(error);
-    res.status(500).json("something went wrong");
+    if (error instanceof AdminControllerError) {
+      res.status(error.statusCode).json({ msg: error.message });
+    } else {
+      res.status(500).json({ msg: "Something went wrong", error: error.message });
+    }
   }
 };
 
@@ -315,24 +629,32 @@ exports.updateUser = async (req, res) => {
 // @access PRIVATE
 exports.getNumberUsers = async (req, res) => {
   try {
-    const numberTeachers = await User.find({
-      isApproved: true,
-      role: "teacher",
-    })
-      .select("-password")
-      .populate("subject");
+    const organizationId = req.organization._id;
 
-    const numberStudents = await User.find({
-      isApproved: true,
-      role: "student",
-    })
-      .select("-password")
-      .populate("classIn");
+    const [numberTeachers, numberStudents, numberAdmins] = await Promise.all([
+      User.find({
+        organizationId,
+        isApproved: true,
+        role: "teacher",
+      })
+        .select("-password")
+        .populate("subject"),
 
-    const numberAdmins = await User.find({
-      role: "admin",
-      isApproved: true,
-    }).select("-password");
+      User.find({
+        organizationId,
+        isApproved: true,
+        role: "student",
+      })
+        .select("-password")
+        .populate("classIn"),
+
+      User.find({
+        organizationId,
+        role: "admin",
+        isApproved: true,
+      }).select("-password")
+    ]);
+
     res.status(200).json({
       student: numberStudents,
       admin: numberAdmins,
@@ -340,94 +662,228 @@ exports.getNumberUsers = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json("something went wrong");
+    res.status(500).json({ msg: "Something went wrong", error: error.message });
   }
 };
 
 // !! class and subject related api
 exports.addNewClass = async (req, res) => {
   try {
+    if (!req.organization) {
+      throw new AdminControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
     const { className } = req.body;
-    const existClass = await classroom.findOne({ className });
-    if (existClass)
-      return res.status(404).json({ msg: "Class already exists" });
-    await classroom.create({ className });
-    res.status(200).json({ msg: "Class added successfully" });
+
+    if (!className || !className.trim()) {
+      throw new AdminControllerError("Class name is required", "MISSING_CLASS_NAME", 400);
+    }
+
+    const existingClass = await classroom.findOne({
+      className: className.trim(),
+      organizationId: req.organization._id
+    });
+
+    if (existingClass) {
+      throw new AdminControllerError("Class already exists in your organization", "CLASS_EXISTS", 409);
+    }
+
+    const newClass = await classroom.create({
+      className: className.trim(),
+      organizationId: req.organization._id
+    });
+
+    res.json({
+      msg: "Class added successfully",
+      class: {
+        id: newClass._id,
+        className: newClass.className,
+        organization: req.organization.name
+      }
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json("something went wrong");
+    if (error instanceof AdminControllerError) {
+      return res.status(error.statusCode).json({
+        msg: error.message,
+        code: error.code,
+      });
+    }
+
+    const wrappedError = new AdminControllerError("Failed to create class", "CREATE_CLASS_ERROR", 500);
+    wrappedError.originalError = error;
+
+    res.status(wrappedError.statusCode).json({
+      msg: wrappedError.message,
+      code: wrappedError.code,
+    });
   }
 };
 
 exports.getAllClasses = async (req, res) => {
   try {
-    const classes = await classroom.find().populate("subjects");
-    res.status(200).json({ msg: "list of classes", classes });
+    if (!req.organization) {
+      throw new AdminControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
+    const classes = await classroom.find({
+      organizationId: req.organization._id
+    })
+    .populate("subjects", "name code")
+    .sort({ className: 1 });
+
+    res.json({
+      success: true,
+      classes,
+      count: classes.length,
+      organization: req.organization.name
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json("something went wrong");
+    if (error instanceof AdminControllerError) {
+      return res.status(error.statusCode).json({
+        msg: error.message,
+        code: error.code,
+      });
+    }
+
+    const wrappedError = new AdminControllerError("Failed to retrieve classes", "GET_CLASSES_ERROR", 500);
+    wrappedError.originalError = error;
+
+    res.status(wrappedError.statusCode).json({
+      msg: wrappedError.message,
+      code: wrappedError.code,
+    });
   }
 };
 
 exports.deleteClass = async (req, res) => {
   try {
-    const classSelected = await classroom.findById(req.params.userId);
+    if (!req.organization) {
+      throw new AdminControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
+    const classSelected = await classroom.findOne({
+      _id: req.params.userId,
+      organizationId: req.organization._id
+    });
+
     if (classSelected) {
       await User.updateMany(
-        { classIn: classSelected._id },
+        {
+          classIn: classSelected._id,
+          organizationId: req.organization._id
+        },
         { $unset: { classIn: "" } }
       );
     }
-    const classr = await classroom.findByIdAndDelete(req.params.userId);
-    res.status(200).json({ msg: "class deleted successfully", classr });
+
+    const deletedClass = await classroom.findOneAndDelete({
+      _id: req.params.userId,
+      organizationId: req.organization._id
+    });
+
+    if (!deletedClass) {
+      throw new AdminControllerError("Class not found in your organization", "CLASS_NOT_FOUND", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      msg: "class deleted successfully",
+      class: {
+        id: deletedClass._id,
+        className: deletedClass.className
+      },
+      organization: req.organization.name
+    });
   } catch (error) {
     console.log(error);
-    res.status(500).json("something went wrong");
+    if (error instanceof AdminControllerError) {
+      res.status(error.statusCode).json({ msg: error.message });
+    } else {
+      res.status(500).json({ msg: "Something went wrong", error: error.message });
+    }
   }
 };
 
 exports.updateClass = async (req, res) => {
   try {
+    if (!req.organization) {
+      throw new AdminControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
     let updateData = { ...req.body };
-    
+
     if (updateData.className && updateData.className !== req.body.className) {
-      const existClass = await classroom.findOne({ className: updateData.className });
+      const existClass = await classroom.findOne({
+        className: updateData.className,
+        organizationId: req.organization._id
+      });
       if (existClass && existClass._id.toString() !== req.params.userId) {
-        return res.status(400).json({ msg: "Class name already exists" });
+        throw new AdminControllerError("Class name already exists in your organization", "CLASS_EXISTS", 400);
       }
     }
-    
+
     if (updateData.subjects && Array.isArray(updateData.subjects)) {
       const subjectIds = [];
       for (const subject of updateData.subjects) {
         if (mongoose.Types.ObjectId.isValid(subject)) {
+          const foundSubject = await Subject.findOne({
+            _id: subject,
+            organizationId: req.organization._id
+          });
+          if (!foundSubject) {
+            throw new AdminControllerError(`Subject not found in your organization`, "SUBJECT_NOT_FOUND", 404);
+          }
           subjectIds.push(subject);
         } else {
-          let foundSubject = await Subject.findOne({ name: subject });
+          let foundSubject = await Subject.findOne({
+            name: subject,
+            organizationId: req.organization._id
+          });
           if (!foundSubject) {
-            foundSubject = await Subject.create({ name: subject });
+            foundSubject = await Subject.create({
+              name: subject,
+              organizationId: req.organization._id
+            });
           }
           subjectIds.push(foundSubject._id);
         }
       }
       updateData.subjects = subjectIds;
     }
-    
-    const classr = await classroom.findByIdAndUpdate(
-      req.params.userId,
+
+    const updatedClass = await classroom.findOneAndUpdate(
+      {
+        _id: req.params.userId,
+        organizationId: req.organization._id
+      },
       updateData,
       { new: true }
     ).populate("subjects");
-    res.status(200).json({ msg: "class updated", classr });
+
+    if (!updatedClass) {
+      throw new AdminControllerError("Class not found in your organization", "CLASS_NOT_FOUND", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      msg: "class updated successfully",
+      class: updatedClass,
+      organization: req.organization.name
+    });
   } catch (error) {
     console.log(error);
-    res.status(500).json("something went wrong");
+    if (error instanceof AdminControllerError) {
+      res.status(error.statusCode).json({ msg: error.message });
+    } else {
+      res.status(500).json({ msg: "Something went wrong", error: error.message });
+    }
   }
 };
 
 exports.assignNewSubject = async (req, res) => {
   try {
     const { classname, className, subjectName, subjectId } = req.body;
+    const organizationId = req.organization._id;
     
     let classObjectId = null;
     if (className || classname) {
@@ -435,7 +891,7 @@ exports.assignNewSubject = async (req, res) => {
       if (mongoose.Types.ObjectId.isValid(classToFind)) {
         classObjectId = classToFind;
       } else {
-        const foundClass = await classroom.findOne({ className: classToFind });
+        const foundClass = await classroom.findOne({ className: classToFind, organizationId });
         if (!foundClass) {
           return res.status(404).json({ msg: `Class "${classToFind}" not found` });
         }
@@ -451,9 +907,9 @@ exports.assignNewSubject = async (req, res) => {
       if (mongoose.Types.ObjectId.isValid(subjectToFind)) {
         subjectObjectId = subjectToFind;
       } else {
-        let foundSubject = await Subject.findOne({ name: subjectToFind });
+        let foundSubject = await Subject.findOne({ name: subjectToFind, organizationId });
         if (!foundSubject) {
-          foundSubject = await Subject.create({ name: subjectToFind });
+          foundSubject = await Subject.create({ name: subjectToFind, organizationId });
         }
         subjectObjectId = foundSubject._id;
       }
@@ -488,15 +944,19 @@ exports.getUserInfo = async (req, res) => {
 
 exports.getAttendance = async (req, res) => {
   try {
+    if (!req.organization) {
+      throw new AdminControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
     const { date, classId, userId, role } = req.query;
 
     if (!date) {
-      return res.status(400).json({ msg: 'Date is required' });
+      throw new AdminControllerError("Date is required", "MISSING_DATE", 400);
     }
 
     const attendanceDate = new Date(date);
     if (isNaN(attendanceDate.getTime())) {
-      return res.status(400).json({ msg: 'Invalid date format' });
+      throw new AdminControllerError("Invalid date format", "INVALID_DATE", 400);
     }
 
     const startOfDay = new Date(attendanceDate);
@@ -509,13 +969,28 @@ exports.getAttendance = async (req, res) => {
         $gte: startOfDay,
         $lte: endOfDay,
       },
+      organizationId: req.organization._id,
     };
 
     if (classId && mongoose.Types.ObjectId.isValid(classId)) {
+      const foundClass = await classroom.findOne({
+        _id: classId,
+        organizationId: req.organization._id
+      });
+      if (!foundClass) {
+        throw new AdminControllerError("Class not found in your organization", "CLASS_NOT_FOUND", 404);
+      }
       query.classId = classId;
     }
 
     if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+      const foundUser = await User.findOne({
+        _id: userId,
+        organizationId: req.organization._id
+      });
+      if (!foundUser) {
+        throw new AdminControllerError("User not found in your organization", "USER_NOT_FOUND", 404);
+      }
       query.studentId = userId;
     }
 
@@ -543,38 +1018,48 @@ exports.getAttendance = async (req, res) => {
     });
 
     res.status(200).json({
+      success: true,
       msg: 'Attendance fetched successfully',
       date: date,
       attendance: attendanceMap,
       count: attendanceRecords.length,
+      organization: req.organization.name
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ msg: 'Something went wrong', error: error.message });
+    if (error instanceof AdminControllerError) {
+      res.status(error.statusCode).json({ msg: error.message });
+    } else {
+      res.status(500).json({ msg: "Something went wrong", error: error.message });
+    }
   }
 };
 
 exports.submitAttendance = async (req, res) => {
   try {
+    if (!req.organization) {
+      throw new AdminControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
     const { date, attendance, role } = req.body;
     const adminId = req.userId || req.headers.userid;
 
     if (!date) {
-      return res.status(400).json({ msg: 'Date is required' });
+      throw new AdminControllerError("Date is required", "MISSING_DATE", 400);
     }
 
     if (!attendance || !Array.isArray(attendance) || attendance.length === 0) {
-      return res.status(400).json({ msg: 'Attendance data is required' });
+      throw new AdminControllerError("Attendance data is required", "MISSING_ATTENDANCE", 400);
     }
 
     const attendanceDate = new Date(date);
     if (isNaN(attendanceDate.getTime())) {
-      return res.status(400).json({ msg: 'Invalid date format' });
+      throw new AdminControllerError("Invalid date format", "INVALID_DATE", 400);
     }
 
     const expectedRole = role || 'student';
     if (!['student', 'teacher'].includes(expectedRole)) {
-      return res.status(400).json({ msg: 'Role must be student or teacher' });
+      throw new AdminControllerError("Role must be student or teacher", "INVALID_ROLE", 400);
     }
 
     const results = [];
@@ -599,9 +1084,12 @@ exports.submitAttendance = async (req, res) => {
         continue;
       }
 
-      const user = await User.findById(userIdToUse);
+      const user = await User.findOne({
+        _id: userIdToUse,
+        organizationId: req.organization._id
+      });
       if (!user) {
-        errors.push({ userId: userIdToUse, error: 'User not found' });
+        errors.push({ userId: userIdToUse, error: 'User not found in your organization' });
         continue;
       }
 
@@ -617,6 +1105,7 @@ exports.submitAttendance = async (req, res) => {
           {
             date: attendanceDate,
             studentId: userIdToUse,
+            organizationId: req.organization._id,
           },
           {
             date: attendanceDate,
@@ -624,6 +1113,7 @@ exports.submitAttendance = async (req, res) => {
             classId: classId || null,
             status,
             markedBy: adminId || null,
+            organizationId: req.organization._id,
           },
           {
             upsert: true,
@@ -638,20 +1128,250 @@ exports.submitAttendance = async (req, res) => {
 
     if (errors.length > 0 && results.length === 0) {
       return res.status(400).json({
+        success: false,
         msg: 'Failed to submit attendance',
         errors,
       });
     }
 
     res.status(200).json({
+      success: true,
       msg: 'Attendance submitted successfully',
       success: results.length,
       failed: errors.length,
       results,
       errors: errors.length > 0 ? errors : undefined,
+      organization: req.organization.name
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ msg: 'Something went wrong', error: error.message });
+    if (error instanceof AdminControllerError) {
+      res.status(error.statusCode).json({ msg: error.message });
+    } else {
+      res.status(500).json({ msg: "Something went wrong", error: error.message });
+    }
+  }
+};
+
+exports.getUserRegistrationTrends = async (req, res) => {
+  try {
+    const days = validateDaysParameter(req.query.days);
+    const { startDate, endDate } = createDateRange(days);
+
+    const registrationData = await User.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startDate, $lte: endDate },
+          organizationId: req.organization._id,
+          isApproved: true
+        }
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]);
+
+    const trends = fillMissingDates(registrationData, startDate, endDate);
+
+    res.status(200).json({
+      success: true,
+      data: trends,
+      metadata: {
+        period: `${days} days`,
+        totalRegistrations: trends.reduce((sum, day) => sum + day.registrations, 0),
+        averageDaily: (trends.reduce((sum, day) => sum + day.registrations, 0) / days).toFixed(1)
+      }
+    });
+  } catch (error) {
+    handleAnalyticsError(error, 'getUserRegistrationTrends', res);
+  }
+};
+
+exports.getSubscriptionAnalytics = async (req, res) => {
+  try {
+    const [organizations, totalActiveUsers] = await Promise.all([
+      Organization.find({}).select('subscriptionTier maxUsers subscriptionStatus createdAt'),
+      User.countDocuments({ isApproved: true })
+    ]);
+
+    const metrics = calculateOrganizationMetrics(organizations, config.SUBSCRIPTION_PRICES);
+
+    const recentOrganizations = organizations
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, ANALYTICS_CONSTANTS.RECENT_ORGANIZATIONS_LIMIT)
+      .map(org => ({
+        tier: org.subscriptionTier,
+        createdAt: org.createdAt,
+        status: org.subscriptionStatus
+      }));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        ...metrics,
+        totalActiveUsers,
+        utilizationRate: metrics.totalUserCapacity > 0
+          ? ((totalActiveUsers / metrics.totalUserCapacity) * 100).toFixed(1)
+          : 0,
+        recentOrganizations
+      }
+    });
+  } catch (error) {
+    handleAnalyticsError(error, 'getSubscriptionAnalytics', res);
+  }
+};
+
+exports.getEducationalAnalytics = async (req, res) => {
+  try {
+    const { startDate } = createDateRange(ANALYTICS_CONSTANTS.ATTENDANCE_DAYS);
+
+    const [classes, subjects, attendanceStats] = await Promise.all([
+      classroom.find({ organizationId: req.organization._id }).select('className'),
+      Subject.find({ organizationId: req.organization._id }).select('subjectName'),
+      Attendance.aggregate([
+        {
+          $match: {
+            date: { $gte: startDate },
+            organizationId: req.organization._id
+          }
+        },
+        {
+          $group: {
+            _id: { $toLower: '$status' },
+            count: { $sum: 1 }
+          }
+        }
+      ])
+    ]);
+
+    const subjectDistribution = {};
+    subjects.forEach(subject => {
+      const subjectName = subject.subjectName;
+      subjectDistribution[subjectName] = (subjectDistribution[subjectName] || 0) + 1;
+    });
+
+    const attendanceSummary = {
+      present: 0,
+      absent: 0,
+      late: 0,
+      total: 0
+    };
+
+    attendanceStats.forEach(stat => {
+      const status = stat._id;
+      const count = stat.count;
+      if (attendanceSummary.hasOwnProperty(status)) {
+        attendanceSummary[status] = count;
+        attendanceSummary.total += count;
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalClasses: classes.length,
+        totalSubjects: subjects.length,
+        subjectDistribution,
+        attendanceSummary,
+        attendanceRate: attendanceSummary.total > 0
+          ? ((attendanceSummary.present / attendanceSummary.total) * 100).toFixed(1)
+          : '0.0'
+      }
+    });
+  } catch (error) {
+    handleAnalyticsError(error, 'getEducationalAnalytics', res);
+  }
+};
+
+exports.getDashboardAnalytics = async (req, res) => {
+  try {
+    const { startDate: registrationStartDate } = createDateRange(ANALYTICS_CONSTANTS.DEFAULT_DAYS);
+    const { startDate: activityStartDate } = createDateRange(ANALYTICS_CONSTANTS.RECENT_ACTIVITY_DAYS);
+
+    const [
+      userTrends,
+      subscription,
+      [classCount, subjectCount],
+      pendingUsers,
+      recentActivity,
+      userCounts
+    ] = await Promise.all([
+      User.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: registrationStartDate },
+            organizationId: req.organization._id,
+            isApproved: true
+          }
+        },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { "_id": 1 } }
+      ]),
+
+      Organization.findById(req.organization._id).select('subscriptionTier maxUsers subscriptionStatus'),
+
+      Promise.all([
+        classroom.countDocuments({ organizationId: req.organization._id }),
+        Subject.countDocuments({ organizationId: req.organization._id })
+      ]),
+
+      User.countDocuments({
+        organizationId: req.organization._id,
+        isApproved: false
+      }),
+
+      User.find({
+        organizationId: req.organization._id,
+        lastLogin: { $gte: activityStartDate }
+      })
+      .select('firstName lastName role lastLogin')
+      .sort({ lastLogin: -1 })
+      .limit(ANALYTICS_CONSTANTS.RECENT_ACTIVITY_LIMIT),
+
+      getUserCounts(req.organization._id)
+    ]);
+
+    const utilizationRate = subscription?.maxUsers > 0
+      ? ((userCounts.totalUsers / subscription.maxUsers) * 100).toFixed(1)
+      : '0.0';
+
+    res.status(200).json({
+      success: true,
+      data: {
+        userTrends,
+        subscription,
+        classCount,
+        subjectCount,
+        pendingUsers,
+        recentActivity: recentActivity.map(user => ({
+          name: `${user.firstName} ${user.lastName}`,
+          role: user.role,
+          lastLogin: user.lastLogin
+        })),
+        quickStats: {
+          ...userCounts,
+          pendingApprovals: pendingUsers,
+          utilizationRate
+        }
+      },
+      metadata: {
+        generatedAt: new Date().toISOString(),
+        period: {
+          registration: `${ANALYTICS_CONSTANTS.DEFAULT_DAYS} days`,
+          activity: `${ANALYTICS_CONSTANTS.RECENT_ACTIVITY_DAYS} days`
+        }
+      }
+    });
+  } catch (error) {
+    handleAnalyticsError(error, 'getDashboardAnalytics', res);
   }
 };
