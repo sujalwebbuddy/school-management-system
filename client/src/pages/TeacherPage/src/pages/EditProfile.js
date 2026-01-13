@@ -60,7 +60,9 @@ const EditAccount = () => {
     console.log(file);
     setLoading(true);
     axios
-      .put(`/api/v1/teacher/update/${userf?._id}`, formData)
+      .put(`/api/v1/teacher/update/${userf?._id}`, formData, {
+        headers: { token: localStorage.getItem("token") }
+      })
       .then((res) => {
         swal("Done!", "User has been updated successfully !", "success").then(
           () => {

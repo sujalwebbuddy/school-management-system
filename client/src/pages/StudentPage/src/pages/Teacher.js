@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import "../../../../components/UserInfo.css";
 import "../../../../../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import { useLocation } from "react-router-dom";
-import axios from "axios";
 import { useSelector } from "react-redux";
 
 const Teacher = () => {

@@ -44,7 +44,9 @@ export default function UserMoreMenu({ id, name, dateOf, totalMark }) {
       if (result.isConfirmed) {
         Swal.fire("Deleted!", "Class has been deleted.", "success");
         axios
-          .delete(`/api/v1/teacher/deleteExam/${id}`)
+          .delete(`/api/v1/teacher/deleteExam/${id}`, {
+            headers: { token: localStorage.getItem("token") }
+          })
           .then((res) => console.log(res))
           .catch((err) => console.log(err));
         dispatch(getExams(subject));
@@ -75,7 +77,9 @@ export default function UserMoreMenu({ id, name, dateOf, totalMark }) {
 
   const onSubmit = (data) => {
     axios
-      .put(`/api/v1/teacher/updateexam/${id}`, data)
+      .put(`/api/v1/teacher/updateexam/${id}`, data, {
+        headers: { token: localStorage.getItem("token") }
+      })
       .then((res) => {
         swal("Done!", "Exam has been updated successfully !", "success").then(
           () => console.log(res)

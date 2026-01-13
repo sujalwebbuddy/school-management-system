@@ -97,7 +97,9 @@ const ClassInfo = ({ id, name, number }) => {
   };
   const onSubmit = (data) => {
     axios
-      .put(`/api/v1/admin/class/update/${id}`, data)
+      .put(`/api/v1/admin/class/update/${id}`, data, {
+        headers: { token: localStorage.getItem("token") }
+      })
       .then((res) => {
         swal("Done!", "Class has been updated successfully !", "success");
       })

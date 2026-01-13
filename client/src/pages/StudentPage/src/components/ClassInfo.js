@@ -1,25 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import {
-  Avatar,
   Box,
-  Button,
   Card,
   CardContent,
   Grid,
-  IconButton,
-  Modal,
-  TextField,
   Typography,
 } from "@mui/material";
 import ClassIcon from "@mui/icons-material/Class";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { useDispatch, useSelector } from "react-redux";
-import Swal from "sweetalert2";
-import axios from "axios";
-import { getClasses } from "../../../../slices/adminSlice";
-import EditIcon from "@mui/icons-material/Edit";
-import { useForm } from "react-hook-form";
-import swal from "sweetalert";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
 const ClassInfo = ({ subject }) => {

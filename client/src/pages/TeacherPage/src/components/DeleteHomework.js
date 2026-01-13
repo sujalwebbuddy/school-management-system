@@ -25,7 +25,9 @@ const DeleteHomework = ({ id }) => {
 
       if (result.isConfirmed) {
         try {
-          await axios.delete(`/api/v1/teacher/delete/${id}`);
+          await axios.delete(`/api/v1/teacher/delete/${id}`, {
+            headers: { token: localStorage.getItem("token") }
+          });
           await Swal.fire("Deleted!", "Homework has been deleted.", "success");
         } catch (error) {
           // Error handling with context for architecture compliance

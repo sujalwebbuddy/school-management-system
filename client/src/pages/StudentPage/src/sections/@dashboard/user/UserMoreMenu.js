@@ -10,9 +10,7 @@ import {
 } from "@mui/material";
 // component
 import Iconify from "../../../components/Iconify";
-import axios from "axios";
 import { useDispatch } from "react-redux";
-import { getNoApprovedUsers } from "../../../../../../slices/adminSlice";
 
 // ----------------------------------------------------------------------
 

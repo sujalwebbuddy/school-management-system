@@ -96,7 +96,9 @@ const EditAccount = () => {
       formData.append("subject", data.subject);
     }
     axios
-      .put(`/api/v1/admin/user/update/${userid}`, formData)
+      .put(`/api/v1/admin/user/update/${userid}`, formData, {
+        headers: { token: localStorage.getItem("token") }
+      })
       .then((res) => {
         swal("Done!", "User has been updated successfully !", "success").then(
           () => {

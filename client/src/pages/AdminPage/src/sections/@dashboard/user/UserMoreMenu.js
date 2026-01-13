@@ -24,7 +24,9 @@ export default function UserMoreMenu({ id, role, userData }) {
 
   const handleDelete = () => {
     axios
-      .delete(`/api/v1/admin/deleteUser/${id}`)
+      .delete(`/api/v1/admin/deleteUser/${id}`, {
+        headers: { token: localStorage.getItem("token") }
+      })
       .then((res) => console.log(res))
       .catch((err) => console.log(err));
     dispatch(getNoApprovedUsers());

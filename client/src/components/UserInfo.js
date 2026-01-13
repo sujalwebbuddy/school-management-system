@@ -10,7 +10,9 @@ const UserInfo = () => {
   const [user, setuser] = useState({});
   useEffect(() => {
     axios
-      .get(`/api/v1/admin/user/view/${userid}`)
+      .get(`/api/v1/admin/user/view/${userid}`, {
+        headers: { token: localStorage.getItem("token") }
+      })
       .then(function (result) {
         setuser(result.data.user);
       })

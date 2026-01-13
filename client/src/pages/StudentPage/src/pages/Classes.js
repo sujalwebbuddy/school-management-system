@@ -43,7 +43,9 @@ const Classes = () => {
   const dispatch = useDispatch();
   const onSubmit = (data) => {
     axios
-      .post("/api/v1/admin/newclass", data)
+      .post("/api/v1/admin/newclass", data, {
+        headers: { token: localStorage.getItem("token") }
+      })
       .then((res) => {
         swal(
           "Done!",
