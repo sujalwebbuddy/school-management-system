@@ -11,9 +11,23 @@ import {
   Tab,
   CircularProgress,
   Chip,
+  Stack,
+  Avatar,
+  IconButton,
+  Tooltip,
+  Divider,
+  Paper,
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import {
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Add as AddIcon,
+  AssignmentOutlined,
+  PersonOutline,
+  AccessTime,
+  CheckCircle,
+  RadioButtonUnchecked,
+} from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 
 // Import task components
@@ -31,6 +45,8 @@ import {
 
 // Import user slice to get current user and available users
 import userSlice from '../../../slices/userSlice';
+// Import admin slice to get approved users
+import { getApprovedUsers } from '../../../slices/adminSlice';
 
 // Tab panel component
 function TabPanel({ children, value, index, ...other }) {
@@ -59,11 +75,16 @@ const TaskPage = () => {
   const error = useSelector(selectTasksError);
   const stats = useSelector(selectTaskStats);
   const currentUser = useSelector((state) => state.user.userInfo);
+  const users = useSelector((state) => state.admin.usersApproved);
+
+  // Combine all user types into a single array
+  const allUsers = users?.student?.concat(users?.teacher || [], users?.admin || []) || [];
 
   useEffect(() => {
     // Fetch tasks and stats on component mount
     dispatch(fetchTasks());
     dispatch(fetchTaskStats());
+    dispatch(getApprovedUsers());
   }, [dispatch]);
 
   const handleTabChange = (event, newValue) => {
@@ -90,12 +111,6 @@ const TaskPage = () => {
     }
   };
 
-  // Mock users list - in a real app, this would come from an API
-  const mockUsers = [
-    { _id: '1', firstName: 'John', lastName: 'Doe', email: 'john@example.com', role: 'student' },
-    { _id: '2', firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com', role: 'teacher' },
-    { _id: '3', firstName: 'Bob', lastName: 'Wilson', email: 'bob@example.com', role: 'admin' },
-  ];
 
   if (loading && tasks.length === 0) {
     return (
@@ -112,60 +127,220 @@ const TaskPage = () => {
     );
   }
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Open':
+        return 'primary';
+      case 'InProgress':
+        return 'warning';
+      case 'Testing':
+        return 'info';
+      case 'Close':
+        return 'success';
+      default:
+        return 'default';
+    }
+  };
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'Critical':
+        return 'error';
+      case 'High':
+        return 'warning';
+      case 'Normal':
+        return 'info';
+      case 'Low':
+        return 'default';
+      default:
+        return 'default';
+    }
+  };
+
   return (
     <Container maxWidth="xl">
-      <Typography variant="h4" sx={{ mb: 5 }}>
-        Task Management
-      </Typography>
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ mb: 4 }}
+      >
+        <Typography variant="h4" fontWeight={600}>
+          Task Management
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => handleOpenTaskDialog()}
+          sx={{
+            textTransform: 'none',
+            fontWeight: 600,
+            px: 3,
+            py: 1.5,
+            borderRadius: 1.5,
+            boxShadow: 2,
+          }}
+        >
+          Create Task
+        </Button>
+      </Stack>
 
       {/* Stats Cards */}
       {stats && (
-        <Grid container spacing={3} sx={{ mb: 5 }}>
+        <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
+            <Card
+              sx={{
+                borderRadius: 2,
+                boxShadow: 3,
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: 6,
+                },
+              }}
+            >
               <CardContent>
-                <Typography color="textSecondary" gutterBottom>
-                  Total Tasks
-                </Typography>
-                <Typography variant="h5">
-                  {stats.totalTasks || 0}
-                </Typography>
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={500}>
+                      Total Tasks
+                    </Typography>
+                    <Typography variant="h4" fontWeight={700} color="text.primary">
+                      {stats.totalTasks || 0}
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: 2,
+                      bgcolor: 'primary.lighter',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <AssignmentOutlined sx={{ color: 'primary.main', fontSize: 28 }} />
+                  </Box>
+                </Stack>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
+            <Card
+              sx={{
+                borderRadius: 2,
+                boxShadow: 3,
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: 6,
+                },
+              }}
+            >
               <CardContent>
-                <Typography color="textSecondary" gutterBottom>
-                  Open Tasks
-                </Typography>
-                <Typography variant="h5">
-                  {stats.statusStats?.find(s => s._id === 'Open')?.count || 0}
-                </Typography>
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={500}>
+                      Open Tasks
+                    </Typography>
+                    <Typography variant="h4" fontWeight={700} color="primary.main">
+                      {stats.statusStats?.find(s => s._id === 'Open')?.count || 0}
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: 2,
+                      bgcolor: 'primary.lighter',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <RadioButtonUnchecked sx={{ color: 'primary.main', fontSize: 28 }} />
+                  </Box>
+                </Stack>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
+            <Card
+              sx={{
+                borderRadius: 2,
+                boxShadow: 3,
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: 6,
+                },
+              }}
+            >
               <CardContent>
-                <Typography color="textSecondary" gutterBottom>
-                  In Progress
-                </Typography>
-                <Typography variant="h5">
-                  {stats.statusStats?.find(s => s._id === 'InProgress')?.count || 0}
-                </Typography>
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={500}>
+                      In Progress
+                    </Typography>
+                    <Typography variant="h4" fontWeight={700} color="warning.main">
+                      {stats.statusStats?.find(s => s._id === 'InProgress')?.count || 0}
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: 2,
+                      bgcolor: 'warning.lighter',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <AccessTime sx={{ color: 'warning.main', fontSize: 28 }} />
+                  </Box>
+                </Stack>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
+            <Card
+              sx={{
+                borderRadius: 2,
+                boxShadow: 3,
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: 6,
+                },
+              }}
+            >
               <CardContent>
-                <Typography color="textSecondary" gutterBottom>
-                  Completed
-                </Typography>
-                <Typography variant="h5">
-                  {stats.statusStats?.find(s => s._id === 'Close')?.count || 0}
-                </Typography>
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={500}>
+                      Completed
+                    </Typography>
+                    <Typography variant="h4" fontWeight={700} color="success.main">
+                      {stats.statusStats?.find(s => s._id === 'Close')?.count || 0}
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: 2,
+                      bgcolor: 'success.lighter',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <CheckCircle sx={{ color: 'success.main', fontSize: 28 }} />
+                  </Box>
+                </Stack>
               </CardContent>
             </Card>
           </Grid>
@@ -173,110 +348,227 @@ const TaskPage = () => {
       )}
 
       {/* Main Content */}
-      <Card>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={tabValue} onChange={handleTabChange} aria-label="task tabs">
+      <Card
+        sx={{
+          borderRadius: 2,
+          boxShadow: 3,
+          overflow: 'hidden',
+        }}
+      >
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
+          <Tabs
+            value={tabValue}
+            onChange={handleTabChange}
+            aria-label="task tabs"
+            sx={{
+              px: 2,
+              '& .MuiTab-root': {
+                textTransform: 'none',
+                fontWeight: 600,
+                minHeight: 64,
+              },
+            }}
+          >
             <Tab label="Dashboard" />
             <Tab label="Kanban Board" />
           </Tabs>
         </Box>
 
         <TabPanel value={tabValue} index={0}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h6">All Tasks</Typography>
-                <Button
-                  variant="contained"
-                  onClick={() => handleOpenTaskDialog()}
-                >
-                  Create Task
-                </Button>
-              </Box>
+          <Box sx={{ p: 3 }}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              sx={{ mb: 3 }}
+            >
+              <Typography variant="h6" fontWeight={600}>
+                All Tasks
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={() => handleOpenTaskDialog()}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 600,
+                }}
+              >
+                Add Task
+              </Button>
+            </Stack>
 
-              {/* Custom Task List */}
-              <Card>
-                {tasks.length > 0 ? (
-                  tasks.map((task) => (
-                    <Box
-                      key={task._id}
-                      sx={{
-                        p: 2,
-                        borderBottom: '1px solid',
-                        borderColor: 'divider',
-                        '&:last-child': { borderBottom: 0 },
-                        '&:hover': { bgcolor: 'action.hover' }
-                      }}
-                    >
-                      <Box display="flex" justifyContent="space-between" alignItems="center">
-                        <Box>
-                          <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                            {task.title}
+            {/* Custom Task List */}
+            {tasks.length > 0 ? (
+              <Stack spacing={1.5}>
+                {tasks.map((task, index) => (
+                  <Paper
+                    key={task._id}
+                    elevation={0}
+                    sx={{
+                      p: 2.5,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 2,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        bgcolor: 'action.hover',
+                        borderColor: 'primary.main',
+                        boxShadow: 2,
+                      },
+                    }}
+                  >
+                    <Stack direction="row" spacing={2} alignItems="flex-start">
+                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight={600}
+                          sx={{ mb: 1 }}
+                        >
+                          {task.title}
+                        </Typography>
+                        {task.description && (
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{
+                              mb: 2,
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            {task.description}
                           </Typography>
-                          {task.description && (
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                              {task.description.length > 100
-                                ? `${task.description.substring(0, 100)}...`
-                                : task.description}
-                            </Typography>
-                          )}
-                          <Box display="flex" gap={1} alignItems="center">
+                        )}
+                        <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
+                          {task.status && (
                             <Chip
                               label={task.status}
                               size="small"
-                              color={
-                                task.status === 'Open' ? 'primary' :
-                                task.status === 'InProgress' ? 'warning' :
-                                task.status === 'Testing' ? 'info' : 'success'
-                              }
+                              color={getStatusColor(task.status)}
+                              sx={{
+                                fontWeight: 600,
+                                fontSize: '0.75rem',
+                              }}
                             />
+                          )}
+                          {task.priority && (
                             <Chip
                               label={task.priority}
                               size="small"
                               variant="outlined"
-                              color={
-                                task.priority === 'Critical' ? 'error' :
-                                task.priority === 'High' ? 'warning' :
-                                task.priority === 'Normal' ? 'info' : 'default'
-                              }
+                              color={getPriorityColor(task.priority)}
+                              sx={{
+                                fontWeight: 500,
+                                fontSize: '0.75rem',
+                              }}
                             />
-                            {task.assignee && (
+                          )}
+                          {task.assignee && (
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              <PersonOutline sx={{ fontSize: 16, color: 'text.secondary' }} />
                               <Typography variant="caption" color="text.secondary">
-                                Assigned to: {task.assignee.firstName} {task.assignee.lastName}
+                                {task.assignee.firstName} {task.assignee.lastName}
                               </Typography>
-                            )}
-                          </Box>
-                        </Box>
-                        <Box display="flex" gap={1}>
-                          <Button
+                              <Tooltip title={`Assigned to ${task.assignee.firstName} ${task.assignee.lastName}`}>
+                                <Avatar
+                                  sx={{
+                                    width: 24,
+                                    height: 24,
+                                    fontSize: '0.7rem',
+                                    bgcolor: 'primary.main',
+                                  }}
+                                  src={task.assignee.profileImage}
+                                >
+                                  {task.assignee.firstName?.[0]}
+                                </Avatar>
+                              </Tooltip>
+                            </Stack>
+                          )}
+                        </Stack>
+                      </Box>
+                      <Stack direction="row" spacing={1}>
+                        <Tooltip title="Edit Task">
+                          <IconButton
                             size="small"
                             onClick={() => handleOpenTaskDialog(task)}
-                            startIcon={<EditIcon />}
+                            sx={{
+                              color: 'primary.main',
+                              '&:hover': {
+                                bgcolor: 'primary.lighter',
+                              },
+                            }}
                           >
-                            Edit
-                          </Button>
-                          <Button
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete Task">
+                          <IconButton
                             size="small"
-                            color="error"
                             onClick={() => handleDeleteTask(task._id)}
-                            startIcon={<DeleteIcon />}
+                            sx={{
+                              color: 'error.main',
+                              '&:hover': {
+                                bgcolor: 'error.lighter',
+                              },
+                            }}
                           >
-                            Delete
-                          </Button>
-                        </Box>
-                      </Box>
-                    </Box>
-                  ))
-                ) : (
-                  <Box p={4} textAlign="center">
-                    <Typography color="text.secondary">
-                      No tasks found. Create your first task!
-                    </Typography>
-                  </Box>
-                )}
-              </Card>
-            </Grid>
-          </Grid>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Stack>
+                    </Stack>
+                  </Paper>
+                ))}
+              </Stack>
+            ) : (
+              <Paper
+                sx={{
+                  p: 6,
+                  textAlign: 'center',
+                  bgcolor: 'background.paper',
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 100,
+                    height: 100,
+                    borderRadius: '50%',
+                    bgcolor: 'action.hover',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mx: 'auto',
+                    mb: 3,
+                  }}
+                >
+                  <AssignmentOutlined sx={{ fontSize: 48, color: 'text.disabled' }} />
+                </Box>
+                <Typography variant="h6" color="text.primary" gutterBottom fontWeight={600}>
+                  No Tasks Found
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 400, mx: 'auto' }}>
+                  Get started by creating your first task. Tasks help you stay organized and track your progress.
+                </Typography>
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={() => handleOpenTaskDialog()}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    px: 3,
+                    py: 1.5,
+                  }}
+                >
+                  Create Your First Task
+                </Button>
+              </Paper>
+            )}
+          </Box>
         </TabPanel>
 
         <TabPanel value={tabValue} index={1}>
@@ -289,7 +581,7 @@ const TaskPage = () => {
         open={taskDialogOpen}
         onClose={handleCloseTaskDialog}
         task={editingTask}
-        users={mockUsers}
+        users={allUsers}
       />
     </Container>
   );

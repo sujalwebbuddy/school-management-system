@@ -53,9 +53,13 @@ const Navigation = () => {
     if (location.pathname === '/') {
       const element = document.querySelector(sectionId);
       if (element) {
-        element.scrollIntoView({
+        const headerOffset = 80; // Height of sticky header
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
           behavior: 'smooth',
-          block: 'start',
         });
       }
     } else {
@@ -63,9 +67,13 @@ const Navigation = () => {
       setTimeout(() => {
         const element = document.querySelector(sectionId);
         if (element) {
-          element.scrollIntoView({
+          const headerOffset = 80; // Height of sticky header
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+          window.scrollTo({
+            top: offsetPosition,
             behavior: 'smooth',
-            block: 'start',
           });
         }
       }, 100);
@@ -91,7 +99,7 @@ const Navigation = () => {
             px: { xs: 2, sm: 3, md: 4 },
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/')}>
             <img
               src={logoImage}
               alt="SchoolHub"
@@ -152,7 +160,7 @@ const Navigation = () => {
               Pricing
             </Button>
             <Button
-              onClick={() => handleSectionScroll('#contact')}
+              onClick={() => navigate('/contact')}
               sx={{
                 color: 'text.primary',
                 fontWeight: 500,

@@ -18,6 +18,7 @@ import {
   OutlinedInput,
   InputAdornment,
   Chip,
+  Paper,
 } from '@mui/material';
 import Page from '../components/Page';
 import Scrollbar from '../components/Scrollbar';
@@ -111,6 +112,8 @@ export default function Exam() {
   );
 
   const isExamNotFound = filteredExams?.length === 0;
+  const hasNoExams = exams?.length === 0;
+  const hasSearchFilter = filterName.trim().length > 0;
 
   return (
     <Page title="Exams">
@@ -290,8 +293,101 @@ export default function Exam() {
                 {isExamNotFound && (
                   <TableBody>
                     <TableRow>
-                      <TableCell align="center" colSpan={7} sx={{ py: 3 }}>
-                        <SearchNotFound searchQuery={filterName} />
+                      <TableCell align="center" colSpan={7} sx={{ py: 6 }}>
+                        {hasNoExams ? (
+                          <Paper
+                            sx={{
+                              textAlign: 'center',
+                              py: 5,
+                              px: 3,
+                              bgcolor: 'background.paper',
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                mb: 2,
+                              }}
+                            >
+                              <Iconify
+                                icon="eva:file-text-outline"
+                                sx={{
+                                  width: 80,
+                                  height: 80,
+                                  color: 'text.disabled',
+                                }}
+                              />
+                            </Box>
+                            <Typography
+                              variant="h6"
+                              gutterBottom
+                              sx={{ color: 'text.primary', fontWeight: 600 }}
+                            >
+                              No Exams Yet
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{ color: 'text.secondary', mb: 3, maxWidth: 400, mx: 'auto' }}
+                            >
+                              You haven't created any exams yet. Click the "New Exam" button to get started and create your first exam.
+                            </Typography>
+                            <Button
+                              variant="contained"
+                              startIcon={<Iconify icon="eva:plus-fill" />}
+                              onClick={handleOpen}
+                              sx={{
+                                textTransform: 'none',
+                                px: 3,
+                                py: 1.5,
+                                fontWeight: 600,
+                              }}
+                            >
+                              Create Your First Exam
+                            </Button>
+                          </Paper>
+                        ) : hasSearchFilter ? (
+                          <SearchNotFound searchQuery={filterName} />
+                        ) : (
+                          <Paper
+                            sx={{
+                              textAlign: 'center',
+                              py: 5,
+                              px: 3,
+                              bgcolor: 'background.paper',
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                mb: 2,
+                              }}
+                            >
+                              <Iconify
+                                icon="eva:search-outline"
+                                sx={{
+                                  width: 80,
+                                  height: 80,
+                                  color: 'text.disabled',
+                                }}
+                              />
+                            </Box>
+                            <Typography
+                              variant="h6"
+                              gutterBottom
+                              sx={{ color: 'text.primary', fontWeight: 600 }}
+                            >
+                              No Exams Found
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{ color: 'text.secondary', maxWidth: 400, mx: 'auto' }}
+                            >
+                              We couldn't find any exams matching your search criteria. Try adjusting your search or create a new exam.
+                            </Typography>
+                          </Paper>
+                        )}
                       </TableCell>
                     </TableRow>
                   </TableBody>

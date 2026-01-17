@@ -18,8 +18,9 @@ import {
   AppConversionRates,
 } from "../sections/@dashboard/app";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getApprovedUsers } from "../../../../slices/adminSlice";
+import { TaskDialog } from "../../../../features/tasks";
 
 // ----------------------------------------------------------------------
 import {
@@ -44,6 +45,27 @@ import "../../../../../node_modules/@syncfusion/ej2-react-schedule/styles/materi
 
 export default function DashboardApp() {
   var todayDate = new Date().toISOString().slice(0, 10).split("-");
+  const dispatch = useDispatch();
+  const [taskDialogOpen, setTaskDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+
+  const users = useSelector((state) => state.admin.usersApproved);
+  const allUsers = users?.student?.concat(users?.teacher || [], users?.admin || []) || [];
+
+  useEffect(() => {
+    dispatch(getApprovedUsers());
+  }, [dispatch]);
+
+  const handleOpenTaskDialog = (task = null) => {
+    setEditingTask(task);
+    setTaskDialogOpen(true);
+  };
+
+  const handleCloseTaskDialog = () => {
+    setTaskDialogOpen(false);
+    setEditingTask(null);
+  };
+
   const data = [
     {
       Id: 2,
@@ -238,10 +260,18 @@ export default function DashboardApp() {
                 { id: "5", label: "Attend my class" },
                 { id: "6", label: "Play football" },
               ]}
+              onEditTask={(task) => handleOpenTaskDialog(task)}
             />
           </Grid>
         </Grid>
       </Container>
+
+      <TaskDialog
+        open={taskDialogOpen}
+        onClose={handleCloseTaskDialog}
+        task={editingTask}
+        users={allUsers}
+      />
     </Page>
   );
 }

@@ -12,7 +12,7 @@ const CTABanner = () => {
   };
 
   const handleContactUs = () => {
-    window.location.href = '#contact';
+    window.location.href = '/contact';
   };
 
   return (

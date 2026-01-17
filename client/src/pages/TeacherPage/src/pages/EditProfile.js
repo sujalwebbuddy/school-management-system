@@ -12,7 +12,19 @@ import {
   Stack,
   TextField,
   Typography,
+  Chip,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
+import {
+  Person,
+  Email,
+  Phone,
+  Cake,
+  Wc,
+  CloudUpload,
+  CheckCircle,
+} from "@mui/icons-material";
 
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
@@ -46,8 +58,21 @@ const EditAccount = () => {
   });
   const { isAuth, userInfo } = useSelector((state) => state?.user);
   const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result);
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+  };
   const onSubmit = (data) => {
     const formData = new FormData();
     formData.append("image", file);
@@ -80,201 +105,340 @@ const EditAccount = () => {
   };
 
   return (
-    <>
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        mb={5}
-      >
-        <Typography variant="h4" gutterBottom style={{ color: "#ff808b" }}>
-          Edit Profile
-        </Typography>
-      </Stack>
+    <Box
+      component="main"
+      sx={{
+        flexGrow: 1,
+        py: 3,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          mb={4}
+        >
+          <Typography variant="h4" fontWeight={600} color="text.primary">
+            Edit Profile
+          </Typography>
+        </Stack>
 
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          py: 8,
-        }}
-      >
-        <Container maxWidth="lg">
-          <Grid container spacing={3}>
-            <Grid item lg={4} md={6} xs={12}>
-              <Card>
-                <CardContent>
+        <Grid container spacing={3}>
+          <Grid item lg={4} md={6} xs={12}>
+            <Card
+              sx={{
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                boxShadow: 3,
+                borderRadius: 2,
+              }}
+            >
+              <CardContent sx={{ flexGrow: 1, pt: 4 }}>
+                <Box
+                  sx={{
+                    alignItems: "center",
+                    display: "flex",
+                    flexDirection: "column",
+                    position: "relative",
+                  }}
+                >
                   <Box
                     sx={{
-                      alignItems: "center",
-                      display: "flex",
-                      flexDirection: "column",
+                      position: "relative",
+                      mb: 3,
                     }}
                   >
                     <Avatar
-                      src={userf?.profileImage}
+                      src={preview || userf?.profileImage}
                       sx={{
-                        height: 64,
-                        mb: 2,
-                        width: 64,
+                        height: 120,
+                        width: 120,
+                        border: "4px solid",
+                        borderColor: "primary.main",
+                        boxShadow: 4,
                       }}
                     />
-                    <Typography color="textPrimary" gutterBottom variant="h5">
-                      {`${userf?.firstName} ${userf?.lastName}`.toUpperCase()}
-                    </Typography>
-                    <Typography color="textSecondary" variant="body2">
-                      {userf?.role}
-                    </Typography>
-                    <Typography
-                      color="textSecondary"
-                      variant="body2"
-                      style={{ color: "green" }}
+                    <IconButton
+                      component="label"
+                      sx={{
+                        position: "absolute",
+                        bottom: 0,
+                        right: 0,
+                        bgcolor: "primary.main",
+                        color: "white",
+                        "&:hover": {
+                          bgcolor: "primary.dark",
+                        },
+                        border: "3px solid white",
+                      }}
+                      size="small"
                     >
-                      {"Approved"}
-                    </Typography>
+                      <CloudUpload fontSize="small" />
+                      <input
+                        hidden
+                        accept="image/*"
+                        type="file"
+                        onChange={handleFileChange}
+                      />
+                    </IconButton>
                   </Box>
+                  <Typography
+                    color="textPrimary"
+                    gutterBottom
+                    variant="h5"
+                    fontWeight={600}
+                    textAlign="center"
+                  >
+                    {`${userf?.firstName || ""} ${userf?.lastName || ""}`.trim().toUpperCase() || "Teacher"}
+                  </Typography>
+                  <Chip
+                    label={userf?.role || "teacher"}
+                    size="small"
+                    sx={{
+                      mt: 1,
+                      mb: 1,
+                      textTransform: "capitalize",
+                      bgcolor: "primary.lighter",
+                      color: "primary.dark",
+                      fontWeight: 500,
+                    }}
+                  />
+                  <Chip
+                    icon={<CheckCircle sx={{ fontSize: 16 }} />}
+                    label="Approved"
+                    color="success"
+                    size="small"
+                    sx={{
+                      mt: 1,
+                      fontWeight: 500,
+                    }}
+                  />
+                </Box>
+              </CardContent>
+              <Divider />
+              <CardActions sx={{ p: 2 }}>
+                <Button
+                  component="label"
+                  variant="outlined"
+                  fullWidth
+                  startIcon={<CloudUpload />}
+                  sx={{
+                    textTransform: "none",
+                    py: 1.5,
+                  }}
+                >
+                  {file ? "Change Photo" : "Upload Photo"}
+                  <input
+                    hidden
+                    accept="image/*"
+                    type="file"
+                    onChange={handleFileChange}
+                  />
+                </Button>
+              </CardActions>
+            </Card>
+          </Grid>
+          <Grid item lg={8} md={6} xs={12}>
+            <form autoComplete="off" noValidate onSubmit={handleSubmit(onSubmit)}>
+              <Card
+                sx={{
+                  boxShadow: 3,
+                  borderRadius: 2,
+                }}
+              >
+                <CardHeader
+                  title={
+                    <Typography variant="h5" fontWeight={600}>
+                      Profile Information
+                    </Typography>
+                  }
+                  subheader={
+                    <Typography variant="body2" color="text.secondary">
+                      Update your personal information. All fields marked with * are required.
+                    </Typography>
+                  }
+                  sx={{ pb: 2 }}
+                />
+                <Divider />
+                <CardContent sx={{ pt: 3 }}>
+                  <Grid container spacing={3}>
+                    <Grid item md={6} xs={12}>
+                      <TextField
+                        fullWidth
+                        label="First Name"
+                        name="firstName"
+                        defaultValue={userf?.firstName || ""}
+                        variant="outlined"
+                        error={!!errors.firstName}
+                        helperText={errors.firstName?.type === "required" && "First Name is required"}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Person color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                        {...register("firstName", { required: true })}
+                      />
+                    </Grid>
+                    <Grid item md={6} xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Last Name"
+                        name="lastName"
+                        defaultValue={userf?.lastName || ""}
+                        variant="outlined"
+                        error={!!errors.lastName}
+                        helperText={errors.lastName?.type === "required" && "Last Name is required"}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Person color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                        {...register("lastName", { required: true })}
+                      />
+                    </Grid>
+                    <Grid item md={6} xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Email Address"
+                        name="email"
+                        type="email"
+                        defaultValue={userf?.email || ""}
+                        variant="outlined"
+                        error={!!errors.email}
+                        helperText={
+                          errors.email?.type === "required"
+                            ? "Email is required"
+                            : errors.email?.type === "pattern"
+                            ? errors.email?.message
+                            : ""
+                        }
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Email color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                        {...register("email", {
+                          required: true,
+                          pattern: {
+                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                            message: "Invalid email address",
+                          },
+                        })}
+                      />
+                    </Grid>
+                    <Grid item md={6} xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Phone Number"
+                        name="phoneNumber"
+                        type="tel"
+                        defaultValue={userf?.phoneNumber || ""}
+                        variant="outlined"
+                        error={!!errors.phoneNumber}
+                        helperText={errors.phoneNumber?.type === "required" && "Phone Number is required"}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Phone color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                        {...register("phoneNumber", { required: true })}
+                      />
+                    </Grid>
+                    <Grid item md={6} xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Age"
+                        name="age"
+                        type="number"
+                        defaultValue={userf?.age || ""}
+                        variant="outlined"
+                        error={!!errors.age}
+                        helperText={errors.age?.type === "required" && "Age is required"}
+                        inputProps={{ min: 1, max: 120 }}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Cake color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                        {...register("age", { required: true })}
+                      />
+                    </Grid>
+                    <Grid item md={6} xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Gender"
+                        name="gender"
+                        select
+                        defaultValue={userf?.gender || ""}
+                        SelectProps={{ native: true }}
+                        variant="outlined"
+                        error={!!errors.gender}
+                        helperText={errors.gender?.type === "required" && "Gender is required"}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Wc color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
+                        {...register("gender", { required: true })}
+                      >
+                        <option value="">Select Gender</option>
+                        {states.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </TextField>
+                    </Grid>
+                  </Grid>
                 </CardContent>
                 <Divider />
-                <CardActions>
-                  <label htmlFor="upload-photo" style={{ width: "100%" }}>
-                    <input
-                      style={{ display: "none" }}
-                      id="upload-photo"
-                      name="upload-photo"
-                      type="file"
-                      onChange={(e) => setFile(e.target.files[0])}
-                      enctype="multipart/form-data"
-                    />
-
-                    <Button
-                      color="secondary"
-                      variant="contained"
-                      component="span"
-                      style={{ width: "100%" }}
-                    >
-                      Upload button
-                    </Button>
-                  </label>
-                </CardActions>
-              </Card>
-            </Grid>
-            <Grid item lg={8} md={6} xs={12}>
-              <form autoComplete="off" noValidate>
-                <Card>
-                  <CardHeader
-                    subheader="The information can be edited"
-                    title="Profile"
-                  />
-                  <br />
-                  <Divider />
-                  <CardContent>
-                    <Grid container spacing={3}>
-                      <Grid item md={6} xs={12}>
-                        <TextField
-                          fullWidth
-                          name="firstName"
-                          defaultValue={userf?.firstName}
-                          variant="outlined"
-                          {...register("firstName", { required: true })}
-                        />
-                        <p style={{ color: "red" }}>
-                          {errors.firstName?.type === "required" &&
-                            "First Name is required"}
-                        </p>
-                      </Grid>
-                      <Grid item md={6} xs={12}>
-                        <TextField
-                          fullWidth
-                          name="lastName"
-                          defaultValue={userf?.lastName}
-                          variant="outlined"
-                          {...register("lastName", { required: true })}
-                        />
-                        <p style={{ color: "red" }}>
-                          {errors.lastName?.type === "required" &&
-                            "Last Name is required"}
-                        </p>
-                      </Grid>
-                      <Grid item md={6} xs={12}>
-                        <TextField
-                          fullWidth
-                          name="email"
-                          defaultValue={userf?.email}
-                          variant="outlined"
-                          {...register("email", { required: true })}
-                        />
-                        <p style={{ color: "red" }}>
-                          {errors.email?.type === "required" &&
-                            "Email is required"}
-                        </p>
-                      </Grid>
-                      <Grid item md={6} xs={12}>
-                        <TextField
-                          fullWidth
-                          name="phone"
-                          type="number"
-                          defaultValue={userf?.phoneNumber}
-                          variant="outlined"
-                          {...register("phoneNumber", { required: true })}
-                        />
-                        <p style={{ color: "red" }}>
-                          {errors.phoneNumber?.type === "required" &&
-                            "Phone Number is required"}
-                        </p>
-                      </Grid>
-                      <Grid item md={6} xs={12}>
-                        <TextField
-                          fullWidth
-                          lable="Age"
-                          name="age"
-                          variant="outlined"
-                          type="number"
-                          defaultValue={userf?.age || ""}
-                          {...register("age", { required: true })}
-                        />
-                      </Grid>
-                      <Grid item md={6} xs={12}>
-                        <TextField
-                          fullWidth
-                          name="state"
-                          select
-                          defaultValue={userf?.gender}
-                          SelectProps={{ native: true }}
-                          variant="outlined"
-                          {...register("gender", { required: true })}
-                        >
-                          {states.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </TextField>
-                      </Grid>
-                    </Grid>
-                  </CardContent>
-                  <Divider />
-                  <Box
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: 2,
+                    p: 3,
+                  }}
+                >
+                  <Button
+                    variant="outlined"
+                    onClick={() => navigate("/teacherDashboard")}
+                    sx={{ textTransform: "none" }}
+                  >
+                    Cancel
+                  </Button>
+                  <LoadingButton
+                    type="submit"
+                    loading={loading}
+                    variant="contained"
                     sx={{
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      p: 2,
+                      textTransform: "none",
+                      px: 4,
                     }}
                   >
-                    <LoadingButton
-                      onClick={handleSubmit(onSubmit)}
-                      loading={loading}
-                      variant="contained"
-                    >
-                      Save Details
-                    </LoadingButton>
-                  </Box>
-                </Card>
-              </form>
-            </Grid>
+                    Save Changes
+                  </LoadingButton>
+                </Box>
+              </Card>
+            </form>
           </Grid>
-        </Container>
-      </Box>
-    </>
+        </Grid>
+      </Container>
+    </Box>
   );
 };
 

@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { getApprovedUsers } from "../../../../slices/adminSlice";
+import { TaskDialog } from "../../../../features/tasks";
 
 import {
   ScheduleComponent,
@@ -124,6 +125,20 @@ export default function DashboardApp() {
     return state.teacher.classrooms.classes;
   });
   const [studentCount, setStudentCount] = useState(0);
+  const [taskDialogOpen, setTaskDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+
+  const allUsers = users?.student?.concat(users?.teacher || [], users?.admin || []) || [];
+
+  const handleOpenTaskDialog = (task = null) => {
+    setEditingTask(task);
+    setTaskDialogOpen(true);
+  };
+
+  const handleCloseTaskDialog = () => {
+    setTaskDialogOpen(false);
+    setEditingTask(null);
+  };
 
   useEffect(() => {
     const fetchStudentCount = async () => {
@@ -242,10 +257,18 @@ export default function DashboardApp() {
                 { id: "5", label: "Talk to the students" },
                 { id: "6", label: "Mark attendance" },
               ]}
+              onEditTask={(task) => handleOpenTaskDialog(task)}
             />
           </Grid>
         </Grid>
       </Container>
+
+      <TaskDialog
+        open={taskDialogOpen}
+        onClose={handleCloseTaskDialog}
+        task={editingTask}
+        users={allUsers}
+      />
     </Page>
   );
 }

@@ -17,7 +17,7 @@ const {
 // Import middleware
 const authMiddleware = require("../middlewares/authMiddleware");
 const tenantMiddleware = require("../middlewares/tenantMiddleware");
-const { adminMiddleware } = require("../middlewares/authMiddleware");
+const roleMiddleware = require("../middlewares/roleMiddleware");
 
 // Validation rules
 const taskValidationRules = [
@@ -77,19 +77,19 @@ router.get("/assignee/:userId", getTasksByAssignee);
 router.get("/:id", getTask);
 
 // POST /api/tasks - Create new task
-router.post("/", adminMiddleware, taskValidationRules, createTask);
+router.post("/", roleMiddleware('admin'), taskValidationRules, createTask);
 
 // PUT /api/tasks/:id - Update task
-router.put("/:id", adminMiddleware, updateTask);
+router.put("/:id", roleMiddleware('admin'), updateTask);
 
 // PATCH /api/tasks/:id/status - Update task status (for kanban)
-router.patch("/:id/status", adminMiddleware, [
+router.patch("/:id/status", roleMiddleware('admin'), [
   body("status")
     .isIn(["Open", "InProgress", "Testing", "Close"])
     .withMessage("Invalid status"),
 ], updateTaskStatus);
 
 // DELETE /api/tasks/:id - Delete task
-router.delete("/:id", adminMiddleware, deleteTask);
+router.delete("/:id", roleMiddleware('admin'), deleteTask);
 
 module.exports = router;

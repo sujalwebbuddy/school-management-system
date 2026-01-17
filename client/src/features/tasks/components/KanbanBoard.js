@@ -98,56 +98,79 @@ const Kanban = () => {
   };
   if (loading && tasks.length === 0) {
     return (
-      <>
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          mb={5}
-        >
-          <Typography variant="h4" gutterBottom style={{ color: "#ff808b" }}>
-            Kanban App
-          </Typography>
-        </Stack>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress size={48} />
-        </Box>
-      </>
+      <Box
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="500px"
+      >
+        <CircularProgress size={48} />
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+          Loading tasks...
+        </Typography>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <>
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          mb={5}
+      <Box
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="500px"
+        p={3}
+      >
+        <Typography variant="h6" color="error" gutterBottom>
+          Error Loading Tasks
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {error}
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (tasks.length === 0) {
+    return (
+      <Box
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="500px"
+        p={4}
+      >
+        <Box
+          sx={{
+            width: 100,
+            height: 100,
+            borderRadius: '50%',
+            bgcolor: 'action.hover',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mb: 3,
+          }}
         >
-          <Typography variant="h4" gutterBottom style={{ color: "#ff808b" }}>
-            Kanban App
+          <Typography variant="h2" color="text.disabled">
+            📋
           </Typography>
-        </Stack>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <Typography color="error">Error loading tasks: {error}</Typography>
         </Box>
-      </>
+        <Typography variant="h6" color="text.primary" gutterBottom fontWeight={600}>
+          No Tasks Available
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 400, textAlign: 'center' }}>
+          Create your first task to see it appear on the Kanban board. Drag and drop tasks between columns to update their status.
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <>
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        mb={5}
-      >
-        <Typography variant="h4" gutterBottom style={{ color: "#ff808b" }}>
-          Kanban App
-        </Typography>
-      </Stack>
+    <Box sx={{ minHeight: '600px' }}>
       <KanbanComponent
         id="kanban"
         keyField="Status"
@@ -163,7 +186,7 @@ const Kanban = () => {
           ))}
         </ColumnsDirective>
       </KanbanComponent>
-    </>
+    </Box>
   );
 };
 

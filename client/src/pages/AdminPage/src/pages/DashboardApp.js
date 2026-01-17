@@ -279,6 +279,7 @@ export default function DashboardApp() {
             <AppTasks
               title="Tasks"
               onAddTask={() => handleOpenTaskDialog()}
+              onEditTask={(task) => handleOpenTaskDialog(task)}
             />
           </Grid>
         </Grid>

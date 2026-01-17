@@ -22,9 +22,10 @@ AppTasks.propTypes = {
   title: PropTypes.string,
   subheader: PropTypes.string,
   list: PropTypes.array.isRequired,
+  onEditTask: PropTypes.func,
 };
 
-export default function AppTasks({ title, subheader, list, ...other }) {
+export default function AppTasks({ title, subheader, list, onEditTask, ...other }) {
   const formik = useFormik({
     initialValues: {
       checked: [list[0].id, list[2].id],
@@ -48,6 +49,7 @@ export default function AppTasks({ title, subheader, list, ...other }) {
               task={task}
               checked={values.checked.includes(task.id)}
               formik={formik}
+              onEdit={onEditTask}
             />
           ))}
         </Form>
@@ -62,9 +64,10 @@ TaskItem.propTypes = {
   formik: PropTypes.object,
   checked: PropTypes.bool,
   task: PropTypes.object,
+  onEdit: PropTypes.func,
 };
 
-function TaskItem({ formik, task, checked, ...other }) {
+function TaskItem({ formik, task, checked, onEdit, ...other }) {
   const { getFieldProps } = formik;
 
   const [open, setOpen] = useState(null);
@@ -82,14 +85,11 @@ function TaskItem({ formik, task, checked, ...other }) {
     console.log("MARK COMPLETE", task);
   };
 
-  const handleShare = () => {
-    handleCloseMenu();
-    console.log("SHARE", task);
-  };
-
   const handleEdit = () => {
     handleCloseMenu();
-    console.log("EDIT", task);
+    if (onEdit) {
+      onEdit(task);
+    }
   };
 
   const handleDelete = () => {
@@ -137,11 +137,6 @@ function TaskItem({ formik, task, checked, ...other }) {
             <MenuItem onClick={handleEdit}>
               <Iconify icon={"eva:edit-fill"} />
               Edit
-            </MenuItem>
-
-            <MenuItem onClick={handleShare}>
-              <Iconify icon={"eva:share-fill"} />
-              Share
             </MenuItem>
 
             <Divider sx={{ borderStyle: "dashed" }} />

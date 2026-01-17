@@ -9,42 +9,61 @@ import {
   Link,
   Divider,
 } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import facebookIcon from '../../../images/landing/facebook-icon.svg';
 import twitterIcon from '../../../images/landing/twitter-icon.svg';
 import youtubeIcon from '../../../images/landing/youtube-icon.svg';
 
 const Footer = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleAnchorClick = (e, href) => {
+    e.preventDefault();
+    if (location.pathname === '/') {
+      const element = document.querySelector(href);
+      if (element) {
+        const headerOffset = 80;
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth',
+        });
+      }
+    } else {
+      navigate('/');
+      setTimeout(() => {
+        const element = document.querySelector(href);
+        if (element) {
+          const headerOffset = 80;
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth',
+          });
+        }
+      }, 100);
+    }
+  };
+
   const footerLinks = {
     main: [
-      { text: 'Blog', href: '#blog' },
-      { text: 'FAQs', href: '#faq' },
-      { text: 'Support', href: '#support' },
+      { text: 'FAQs', href: '/faq' },
+      { text: 'Contact', href: '/contact' },
       { text: 'About Us', href: '#about' },
     ],
     product: [
       { text: 'Log In', href: '/login' },
-      { text: 'Personal', href: '#personal' },
-      { text: 'Business', href: '#business' },
-      { text: 'Team', href: '#team' },
-    ],
-    press: [
-      { text: 'Logos', href: '#logos' },
-      { text: 'Events', href: '#events' },
-      { text: 'Stories', href: '#stories' },
-      { text: 'Office', href: '#office' },
-    ],
-    team: [
-      { text: 'Career', href: '#career' },
-      { text: 'Founders', href: '#founders' },
-      { text: 'Culture', href: '#culture' },
-      { text: 'Onboarding', href: '#onboarding' },
+      { text: 'Sign Up', href: '/register' },
+      { text: 'Pricing', href: '#pricing' },
+      { text: 'Features', href: '#features' },
     ],
     legal: [
-      { text: 'GDPR', href: '#gdpr' },
       { text: 'Privacy Policy', href: '/privacy-policy' },
       { text: 'Terms of Service', href: '/terms-of-service' },
-      { text: 'Disclaimer', href: '#disclaimer' },
+      { text: 'Disclaimer', href: '/disclaimer' },
     ],
   };
 
@@ -84,23 +103,42 @@ const Footer = () => {
               MAIN
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {footerLinks.main.map((link, index) => (
-                <Link
-                  key={index}
-                  component={RouterLink}
-                  to={link.href}
-                  sx={{
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontSize: { xs: '0.75rem', md: '0.875rem' },
-                    textDecoration: 'none',
-                    '&:hover': {
-                      color: 'white',
-                    },
-                  }}
-                >
-                  {link.text}
-                </Link>
-              ))}
+              {footerLinks.main.map((link, index) =>
+                link.href.startsWith('#') ? (
+                  <Link
+                    key={index}
+                    href={link.href}
+                    onClick={(e) => handleAnchorClick(e, link.href)}
+                    sx={{
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      fontSize: { xs: '0.75rem', md: '0.875rem' },
+                      textDecoration: 'none',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        color: 'white',
+                      },
+                    }}
+                  >
+                    {link.text}
+                  </Link>
+                ) : (
+                  <Link
+                    key={index}
+                    component={RouterLink}
+                    to={link.href}
+                    sx={{
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      fontSize: { xs: '0.75rem', md: '0.875rem' },
+                      textDecoration: 'none',
+                      '&:hover': {
+                        color: 'white',
+                      },
+                    }}
+                  >
+                    {link.text}
+                  </Link>
+                )
+              )}
             </Box>
           </Grid>
 
@@ -120,93 +158,42 @@ const Footer = () => {
               PRODUCT
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {footerLinks.product.map((link, index) => (
-                <Link
-                  key={index}
-                  component={RouterLink}
-                  to={link.href}
-                  sx={{
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontSize: { xs: '0.75rem', md: '0.875rem' },
-                    textDecoration: 'none',
-                    '&:hover': {
-                      color: 'white',
-                    },
-                  }}
-                >
-                  {link.text}
-                </Link>
-              ))}
-            </Box>
-          </Grid>
-
-          <Grid item xs={6} sm={4} md={2.4}>
-            <Typography
-              variant="overline"
-              sx={{
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: 'white',
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em',
-                mb: 2,
-                display: 'block',
-              }}
-            >
-              PRESS
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {footerLinks.press.map((link, index) => (
-                <Link
-                  key={index}
-                  href={link.href}
-                  sx={{
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontSize: { xs: '0.75rem', md: '0.875rem' },
-                    textDecoration: 'none',
-                    '&:hover': {
-                      color: 'white',
-                    },
-                  }}
-                >
-                  {link.text}
-                </Link>
-              ))}
-            </Box>
-          </Grid>
-
-          <Grid item xs={6} sm={4} md={2.4}>
-            <Typography
-              variant="overline"
-              sx={{
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: 'white',
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em',
-                mb: 2,
-                display: 'block',
-              }}
-            >
-              TEAM
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {footerLinks.team.map((link, index) => (
-                <Link
-                  key={index}
-                  href={link.href}
-                  sx={{
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontSize: { xs: '0.75rem', md: '0.875rem' },
-                    textDecoration: 'none',
-                    '&:hover': {
-                      color: 'white',
-                    },
-                  }}
-                >
-                  {link.text}
-                </Link>
-              ))}
+              {footerLinks.product.map((link, index) =>
+                link.href.startsWith('#') ? (
+                  <Link
+                    key={index}
+                    href={link.href}
+                    onClick={(e) => handleAnchorClick(e, link.href)}
+                    sx={{
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      fontSize: { xs: '0.75rem', md: '0.875rem' },
+                      textDecoration: 'none',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        color: 'white',
+                      },
+                    }}
+                  >
+                    {link.text}
+                  </Link>
+                ) : (
+                  <Link
+                    key={index}
+                    component={RouterLink}
+                    to={link.href}
+                    sx={{
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      fontSize: { xs: '0.75rem', md: '0.875rem' },
+                      textDecoration: 'none',
+                      '&:hover': {
+                        color: 'white',
+                      },
+                    }}
+                  >
+                    {link.text}
+                  </Link>
+                )
+              )}
             </Box>
           </Grid>
 

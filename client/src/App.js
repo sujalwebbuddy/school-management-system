@@ -13,6 +13,9 @@ const OrganizationSignup = React.lazy(() => import("./pages/OrganizationSignup")
 const SubscriptionManagement = React.lazy(() => import("./pages/SubscriptionManagement"));
 const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = React.lazy(() => import("./pages/TermsOfService"));
+const Contact = React.lazy(() => import("./pages/Contact"));
+const FAQ = React.lazy(() => import("./pages/FAQ"));
+const Disclaimer = React.lazy(() => import("./pages/Disclaimer"));
 
 const App = () => {
   const dispatch = useDispatch();
@@ -33,6 +36,9 @@ const App = () => {
           <Route path="/subscription" element={<SubscriptionManagement />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
         </Routes>
       </Suspense>
       {isAuth && userInfo.role === "admin" ? (
