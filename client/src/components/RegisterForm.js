@@ -19,6 +19,7 @@ const RegisterForm = () => {
   const [selectedOrganization, setSelectedOrganization] = useState(null);
   const [organizations, setOrganizations] = useState([]);
   const [orgLoading, setOrgLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const orgDebounceRef = useRef(null);
 
   const searchOrganizations = useCallback(async (query) => {
@@ -62,6 +63,7 @@ const RegisterForm = () => {
         return;
       }
 
+      setIsSubmitting(true);
       const registrationData = {
         ...data,
         organizationDomain: selectedOrganization.domain,
@@ -81,181 +83,213 @@ const RegisterForm = () => {
           : "Registration failed due to an unknown error";
       await swal("Oops!", message, "error");
       reset({ email: "" });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <form className="sign-up-form">
-      <h2 className="title" style={{ fontFamily: "poppins" }}>
-        Sign up
-      </h2>
-      <div className="input-field">
-        <i className="fas fa-user" />
-        <input
-          name="firstName"
-          type="text"
-          placeholder="First Name"
-          {...register("firstName", { required: true })}
-        />
+      <div className="form-header">
+        <h2 className="title">Create Your Account</h2>
+        <p className="form-subtitle">Join us and get started today</p>
       </div>
-      <p style={{ color: "red" }}>
-        {errors.firstName?.type === "required" && "First Name is required"}
-      </p>
-      <div className="input-field">
-        <i className="fas fa-user" />
-        <input
-          name="lastName"
-          type="text"
-          placeholder="Last Name"
-          {...register("lastName", { required: true })}
-        />
-      </div>
-      <p style={{ color: "red" }}>
-        {errors.lastName?.type === "required" && "Last Name is required"}
-      </p>
-      <div className="input-field">
-        <i className="fas fa-envelope" />
-        <input
-          name="email"
-          type="email"
-          placeholder="Email"
-          {...register("email", {
-            pattern: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-            required: true,
-          })}
-        />
-      </div>
-      <p style={{ color: "red" }}>
-        {errors.email?.type === "required" && "Email is required"}
-        {errors.email?.type === "pattern" && "Unvalid email"}
-      </p>
 
-      <div className="input-field">
-        <i className="fas fa-phone" />
-        <input
-          type="text"
-          name="phoneNumber"
-          placeholder="Contact Number"
-          {...register("phoneNumber", {
-            required: true,
-            pattern: /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[\s\./0-9]*$/g,
-          })}
-        />
-      </div>
-      <p style={{ color: "red" }}>
-        {errors.phoneNumber?.type === "required" &&
-          "Phone Number is required"}
-        {errors.phoneNumber?.type === "pattern" && "Unvalid phone number"}
-      </p>
-      <div className="input-field">
-        <i className="fas fa-user-tag" />
-        <FormControl fullWidth>
-          <StyledSelect
-            {...register("role", { required: true })}
-            displayEmpty
-            value={watch("role") || ""}
-            onChange={(e) => {
-              setValue("role", e.target.value, { shouldValidate: true });
-            }}
-            inputProps={{ "aria-label": "Select Role" }}
-          >
-            <MenuItem value="" disabled>
-              Select Role
-            </MenuItem>
-            <MenuItem value="teacher">Teacher</MenuItem>
-            <MenuItem value="student">Student</MenuItem>
-          </StyledSelect>
-        </FormControl>
-      </div>
-      <p style={{ color: "red" }}>
-        {errors.role?.type === "required" && "Role is required"}
-      </p>
+      <div className="form-section">
+        <h3 className="section-title">Personal Information</h3>
+        <div className="form-row">
+          <div className="form-group">
+            <div className={`input-field ${errors.firstName ? "error" : ""}`}>
+              <i className="fas fa-user" />
+              <input
+                name="firstName"
+                type="text"
+                placeholder="First Name"
+                {...register("firstName", { required: true })}
+              />
+            </div>
+            {errors.firstName?.type === "required" && (
+              <span className="error-message">First Name is required</span>
+            )}
+          </div>
 
-      {/* Organization Selection */}
-      <div className="input-field">
-        <i className="fas fa-building" />
-        <StyledAutocomplete
-          options={organizations}
-          getOptionLabel={(option) => {
-            if (typeof option === "string") return option;
-            return option.name || option.domain || "";
-          }}
-          isOptionEqualToValue={(option, value) => option.id === value.id}
-          filterOptions={(options) => options}
-          loading={orgLoading}
-          value={selectedOrganization}
-          onChange={(event, newValue) => {
-            setSelectedOrganization(newValue);
-          }}
-          onInputChange={(event, newInputValue, reason) => {
-            if (reason === "input") {
-              searchOrganizations(newInputValue);
-            }
-          }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              placeholder="Search organizations by name or domain..."
-              variant="outlined"
+          <div className="form-group">
+            <div className={`input-field ${errors.lastName ? "error" : ""}`}>
+              <i className="fas fa-user" />
+              <input
+                name="lastName"
+                type="text"
+                placeholder="Last Name"
+                {...register("lastName", { required: true })}
+              />
+            </div>
+            {errors.lastName?.type === "required" && (
+              <span className="error-message">Last Name is required</span>
+            )}
+          </div>
+        </div>
+
+        <div className="form-group">
+          <div className={`input-field ${errors.email ? "error" : ""}`}>
+            <i className="fas fa-envelope" />
+            <input
+              name="email"
+              type="email"
+              placeholder="Email Address"
+              {...register("email", {
+                pattern: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                required: true,
+              })}
             />
+          </div>
+          {errors.email?.type === "required" && (
+            <span className="error-message">Email is required</span>
           )}
-          renderOption={(props, option) => (
-            <li {...props} key={option.id} style={{ padding: "8px 16px" }}>
-              <div>
-                <div
-                  style={{
-                    fontWeight: 600,
-                    color: "#333",
-                    fontSize: "0.95rem",
-                  }}
-                >
-                  {option.name}
-                </div>
-                <div
-                  style={{
-                    fontSize: "0.85rem",
-                    color: "#666",
-                    marginTop: "2px",
-                  }}
-                >
-                  @{option.domain}
-                </div>
-              </div>
-            </li>
+          {errors.email?.type === "pattern" && (
+            <span className="error-message">Please enter a valid email</span>
           )}
-          noOptionsText={
-            orgLoading
-              ? "Searching..."
-              : "Start typing to search for organizations..."
-          }
-          sx={{
-            width: "100%",
-            "& .MuiAutocomplete-listbox": {
-              maxHeight: "200px",
-              padding: "4px 0",
-            },
-            "& .MuiAutocomplete-option": {
-              minHeight: "auto",
-              padding: "8px 16px",
-            },
-            "& .MuiAutocomplete-noOptions": {
-              padding: "12px 16px",
-              fontSize: "0.9rem",
-              color: "#666",
-            },
-          }}
-        />
+        </div>
+
+        <div className="form-group">
+          <div className={`input-field ${errors.phoneNumber ? "error" : ""}`}>
+            <i className="fas fa-phone" />
+            <input
+              type="text"
+              name="phoneNumber"
+              placeholder="Contact Number"
+              {...register("phoneNumber", {
+                required: true,
+                pattern: /^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[\s\./0-9]*$/g,
+              })}
+            />
+          </div>
+          {errors.phoneNumber?.type === "required" && (
+            <span className="error-message">Phone Number is required</span>
+          )}
+          {errors.phoneNumber?.type === "pattern" && (
+            <span className="error-message">Please enter a valid phone number</span>
+          )}
+        </div>
       </div>
-      <input
+
+      <div className="form-section">
+        <h3 className="section-title">Account Details</h3>
+        <div className="form-group">
+          <div className={`input-field ${errors.role ? "error" : ""}`}>
+            <i className="fas fa-user-tag" />
+            <FormControl fullWidth>
+              <StyledSelect
+                {...register("role", { required: true })}
+                displayEmpty
+                value={watch("role") || ""}
+                onChange={(e) => {
+                  setValue("role", e.target.value, { shouldValidate: true });
+                }}
+                inputProps={{ "aria-label": "Select Role" }}
+              >
+                <MenuItem value="" disabled>
+                  Select Role
+                </MenuItem>
+                <MenuItem value="teacher">Teacher</MenuItem>
+                <MenuItem value="student">Student</MenuItem>
+              </StyledSelect>
+            </FormControl>
+          </div>
+          {errors.role?.type === "required" && (
+            <span className="error-message">Please select a role</span>
+          )}
+        </div>
+
+        <div className="form-group">
+          <div className={`input-field ${!selectedOrganization ? "warning" : ""}`}>
+            <i className="fas fa-building" />
+            <StyledAutocomplete
+              options={organizations}
+              getOptionLabel={(option) => {
+                if (typeof option === "string") return option;
+                return option.name || option.domain || "";
+              }}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              filterOptions={(options) => options}
+              loading={orgLoading}
+              value={selectedOrganization}
+              onChange={(event, newValue) => {
+                setSelectedOrganization(newValue);
+              }}
+              onInputChange={(event, newInputValue, reason) => {
+                if (reason === "input") {
+                  searchOrganizations(newInputValue);
+                }
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  placeholder="Search organizations by name or domain..."
+                  variant="outlined"
+                />
+              )}
+              renderOption={(props, option) => (
+                <li {...props} key={option.id} className="org-option">
+                  <div className="org-option-content">
+                    <div className="org-name">{option.name}</div>
+                    <div className="org-domain">@{option.domain}</div>
+                  </div>
+                </li>
+              )}
+              noOptionsText={
+                orgLoading
+                  ? "Searching..."
+                  : "Start typing to search for organizations..."
+              }
+              sx={{
+                width: "100%",
+                "& .MuiAutocomplete-listbox": {
+                  maxHeight: "200px",
+                  padding: "4px 0",
+                },
+                "& .MuiAutocomplete-option": {
+                  minHeight: "auto",
+                  padding: "8px 16px",
+                },
+                "& .MuiAutocomplete-noOptions": {
+                  padding: "12px 16px",
+                  fontSize: "0.9rem",
+                  color: "#666",
+                },
+              }}
+            />
+          </div>
+          {selectedOrganization && (
+            <span className="success-message">
+              Selected: {selectedOrganization.name}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <button
         type="submit"
-        className="btnauth"
-        value="Sign up"
+        className={`btnauth btn-primary ${isSubmitting ? "loading" : ""}`}
         onClick={handleSubmit(onSubmit)}
-      />
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? (
+          <>
+            <span>Creating Account...</span>
+            <i className="fas fa-spinner fa-spin" />
+          </>
+        ) : (
+          <>
+            <span>Create Account</span>
+            <i className="fas fa-arrow-right" />
+          </>
+        )}
+      </button>
     </form>
   );
 };
 
 export default RegisterForm;
+
 
 

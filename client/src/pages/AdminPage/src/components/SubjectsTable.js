@@ -34,14 +34,13 @@ export default function SubjectsTable({ subjects }) {
             }}
           >
             <TableCell sx={{ fontWeight: 600 }}>Subject</TableCell>
-            <TableCell align="right" sx={{ fontWeight: 600 }}>
-              Marks
-            </TableCell>
+            <TableCell sx={{ fontWeight: 600 }}>Code</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {subjects.map((subject, idx) => {
             const subjectName = typeof subject === 'object' ? subject.name : subject;
+            const subjectCode = typeof subject === 'object' ? subject.code : 'N/A';
             return (
               <TableRow
                 key={idx}
@@ -54,9 +53,9 @@ export default function SubjectsTable({ subjects }) {
                 <TableCell>
                   <Chip label={subjectName} size="small" variant="outlined" />
                 </TableCell>
-                <TableCell align="right">
-                  <Typography variant="body2" color="text.secondary">
-                    20
+                <TableCell>
+                  <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 500 }}>
+                    {subjectCode}
                   </Typography>
                 </TableCell>
               </TableRow>

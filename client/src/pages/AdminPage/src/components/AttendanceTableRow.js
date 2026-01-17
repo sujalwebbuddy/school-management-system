@@ -19,7 +19,11 @@ export default function AttendanceTableRow({ user, attendanceStatus, onStatusCha
   };
 
   const classInfo = role === 'student' ? (user.classIn?.className || user.classIn || 'N/A') : null;
-  const subjectInfo = role === 'teacher' ? (user.subject?.name || user.subject || 'N/A') : null;
+  const subjectInfo = role === 'teacher' ? (
+    user.subject?.name ?
+      `${user.subject.name}${user.subject.code ? ` (${user.subject.code})` : ''}` :
+      (user.subject || 'N/A')
+  ) : null;
 
   return (
     <TableRow

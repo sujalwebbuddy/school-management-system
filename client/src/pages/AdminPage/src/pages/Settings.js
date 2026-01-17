@@ -108,7 +108,7 @@ const Settings = () => {
                         <Typography variant="body2" color="text.secondary" gutterBottom>
                           Available Upgrades:
                         </Typography>
-                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                        <Stack direction="row" spacing={1} flexWrap="wrap">
                           {availableUpgrades.map((plan) => (
                             <Button
                               key={plan.id}

@@ -38,6 +38,9 @@ export function descendingComparator(a, b, orderBy) {
     case 'subject':
       aValue = a.subject?.name || a.subject || '';
       bValue = b.subject?.name || b.subject || '';
+      // Also include code in comparison for better sorting/search
+      if (a.subject?.code) aValue += ` ${a.subject.code}`;
+      if (b.subject?.code) bValue += ` ${b.subject.code}`;
       break;
     default:
       aValue = a[orderBy] || '';
@@ -76,6 +79,7 @@ export function applySortFilter(array, comparator, query) {
       const phoneNumber = _user.phoneNumber || '';
       const className = _user.classIn?.className || _user.classIn || '';
       const subjectName = _user.subject?.name || _user.subject || '';
+      const subjectCode = _user.subject?.code || '';
       const searchQuery = query.toLowerCase();
       return (
         name.toLowerCase().indexOf(searchQuery) !== -1 ||
@@ -83,6 +87,7 @@ export function applySortFilter(array, comparator, query) {
         phoneNumber.toLowerCase().indexOf(searchQuery) !== -1 ||
         className.toLowerCase().indexOf(searchQuery) !== -1 ||
         subjectName.toLowerCase().indexOf(searchQuery) !== -1 ||
+        subjectCode.toLowerCase().indexOf(searchQuery) !== -1 ||
         (_user.role || '').toLowerCase().indexOf(searchQuery) !== -1
       );
     });

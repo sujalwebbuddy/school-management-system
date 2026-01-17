@@ -70,7 +70,7 @@ export default function DashboardApp() {
               <Alert severity="warning" sx={{ mb: 2 }}>
                 <Typography variant="body2">
                   You have <strong>{analytics.pendingUsers}</strong> pending user approval{analytics.pendingUsers > 1 ? 's' : ''}.
-                  <Button size="small" sx={{ ml: 1 }} onClick={() => navigate('/dashboard/users')}>
+                  <Button size="small" sx={{ ml: 1 }} onClick={() => navigate('/dashboard/user')}>
                     Review Now
                   </Button>
                 </Typography>
@@ -95,7 +95,7 @@ export default function DashboardApp() {
                 <Typography variant="h6" gutterBottom>
                   Quick Actions
                 </Typography>
-                <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+                <Stack direction="row" spacing={2} flexWrap="wrap">
                   <Button variant="outlined" size="small" onClick={() => navigate('/dashboard/users')}>
                     Manage Users
                   </Button>

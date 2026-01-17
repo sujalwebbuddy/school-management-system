@@ -14,7 +14,7 @@ const LoginForm = () => {
   } = useForm();
 
   const dispatch = useDispatch();
-  const { errors: loginerror, isAuth, userInfo } = useSelector((state) => state.user);
+  const { errors: loginerror, isAuth, userInfo, loading } = useSelector((state) => state.user);
   const nav = useNavigate();
 
   useEffect(() => {
@@ -29,47 +29,89 @@ const LoginForm = () => {
 
   return (
     <form className="sign-in-form">
-      <h2 className="title" style={{ fontFamily: "poppins" }}>
-        Sign in
-      </h2>
-      <div className="input-field">
-        <i className="fas fa-building" />
-        <input
-          name="organizationDomain"
-          type="text"
-          placeholder="Organization Domain (e.g., springfield-high)"
-          {...register("organizationDomain", { required: true })}
-        />
+      <div className="form-header">
+        <h2 className="title">Welcome Back</h2>
+        <p className="form-subtitle">Sign in to continue to your account</p>
       </div>
-      <div className="input-field">
-        <i className="fas fa-user" />
-        <input
-          name="email"
-          type="email"
-          placeholder="Email"
-          {...register("email", { required: true })}
-        />
+
+      <div className="form-section">
+        <div className="form-group">
+          <div className={`input-field ${errors.organizationDomain ? "error" : ""}`}>
+            <i className="fas fa-building" />
+            <input
+              name="organizationDomain"
+              type="text"
+              placeholder="Organization Domain"
+              {...register("organizationDomain", { required: true })}
+            />
+          </div>
+          {errors.organizationDomain?.type === "required" && (
+            <span className="error-message">Organization Domain is required</span>
+          )}
+        </div>
+
+        <div className="form-group">
+          <div className={`input-field ${errors.email ? "error" : ""}`}>
+            <i className="fas fa-user" />
+            <input
+              name="email"
+              type="email"
+              placeholder="Email Address"
+              {...register("email", { required: true })}
+            />
+          </div>
+          {errors.email?.type === "required" && (
+            <span className="error-message">Email is required</span>
+          )}
+        </div>
+
+        <div className="form-group">
+          <div className={`input-field ${errors.password ? "error" : ""}`}>
+            <i className="fas fa-lock" />
+            <input
+              name="password"
+              placeholder="Password"
+              type="password"
+              {...register("password", { required: true })}
+            />
+          </div>
+          {errors.password?.type === "required" && (
+            <span className="error-message">Password is required</span>
+          )}
+        </div>
+
+        {loginerror && (
+          <div className="form-group">
+            <span className="error-message" style={{ marginLeft: "0", fontSize: "0.85rem" }}>
+              {loginerror}
+            </span>
+          </div>
+        )}
       </div>
-      <div className="input-field">
-        <i className="fas fa-lock" />
-        <input
-          name="password"
-          placeholder="Password"
-          type="password"
-          {...register("password", { required: true })}
-        />
-      </div>
-      <p style={{ color: "red" }}>{loginerror && loginerror}</p>
-      <input
+
+      <button
         type="submit"
-        value="Login"
-        className="btnauth solid"
+        className={`btnauth btn-primary ${loading ? "loading" : ""}`}
         onClick={handleSubmit(onSubmitLogin)}
-      />
+        disabled={loading}
+      >
+        {loading ? (
+          <>
+            <span>Signing In...</span>
+            <i className="fas fa-spinner fa-spin" />
+          </>
+        ) : (
+          <>
+            <span>Sign In</span>
+            <i className="fas fa-arrow-right" />
+          </>
+        )}
+      </button>
     </form>
   );
 };
 
 export default LoginForm;
+
 
 

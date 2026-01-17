@@ -37,8 +37,31 @@ const steps = ['Choose Plan', 'Organization Details', 'Admin Account', 'Payment'
 // Use plans from constants
 const plans = getAllPlans();
 
-// Payment Form Component
-const PaymentForm = ({ onSubmit, loading, selectedPlan }) => {
+// Payment Form Component for Free Plans (doesn't use Stripe hooks)
+const FreePlanPaymentForm = ({ onSubmit, loading }) => {
+  return (
+    <Box sx={{ mt: 3 }}>
+      <Alert severity="info">
+        This plan is free. No payment required.
+      </Alert>
+      <Button
+        variant="contained"
+        fullWidth
+        sx={{ mt: 2 }}
+        onClick={async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          await onSubmit(null); // No payment method needed for free plan
+        }}
+        disabled={loading}
+      >
+        {loading ? <CircularProgress size={24} /> : 'Complete Signup'}
+      </Button>
+    </Box>
+  );
+};
+
+const PaidPlanPaymentForm = ({ onSubmit, loading }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState(null);
@@ -93,29 +116,6 @@ const PaymentForm = ({ onSubmit, loading, selectedPlan }) => {
       },
     },
   };
-
-  if (selectedPlan.price === 0) {
-    return (
-      <Box sx={{ mt: 3 }}>
-        <Alert severity="info">
-          This plan is free. No payment required.
-        </Alert>
-        <Button
-          variant="contained"
-          fullWidth
-          sx={{ mt: 2 }}
-          onClick={async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            await onSubmit(null); // No payment method needed for free plan
-          }}
-          disabled={loading}
-        >
-          {loading ? <CircularProgress size={24} /> : 'Complete Signup'}
-        </Button>
-      </Box>
-    );
-  }
 
   return (
     <Box sx={{ mt: 3 }}>
@@ -515,20 +515,25 @@ const OrganizationSignup = () => {
                     {selectedPlan.priceDisplay}
                   </Typography>
                 </Card>
-                {selectedPlan.price > 0 && clientSecret ? (
+                {selectedPlan.price === 0 ? (
+                  <FreePlanPaymentForm
+                    onSubmit={handleFinalSubmit}
+                    loading={loading}
+                  />
+                ) : clientSecret ? (
                   <Elements stripe={stripePromise} options={{ clientSecret }}>
-                    <PaymentForm
+                    <PaidPlanPaymentForm
                       onSubmit={handleFinalSubmit}
                       loading={loading}
-                      selectedPlan={selectedPlan}
                     />
                   </Elements>
                 ) : (
-                  <PaymentForm
-                    onSubmit={handleFinalSubmit}
-                    loading={loading}
-                    selectedPlan={selectedPlan}
-                  />
+                  <Box sx={{ mt: 2 }}>
+                    <Alert severity="warning">
+                      Initializing payment. Please wait...
+                    </Alert>
+                    <CircularProgress sx={{ mt: 2 }} />
+                  </Box>
                 )}
               </Box>
             )}

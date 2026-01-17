@@ -32,6 +32,7 @@ const userSlice = createSlice({
     token: localStorage.getItem("token") || null,
     errors: null,
     isAuth: Boolean(localStorage.getItem("isAuth")) || null,
+    loading: false,
   },
   reducers: {
     logoutUser: (state) => {
@@ -40,10 +41,16 @@ const userSlice = createSlice({
       state.isAuth = false;
       state.userInfo = {};
       state.errors = null;
+      state.loading = false;
     },
   },
   extraReducers: {
+    [loginUser.pending]: (state) => {
+      state.loading = true;
+      state.errors = null;
+    },
     [loginUser.fulfilled]: (state, action) => {
+      state.loading = false;
       state.isAuth = true;
       state.token = action.payload.token;
       localStorage.setItem("token", action.payload.token);
@@ -56,6 +63,7 @@ const userSlice = createSlice({
       state.errors = null;
     },
     [loginUser.rejected]: (state, action) => {
+      state.loading = false;
       state.errors = action.payload;
     },
     [getUserData.fulfilled]: (state, action) => {

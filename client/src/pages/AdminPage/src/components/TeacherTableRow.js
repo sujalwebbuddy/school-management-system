@@ -10,7 +10,7 @@ export default function TeacherTableRow({ teacher, isItemSelected, onSelect }) {
   let subjectName = 'N/A';
   if (subject) {
     if (typeof subject === 'object' && subject.name) {
-      subjectName = subject.name;
+      subjectName = subject.code ? `${subject.name} (${subject.code})` : subject.name;
     } else if (typeof subject === 'string') {
       subjectName = subject;
     }
