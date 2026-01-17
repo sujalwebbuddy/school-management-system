@@ -2,7 +2,6 @@ const User = require("../models/userModel");
 const Organization = require("../models/organizationModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { validationResult } = require("express-validator");
 const config = require("../config/envConfig");
 
 class UserControllerError extends Error {
@@ -53,9 +52,11 @@ exports.login = async (req, res) => {
 
     const userInfo = await User.findById(existUser._id)
       .select("-password")
-      .populate("classIn")
-      .populate("subject")
-      .populate("organizationId", "name domain subscriptionTier subscriptionStatus maxUsers features");
+      .populate([
+        "classIn",
+        "subject",
+        { path: "organizationId", select: "name domain subscriptionTier subscriptionStatus maxUsers features" }
+      ]);
 
     const token = jwt.sign(
       { sub: existUser._id },
@@ -193,9 +194,11 @@ exports.getUserData = async (req, res) => {
 
     const user = await User.findById(req.user._id)
       .select("-password")
-      .populate("classIn")
-      .populate("subject")
-      .populate("organizationId", "name domain subscriptionTier subscriptionStatus maxUsers features");
+      .populate([
+        "classIn",
+        "subject",
+        { path: "organizationId", select: "name domain subscriptionTier subscriptionStatus maxUsers features" }
+      ]);
 
     if (!user) {
       throw new UserControllerError("User not found", "USER_NOT_FOUND", 404);

@@ -1,5 +1,5 @@
 const {
-  login,
+  // login, // Commented out - unused endpoint, redundant with main login system
   getAllUsers,
   setAvatar,
   logOut,
@@ -9,7 +9,7 @@ const tenantMiddleware = require("../middlewares/tenantMiddleware");
 
 const router = require("express").Router();
 
-router.post("/login", login);
+// router.post("/login", login); // Commented out - unused endpoint
 
 router.get("/allusers/:id", authMiddleware, tenantMiddleware, getAllUsers);
 router.post("/setavatar/:id", authMiddleware, tenantMiddleware, setAvatar);

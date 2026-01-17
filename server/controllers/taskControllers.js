@@ -31,8 +31,10 @@ exports.getAllTasks = async (req, res) => {
     }
 
     const tasks = await Task.find(filter)
-      .populate("assignee", "firstName lastName email role")
-      .populate("createdBy", "firstName lastName email role")
+      .populate([
+        { path: "assignee", select: "firstName lastName email role" },
+        { path: "createdBy", select: "firstName lastName email role" }
+      ])
       .sort({ rankId: 1, createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit)
@@ -73,8 +75,10 @@ exports.getTask = async (req, res) => {
       _id: req.params.id,
       organizationId: req.organization._id
     })
-      .populate("assignee", "firstName lastName email role")
-      .populate("createdBy", "firstName lastName email role");
+      .populate([
+        { path: "assignee", select: "firstName lastName email role" },
+        { path: "createdBy", select: "firstName lastName email role" }
+      ]);
 
     if (!task) {
       return res.status(404).json({
@@ -154,8 +158,10 @@ exports.createTask = async (req, res) => {
     });
 
     const populatedTask = await Task.findById(task._id)
-      .populate("assignee", "firstName lastName email role")
-      .populate("createdBy", "firstName lastName email role");
+      .populate([
+        { path: "assignee", select: "firstName lastName email role" },
+        { path: "createdBy", select: "firstName lastName email role" }
+      ]);
 
     res.status(201).json({
       success: true,
@@ -230,8 +236,10 @@ exports.updateTask = async (req, res) => {
     await task.save();
 
     const updatedTask = await Task.findById(task._id)
-      .populate("assignee", "firstName lastName email role")
-      .populate("createdBy", "firstName lastName email role");
+      .populate([
+        { path: "assignee", select: "firstName lastName email role" },
+        { path: "createdBy", select: "firstName lastName email role" }
+      ]);
 
     res.status(200).json({
       success: true,
@@ -282,8 +290,10 @@ exports.updateTaskStatus = async (req, res) => {
     await task.save();
 
     const updatedTask = await Task.findById(task._id)
-      .populate("assignee", "firstName lastName email role")
-      .populate("createdBy", "firstName lastName email role");
+      .populate([
+        { path: "assignee", select: "firstName lastName email role" },
+        { path: "createdBy", select: "firstName lastName email role" }
+      ]);
 
     res.status(200).json({
       success: true,
@@ -345,20 +355,42 @@ exports.deleteTask = async (req, res) => {
 // @access PRIVATE
 exports.getTasksByAssignee = async (req, res) => {
   try {
+    if (!req.organization) {
+      return res.status(403).json({ msg: "Organization context required" });
+    }
+
     const { userId } = req.params;
     const { status } = req.query;
 
-    const filter = { assignee: userId };
+    // Verify assignee belongs to the organization
+    const assigneeUser = await User.findOne({
+      _id: userId,
+      organizationId: req.organization._id
+    });
+    if (!assigneeUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Assignee not found in your organization"
+      });
+    }
+
+    const filter = {
+      assignee: userId,
+      organizationId: req.organization._id
+    };
     if (status) filter.status = status;
 
     const tasks = await Task.find(filter)
-      .populate("assignee", "firstName lastName email role")
-      .populate("createdBy", "firstName lastName email role")
+      .populate([
+        { path: "assignee", select: "firstName lastName email role" },
+        { path: "createdBy", select: "firstName lastName email role" }
+      ])
       .sort({ rankId: 1, createdAt: -1 });
 
     res.status(200).json({
       success: true,
       data: tasks,
+      organization: req.organization.name
     });
   } catch (error) {
     console.error("Error fetching tasks by assignee:", error);
@@ -375,7 +407,16 @@ exports.getTasksByAssignee = async (req, res) => {
 // @access PRIVATE
 exports.getTaskStats = async (req, res) => {
   try {
+    if (!req.organization) {
+      return res.status(403).json({ msg: "Organization context required" });
+    }
+
+    const organizationId = req.organization._id;
+
     const stats = await Task.aggregate([
+      {
+        $match: { organizationId }
+      },
       {
         $group: {
           _id: "$status",
@@ -386,6 +427,9 @@ exports.getTaskStats = async (req, res) => {
 
     const priorityStats = await Task.aggregate([
       {
+        $match: { organizationId }
+      },
+      {
         $group: {
           _id: "$priority",
           count: { $sum: 1 },
@@ -393,7 +437,7 @@ exports.getTaskStats = async (req, res) => {
       },
     ]);
 
-    const totalTasks = await Task.countDocuments();
+    const totalTasks = await Task.countDocuments({ organizationId });
 
     res.status(200).json({
       success: true,
@@ -402,6 +446,7 @@ exports.getTaskStats = async (req, res) => {
         statusStats: stats,
         priorityStats,
       },
+      organization: req.organization.name
     });
   } catch (error) {
     console.error("Error fetching task stats:", error);

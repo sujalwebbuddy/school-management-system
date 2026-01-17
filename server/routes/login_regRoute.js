@@ -5,7 +5,7 @@ const {
   getActiveOrganizations,
 } = require("../controllers/userControllers");
 
-const { body, validationResult } = require("express-validator");
+const { body } = require("express-validator");
 const express = require("express");
 const authMiddleware = require("../middlewares/authMiddleware");
 const tenantMiddleware = require("../middlewares/tenantMiddleware");

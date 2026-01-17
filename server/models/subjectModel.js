@@ -31,7 +31,7 @@ const subjectSchema = mongoose.Schema(
 );
 
 subjectSchema.index({ organizationId: 1, name: 1 }, { unique: true });
-subjectSchema.index({ organizationId: 1, code: 1 }, { unique: true, sparse: true });
+subjectSchema.index({ organizationId: 1, code: 1 }, { unique: true });
 
 module.exports = mongoose.model("Subject", subjectSchema);
 

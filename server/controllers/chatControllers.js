@@ -4,12 +4,8 @@ const mongoose = require("mongoose");
 
 module.exports.createChat = async (req, res, next) => {
   try {
-    if (!req.organization) {
-      return res.status(403).json({ msg: "Organization context required" });
-    }
-
     const { name, description, type = "direct", participantIds } = req.body;
-    const createdBy = req.userId; // Assuming auth middleware sets req.user
+    const createdBy = req.userId;
 
     if (!participantIds || !Array.isArray(participantIds) || participantIds.length === 0) {
       return res.status(400).json({ msg: "At least one participant is required" });
@@ -105,9 +101,11 @@ module.exports.getUserChats = async (req, res, next) => {
       organizationId: req.organization._id,
       isActive: true
     })
-    .populate('participants.user', 'firstName lastName username role avatarImage')
-    .populate('lastMessage')
-    .populate('createdBy', 'firstName lastName username')
+    .populate([
+      { path: 'participants.user', select: 'firstName lastName username role avatarImage' },
+      'lastMessage',
+      { path: 'createdBy', select: 'firstName lastName username' }
+    ])
     .sort({ updatedAt: -1 });
 
     res.json({
@@ -136,9 +134,11 @@ module.exports.getChatById = async (req, res, next) => {
       _id: chatId,
       organizationId: req.organization._id
     })
-      .populate('participants.user', 'firstName lastName username role avatarImage')
-      .populate('lastMessage')
-      .populate('createdBy', 'firstName lastName username');
+      .populate([
+        { path: 'participants.user', select: 'firstName lastName username role avatarImage' },
+        'lastMessage',
+        { path: 'createdBy', select: 'firstName lastName username' }
+      ]);
 
     if (!chat) {
       return res.status(404).json({ msg: "Chat not found" });

@@ -11,6 +11,7 @@ const {
 } = require('../controllers/organizationController');
 const tenantMiddleware = require('../middlewares/tenantMiddleware');
 const authMiddleware = require('../middlewares/authMiddleware');
+const { adminMiddleware } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
@@ -22,8 +23,8 @@ router.post('/create-payment-intent', createPaymentIntent);
 router.get('/search', require('../controllers/organizationController').searchOrganizations);
 
 // Organization admin routes (tenant protected)
-router.post('/update-subscription', authMiddleware, tenantMiddleware, updateSubscription);
-router.post('/confirm-subscription', authMiddleware, tenantMiddleware, confirmSubscription);
+router.post('/update-subscription', authMiddleware, tenantMiddleware, adminMiddleware, updateSubscription);
+router.post('/confirm-subscription', authMiddleware, tenantMiddleware, adminMiddleware, confirmSubscription);
 
 // Platform operator only routes (auth required, no tenant middleware)
 router.post('/createOrganization', authMiddleware, createOrganization);

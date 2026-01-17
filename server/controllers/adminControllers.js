@@ -10,7 +10,6 @@ const mongoose = require("mongoose");
 const config = require("../config/envConfig");
 const {
   ANALYTICS_CONSTANTS,
-  MS_PER_DAY,
   validateDaysParameter,
   createDateRange,
   fillMissingDates,
@@ -472,8 +471,7 @@ exports.getUser = async (req, res) => {
       _id: req.params.userId,
       organizationId: req.organization._id
     })
-      .populate("classIn")
-      .populate("subject");
+      .populate(["classIn", "subject"]);
 
     if (!user) {
       throw new AdminControllerError("User not found in your organization", "USER_NOT_FOUND", 404);
@@ -602,7 +600,7 @@ exports.updateUser = async (req, res) => {
       {
         new: true,
       }
-    ).populate("classIn").populate("subject");
+    ).populate(["classIn", "subject"]);
 
     if (!user) {
       throw new AdminControllerError("User not found in your organization", "USER_NOT_FOUND", 404);
@@ -880,65 +878,182 @@ exports.updateClass = async (req, res) => {
   }
 };
 
+// Helper function to generate unique subject codes
+const generateUniqueSubjectCode = async (subjectName, organizationId) => {
+  const baseCode = subjectName.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6) || 'SUBJ';
+  let uniqueCode = baseCode;
+  let counter = 1;
+
+  while (await Subject.findOne({ code: uniqueCode, organizationId })) {
+    uniqueCode = `${baseCode}${counter}`;
+    counter++;
+  }
+
+  return uniqueCode;
+};
+
 exports.assignNewSubject = async (req, res) => {
   try {
+    // Validate organization context (should be guaranteed by middleware, but defensive check)
+    if (!req.organization) {
+      throw new AdminControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
     const { classname, className, subjectName, subjectId } = req.body;
     const organizationId = req.organization._id;
-    
-    let classObjectId = null;
-    if (className || classname) {
-      const classToFind = className || classname;
-      if (mongoose.Types.ObjectId.isValid(classToFind)) {
-        classObjectId = classToFind;
-      } else {
-        const foundClass = await classroom.findOne({ className: classToFind, organizationId });
-        if (!foundClass) {
-          return res.status(404).json({ msg: `Class "${classToFind}" not found` });
-        }
-        classObjectId = foundClass._id;
-      }
-    } else {
-      return res.status(400).json({ msg: "className or classname is required" });
+
+    // Validate required fields
+    if (!classname && !className) {
+      throw new AdminControllerError("className or classname is required", "MISSING_CLASS", 400);
     }
-    
-    let subjectObjectId = null;
-    if (subjectId || subjectName) {
-      const subjectToFind = subjectId || subjectName;
-      if (mongoose.Types.ObjectId.isValid(subjectToFind)) {
-        subjectObjectId = subjectToFind;
-      } else {
-        let foundSubject = await Subject.findOne({ name: subjectToFind, organizationId });
-        if (!foundSubject) {
-          foundSubject = await Subject.create({ name: subjectToFind, organizationId });
-        }
-        subjectObjectId = foundSubject._id;
-      }
-    } else {
-      return res.status(400).json({ msg: "subjectId or subjectName is required" });
+
+    if (!subjectId && !subjectName) {
+      throw new AdminControllerError("subjectId or subjectName is required", "MISSING_SUBJECT", 400);
     }
-    
-    const claz = await classroom.findByIdAndUpdate(
+
+    // Find and validate class
+    const classToFind = className || classname;
+    let classObjectId;
+
+    if (mongoose.Types.ObjectId.isValid(classToFind)) {
+      // If it's an ObjectId, verify it belongs to the organization
+      const foundClass = await classroom.findOne({
+        _id: classToFind,
+        organizationId
+      });
+      if (!foundClass) {
+        throw new AdminControllerError("Class not found in your organization", "CLASS_NOT_FOUND", 404);
+      }
+      classObjectId = foundClass._id;
+    } else {
+      // If it's a class name, find it within the organization
+      const foundClass = await classroom.findOne({
+        className: classToFind,
+        organizationId
+      });
+      if (!foundClass) {
+        throw new AdminControllerError(`Class "${classToFind}" not found in your organization`, "CLASS_NOT_FOUND", 404);
+      }
+      classObjectId = foundClass._id;
+    }
+
+    // Find or create subject
+    const subjectToFind = subjectId || subjectName;
+    let subjectObjectId;
+
+    if (mongoose.Types.ObjectId.isValid(subjectToFind)) {
+      // If it's an ObjectId, verify it belongs to the organization
+      const foundSubject = await Subject.findOne({
+        _id: subjectToFind,
+        organizationId
+      });
+      if (!foundSubject) {
+        throw new AdminControllerError("Subject not found in your organization", "SUBJECT_NOT_FOUND", 404);
+      }
+      subjectObjectId = foundSubject._id;
+    } else {
+      // If it's a subject name, find or create it within the organization
+      let foundSubject = await Subject.findOne({
+        name: subjectToFind,
+        organizationId
+      });
+
+      if (!foundSubject) {
+        // Generate unique code and create new subject
+        const uniqueCode = await generateUniqueSubjectCode(subjectToFind, organizationId);
+
+        foundSubject = await Subject.create({
+          name: subjectToFind,
+          code: uniqueCode,
+          organizationId
+        });
+      }
+
+      subjectObjectId = foundSubject._id;
+    }
+
+    // Check if subject is already assigned to this class
+    const existingClass = await classroom.findOne({
+      _id: classObjectId,
+      subjects: subjectObjectId
+    });
+
+    if (existingClass) {
+      throw new AdminControllerError("Subject is already assigned to this class", "SUBJECT_ALREADY_ASSIGNED", 409);
+    }
+
+    // Assign subject to class
+    const updatedClass = await classroom.findByIdAndUpdate(
       classObjectId,
       { $addToSet: { subjects: subjectObjectId } },
       { new: true }
-    ).populate("subjects");
-    res.status(200).json({ msg: "Subject added", claz });
+    ).populate("subjects", "name code");
+
+    res.status(200).json({
+      success: true,
+      msg: "Subject assigned to class successfully",
+      data: {
+        class: {
+          id: updatedClass._id,
+          className: updatedClass.className,
+          subjects: updatedClass.subjects
+        },
+        organization: req.organization.name
+      }
+    });
+
   } catch (error) {
-    console.log(error);
-    res.status(500).json("something went wrong");
+    if (error instanceof AdminControllerError) {
+      return res.status(error.statusCode).json({
+        msg: error.message,
+        code: error.code,
+      });
+    }
+
+    console.error("Error assigning subject to class:", error);
+    const wrappedError = new AdminControllerError("Failed to assign subject to class", "ASSIGN_SUBJECT_ERROR", 500);
+    wrappedError.originalError = error;
+
+    res.status(wrappedError.statusCode).json({
+      msg: wrappedError.message,
+      code: wrappedError.code,
+    });
   }
 };
 
 exports.getUserInfo = async (req, res) => {
   try {
-    const user = await User.findOne({ email: req?.query?.email })
-      .populate("classIn")
-      .populate("subject");
-    if (!user) return res.status(404).json({ msg: "user not found" });
+    if (!req.organization) {
+      throw new AdminControllerError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
+    const user = await User.findOne({
+      email: req?.query?.email,
+      organizationId: req.organization._id
+    })
+      .populate(["classIn", "subject"]);
+
+    if (!user) {
+      throw new AdminControllerError("User not found in your organization", "USER_NOT_FOUND", 404);
+    }
+
     res.status(200).json({ user });
   } catch (error) {
+    if (error instanceof AdminControllerError) {
+      return res.status(error.statusCode).json({
+        msg: error.message,
+        code: error.code,
+      });
+    }
+
     console.log(error);
-    res.status(500).json("something went wrong");
+    const wrappedError = new AdminControllerError("Failed to retrieve user info", "GET_USER_INFO_ERROR", 500);
+    wrappedError.originalError = error;
+
+    res.status(wrappedError.statusCode).json({
+      msg: wrappedError.message,
+      code: wrappedError.code,
+    });
   }
 };
 
@@ -995,9 +1110,11 @@ exports.getAttendance = async (req, res) => {
     }
 
     const attendanceRecords = await Attendance.find(query)
-      .populate('studentId', 'firstName lastName email role')
-      .populate('classId', 'className')
-      .populate('markedBy', 'firstName lastName')
+      .populate([
+        { path: 'studentId', select: 'firstName lastName email role' },
+        { path: 'classId', select: 'className' },
+        { path: 'markedBy', select: 'firstName lastName' }
+      ])
       .sort({ createdAt: -1 });
 
     const attendanceMap = {};

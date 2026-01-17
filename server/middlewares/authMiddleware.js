@@ -2,6 +2,56 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/envConfig");
 const User = require("../models/userModel");
 
+class AdminError extends Error {
+  constructor(message, code = "ADMIN_ACCESS_DENIED", statusCode = 403) {
+    super(message);
+    this.name = "AdminError";
+    this.code = code;
+    this.statusCode = statusCode;
+  }
+}
+
+const adminMiddleware = async (req, res, next) => {
+  try {
+    // Ensure tenant middleware has run and organization context exists
+    if (!req.organization) {
+      throw new AdminError("Organization context required", "NO_ORG_CONTEXT", 403);
+    }
+
+    // Check if user is an admin
+    const currentUser = await User.findOne({
+      _id: req.userId,
+      organizationId: req.organization._id
+    });
+
+    if (!currentUser) {
+      throw new AdminError("User not found in your organization", "USER_NOT_FOUND", 404);
+    }
+
+    if (currentUser.role !== "admin") {
+      throw new AdminError("Admin access required", "ADMIN_ACCESS_DENIED", 403);
+    }
+
+    // User is admin, proceed
+    next();
+  } catch (error) {
+    if (error instanceof AdminError) {
+      return res.status(error.statusCode).json({
+        msg: error.message,
+        code: error.code,
+      });
+    }
+
+    const wrappedError = new AdminError("Admin verification failed", "ADMIN_VERIFICATION_ERROR", 500);
+    wrappedError.originalError = error;
+
+    res.status(wrappedError.statusCode).json({
+      msg: wrappedError.message,
+      code: wrappedError.code,
+    });
+  }
+};
+
 class AuthError extends Error {
   constructor(message, code = "AUTH_ERROR", statusCode = 401) {
     super(message);
@@ -72,3 +122,4 @@ const authMiddleware = async (req, res, next) => {
 };
 
 module.exports = authMiddleware;
+module.exports.adminMiddleware = adminMiddleware;
