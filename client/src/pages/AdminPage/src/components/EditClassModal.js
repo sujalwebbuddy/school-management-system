@@ -7,8 +7,9 @@ import {
   Stack,
   TextField,
   Typography,
-  Divider,
+  InputAdornment,
 } from '@mui/material';
+import { SchoolOutlined } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import { useEffect } from 'react';
 import api from '../../../../utils/api';
@@ -21,11 +22,26 @@ const modalStyle = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: { xs: '90%', sm: 500 },
-  bgcolor: 'background.paper',
-  borderRadius: 2,
-  boxShadow: 24,
+  width: { xs: '90%', sm: 480 },
+  bgcolor: '#ffffff',
+  borderRadius: 3,
+  boxShadow: '0 24px 48px -12px rgba(16, 24, 40, 0.25)',
   p: 4,
+  outline: 'none',
+};
+
+const commonInputSx = {
+  borderRadius: 1.5,
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(145, 158, 171, 0.32)',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'text.primary',
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'primary.main',
+    borderWidth: 2,
+  },
 };
 
 export default function EditClassModal({ open, onClose, classData }) {
@@ -51,6 +67,9 @@ export default function EditClassModal({ open, onClose, classData }) {
         text: 'Class has been updated successfully!',
         icon: 'success',
         confirmButtonText: 'OK',
+        customClass: {
+          popup: 'swal2-popup-custom',
+        },
       });
       dispatch(getClasses());
       onClose();
@@ -80,38 +99,70 @@ export default function EditClassModal({ open, onClose, classData }) {
       <Box sx={modalStyle}>
         <Typography
           id="modal-modal-title"
-          variant="h6"
+          variant="h5"
           component="h2"
-          sx={{ fontWeight: 600, mb: 3, textAlign: 'center' }}
+          sx={{ fontWeight: 700, mb: 1, textAlign: 'center', color: '#101828' }}
         >
           Update Class
         </Typography>
-        <Divider sx={{ mb: 3 }} />
+        <Typography variant="body2" sx={{ textAlign: 'center', color: 'text.secondary', mb: 3 }}>
+          Rename or modify the selected class details.
+        </Typography>
 
         <Box component="form" onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={3}>
-            <TextField
-              label="Class Name"
-              variant="outlined"
-              fullWidth
-              {...register('className', { required: 'Class name is required' })}
-              error={!!errors.className}
-              helperText={errors.className?.message}
-            />
-
-            <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 2 }}>
-              <Button
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: 'text.primary' }}>
+                Class Name
+              </Typography>
+              <TextField
+                placeholder="e.g. Class 10 A"
                 variant="outlined"
+                fullWidth
+                {...register('className', { required: 'Class name is required' })}
+                error={!!errors.className}
+                helperText={errors.className?.message}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SchoolOutlined sx={{ color: 'text.disabled' }} />
+                    </InputAdornment>
+                  ),
+                  sx: commonInputSx,
+                }}
+              />
+            </Box>
+
+            <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 3 }}>
+              <Button
+                variant="text"
                 color="inherit"
                 onClick={handleClose}
-                sx={{ textTransform: 'none' }}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  borderRadius: 1,
+                  color: 'text.secondary',
+                  px: 3,
+                }}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 variant="contained"
-                sx={{ textTransform: 'none' }}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  borderRadius: 1.5,
+                  px: 4,
+                  boxShadow: '0 8px 16px -4px rgba(37, 99, 235, 0.24)',
+                  background: 'linear-gradient(to right, #2563EB, #4F46E5)',
+                  '&:hover': {
+                    background: 'linear-gradient(to right, #1D4ED8, #4338CA)',
+                    boxShadow: '0 12px 24px -6px rgba(37, 99, 235, 0.4)',
+                  },
+                }}
               >
                 Update
               </Button>

@@ -2,26 +2,56 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
   TextField,
   Button,
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
   Chip,
   Box,
   Autocomplete,
   TextField as MuiTextField,
+  Typography,
+  Stack,
+  InputAdornment,
+  Grid,
 } from '@mui/material';
+import {
+  AssignmentOutlined,
+  DescriptionOutlined,
+  AccessTimeOutlined,
+  EventOutlined,
+  LabelOutlined,
+  PaletteOutlined,
+} from '@mui/icons-material';
 import { useFormik } from 'formik';
 import { useDispatch } from 'react-redux';
 import { createTask, updateTask } from '../../../slices/taskSlice';
 
 const priorityOptions = ['Low', 'Normal', 'High', 'Critical'];
 const statusOptions = ['Open', 'InProgress', 'Testing', 'Close'];
+
+const commonInputSx = {
+  borderRadius: 1.5,
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(145, 158, 171, 0.32)',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'text.primary',
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'primary.main',
+    borderWidth: 2,
+  },
+};
+
+const labelSx = {
+  mb: 1,
+  fontWeight: 600,
+  color: 'text.primary',
+  fontSize: '0.875rem',
+};
 
 const TaskDialog = ({ open, onClose, task = null, users = [] }) => {
   const dispatch = useDispatch();
@@ -75,7 +105,6 @@ const TaskDialog = ({ open, onClose, task = null, users = [] }) => {
   useEffect(() => {
     if (open) {
       if (task) {
-        // Edit mode - populate form with task data
         formik.setValues({
           title: task.title || '',
           description: task.description || '',
@@ -88,7 +117,6 @@ const TaskDialog = ({ open, onClose, task = null, users = [] }) => {
           color: task.color || '#02897B',
         });
       } else {
-        // Create mode - reset to default values
         formik.setValues({
           title: '',
           description: '',
@@ -111,163 +139,271 @@ const TaskDialog = ({ open, onClose, task = null, users = [] }) => {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle>
-        {task ? 'Edit Task' : 'Create New Task'}
-      </DialogTitle>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+          boxShadow: '0 24px 48px -12px rgba(16, 24, 40, 0.25)',
+          overflow: 'visible',
+        },
+      }}
+    >
+      <Box component="form" onSubmit={handleSubmit} sx={{ p: 4 }}>
+        <Typography variant="h5" align="center" sx={{ fontWeight: 700, mb: 1, color: '#101828' }}>
+          {task ? 'Edit Task' : 'Create New Task'}
+        </Typography>
+        <Typography variant="body2" align="center" sx={{ color: 'text.secondary', mb: 4 }}>
+          {task ? 'Modify task details below' : 'Fill in the details to create a new task'}
+        </Typography>
 
-      <form onSubmit={handleSubmit}>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <TextField
-              fullWidth
-              label="Title"
-              name="title"
-              value={values.title}
-              onChange={handleChange}
-              error={touched.title && Boolean(errors.title)}
-              helperText={touched.title && errors.title}
-              required
-            />
-
-            <TextField
-              fullWidth
-              multiline
-              rows={3}
-              label="Description"
-              name="description"
-              value={values.description}
-              onChange={handleChange}
-              error={touched.description && Boolean(errors.description)}
-              helperText={touched.description && errors.description}
-            />
-
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  name="status"
-                  value={values.status}
-                  onChange={handleChange}
-                  label="Status"
-                >
-                  {statusOptions.map((status) => (
-                    <MenuItem key={status} value={status}>
-                      {status}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControl fullWidth>
-                <InputLabel>Priority</InputLabel>
-                <Select
-                  name="priority"
-                  value={values.priority}
-                  onChange={handleChange}
-                  label="Priority"
-                >
-                  {priorityOptions.map((priority) => (
-                    <MenuItem key={priority} value={priority}>
-                      {priority}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-
-            <FormControl fullWidth>
-              <InputLabel>Assignee</InputLabel>
-              <Select
-                name="assignee"
-                value={values.assignee}
-                onChange={handleChange}
-                label="Assignee"
-              >
-                <MenuItem value="">
-                  <em>Unassigned</em>
-                </MenuItem>
-                {users.map((user) => (
-                  <MenuItem key={user._id} value={user._id}>
-                    {user.firstName} {user.lastName}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <Autocomplete
-              multiple
-              freeSolo
-              options={[]}
-              value={values.tags}
-              onChange={(event, newValue) => {
-                setFieldValue('tags', newValue);
-              }}
-              renderTags={(value, getTagProps) =>
-                value.map((option, index) => (
-                  <Chip variant="outlined" label={option} {...getTagProps({ index })} />
-                ))
-              }
-              renderInput={(params) => (
-                <MuiTextField
-                  {...params}
-                  label="Tags"
-                  placeholder="Add tags..."
-                />
-              )}
-            />
-
-            <Box sx={{ display: 'flex', gap: 2 }}>
+        <DialogContent sx={{ p: 0, overflowY: 'visible' }}>
+          <Stack spacing={3}>
+            {/* Title */}
+            <Box>
+              <Typography variant="subtitle2" sx={labelSx}>Title</Typography>
               <TextField
                 fullWidth
-                type="number"
-                label="Estimate (hours)"
-                name="estimate"
-                value={values.estimate}
+                placeholder="Task title"
+                name="title"
+                value={values.title}
                 onChange={handleChange}
-                error={touched.estimate && Boolean(errors.estimate)}
-                helperText={touched.estimate && errors.estimate}
-                inputProps={{ min: 0, step: 0.5 }}
-              />
-
-              <TextField
-                fullWidth
-                type="date"
-                label="Due Date"
-                name="dueDate"
-                value={values.dueDate}
-                onChange={handleChange}
-                InputLabelProps={{
-                  shrink: true,
+                error={touched.title && Boolean(errors.title)}
+                helperText={touched.title && errors.title}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <AssignmentOutlined sx={{ color: 'text.disabled' }} />
+                    </InputAdornment>
+                  ),
+                  sx: commonInputSx,
                 }}
               />
             </Box>
 
-            <TextField
-              fullWidth
-              type="color"
-              label="Color"
-              name="color"
-              value={values.color}
-              onChange={handleChange}
-              sx={{ maxWidth: 200 }}
-            />
-          </Box>
+            {/* Description */}
+            <Box>
+              <Typography variant="subtitle2" sx={labelSx}>Description</Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                placeholder="Describe the task..."
+                name="description"
+                value={values.description}
+                onChange={handleChange}
+                error={touched.description && Boolean(errors.description)}
+                helperText={touched.description && errors.description}
+                InputProps={{
+                  sx: { ...commonInputSx, alignItems: 'flex-start', py: 1.5 },
+                  startAdornment: (
+                    <InputAdornment position="start" sx={{ mt: 0.5 }}>
+                      <DescriptionOutlined sx={{ color: 'text.disabled' }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
+
+            {/* Status & Priority Row */}
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle2" sx={labelSx}>Status</Typography>
+                <FormControl fullWidth>
+                  <Select
+                    name="status"
+                    value={values.status}
+                    onChange={handleChange}
+                    displayEmpty
+                    sx={commonInputSx}
+                  >
+                    {statusOptions.map((status) => (
+                      <MenuItem key={status} value={status}>{status}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle2" sx={labelSx}>Priority</Typography>
+                <FormControl fullWidth>
+                  <Select
+                    name="priority"
+                    value={values.priority}
+                    onChange={handleChange}
+                    displayEmpty
+                    sx={commonInputSx}
+                  >
+                    {priorityOptions.map((priority) => (
+                      <MenuItem key={priority} value={priority}>{priority}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+            </Stack>
+
+            {/* Assignee */}
+            <Box>
+              <Typography variant="subtitle2" sx={labelSx}>Assignee</Typography>
+              <FormControl fullWidth>
+                <Select
+                  name="assignee"
+                  value={values.assignee}
+                  onChange={handleChange}
+                  displayEmpty
+                  sx={commonInputSx}
+                >
+                  <MenuItem value="">
+                    <span style={{ color: '#919EAB' }}>Unassigned</span>
+                  </MenuItem>
+                  {users.map((user) => (
+                    <MenuItem key={user._id} value={user._id}>
+                      {user.firstName} {user.lastName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+
+            {/* Tags (Autocomplete) */}
+            <Box>
+              <Typography variant="subtitle2" sx={labelSx}>Tags</Typography>
+              <Autocomplete
+                multiple
+                freeSolo
+                options={[]}
+                value={values.tags}
+                onChange={(event, newValue) => {
+                  setFieldValue('tags', newValue);
+                }}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip variant="outlined" label={option} {...getTagProps({ index })} size="small" />
+                  ))
+                }
+                renderInput={(params) => (
+                  <MuiTextField
+                    {...params}
+                    placeholder={values.tags.length === 0 ? "Add tags..." : ""}
+                    InputProps={{
+                      ...params.InputProps,
+                      startAdornment: (
+                        <>
+                          <InputAdornment position="start">
+                            <LabelOutlined sx={{ color: 'text.disabled' }} />
+                          </InputAdornment>
+                          {params.InputProps.startAdornment}
+                        </>
+                      ),
+                      sx: commonInputSx,
+                    }}
+                  />
+                )}
+              />
+            </Box>
+
+            {/* Estimate & Due Date Row */}
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle2" sx={labelSx}>Estimate (Hours)</Typography>
+                <TextField
+                  fullWidth
+                  type="number"
+                  placeholder="0.0"
+                  name="estimate"
+                  value={values.estimate}
+                  onChange={handleChange}
+                  error={touched.estimate && Boolean(errors.estimate)}
+                  helperText={touched.estimate && errors.estimate}
+                  inputProps={{ min: 0, step: 0.5 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <AccessTimeOutlined sx={{ color: 'text.disabled' }} />
+                      </InputAdornment>
+                    ),
+                    sx: commonInputSx,
+                  }}
+                />
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="subtitle2" sx={labelSx}>Due Date</Typography>
+                <TextField
+                  fullWidth
+                  type="date"
+                  name="dueDate"
+                  value={values.dueDate}
+                  onChange={handleChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <EventOutlined sx={{ color: 'text.disabled' }} />
+                      </InputAdornment>
+                    ),
+                    sx: commonInputSx,
+                  }}
+                />
+              </Box>
+            </Stack>
+
+            {/* Color Picker */}
+            <Box>
+              <Typography variant="subtitle2" sx={labelSx}>Label Color</Typography>
+              <TextField
+                type="color"
+                fullWidth
+                name="color"
+                value={values.color}
+                onChange={handleChange}
+                sx={{
+                  ...commonInputSx,
+                  padding: 0,
+                  '& input': { cursor: 'pointer', height: 40, padding: '4px' }
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start" sx={{ ml: 1 }}>
+                      <PaletteOutlined sx={{ color: 'text.disabled' }} />
+                    </InputAdornment>
+                  ),
+                  sx: { borderRadius: 1.5 }
+                }}
+              />
+            </Box>
+          </Stack>
         </DialogContent>
 
-        <DialogActions>
-          <Button onClick={handleClose} disabled={loading}>
+        <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 4 }}>
+          <Button
+            onClick={handleClose}
+            disabled={loading}
+            color="inherit"
+            sx={{ fontWeight: 600, color: 'text.secondary' }}
+          >
             Cancel
           </Button>
           <Button
             type="submit"
             variant="contained"
             disabled={loading}
+            sx={{
+              fontWeight: 700,
+              borderRadius: 1.5,
+              px: 3,
+              boxShadow: '0 8px 16px -4px rgba(37, 99, 235, 0.24)',
+              background: 'linear-gradient(to right, #2563EB, #4F46E5)',
+              '&:hover': {
+                background: 'linear-gradient(to right, #1D4ED8, #4338CA)',
+                boxShadow: '0 12px 24px -6px rgba(37, 99, 235, 0.4)',
+              },
+            }}
           >
             {loading ? 'Saving...' : (task ? 'Update Task' : 'Create Task')}
           </Button>
-        </DialogActions>
-      </form>
+        </Stack>
+      </Box>
     </Dialog>
   );
 };

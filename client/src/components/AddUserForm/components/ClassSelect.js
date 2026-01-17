@@ -5,8 +5,7 @@ import { Controller } from 'react-hook-form';
 
 export default function ClassSelect({ control, errors, classrooms }) {
   return (
-    <FormControl fullWidth error={!!errors.classIn} sx={{ mt: 2 }}>
-      <InputLabel id="class-label">Class</InputLabel>
+    <FormControl fullWidth error={!!errors.classIn}>
       <Controller
         name="classIn"
         control={control}
@@ -15,9 +14,9 @@ export default function ClassSelect({ control, errors, classrooms }) {
           <Select
             {...field}
             value={field.value || ''}
-            labelId="class-label"
+            displayEmpty
             id="class-select"
-            label="Class"
+            sx={{ borderRadius: 1.5 }}
           >
             <MenuItem value="" disabled>
               Select classroom

@@ -39,16 +39,18 @@ export default function AddUserForm({ UserRole }) {
       <Container maxWidth="md">
         <Card
           sx={{
-            p: 4,
-            borderRadius: 2,
-            boxShadow:
-              '0 0 2px 0 rgba(145, 158, 171, 0.08), 0 12px 24px -4px rgba(145, 158, 171, 0.08)',
+            p: 5,
+            borderRadius: 3,
+            boxShadow: '0 24px 48px -12px rgba(16, 24, 40, 0.18)',
+            border: '1px solid rgba(255, 255, 255, 0.5)',
+            background: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(20px)',
           }}
         >
-          <Typography variant="h4" sx={{ fontWeight: 600, mb: 1, textAlign: 'center' }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1.5, textAlign: 'center', color: '#101828' }}>
             {UserRole === 'student' ? 'Add New Student' : 'Add New Teacher'}
           </Typography>
-          <Divider sx={{ mb: 4 }} />
+          <Divider sx={{ mb: 4, borderColor: 'rgba(0,0,0,0.06)' }} />
 
           <Box component="form" onSubmit={handleSubmit(onSubmit)}>
             <UserFormFields
@@ -67,10 +69,20 @@ export default function AddUserForm({ UserRole }) {
               size="large"
               disabled={isSubmitting}
               sx={{
-                mt: 2,
-                py: 1.5,
-                fontWeight: 600,
+                mt: 4,
+                py: 1.8,
+                fontSize: '1rem',
+                fontWeight: 700,
                 textTransform: 'none',
+                borderRadius: 2,
+                boxShadow: '0 8px 16px -4px rgba(37, 99, 235, 0.3)',
+                background: 'linear-gradient(to right, #2563EB, #4F46E5)',
+                '&:hover': {
+                  background: 'linear-gradient(to right, #1D4ED8, #4338CA)',
+                  boxShadow: '0 12px 24px -6px rgba(37, 99, 235, 0.4)',
+                  transform: 'translateY(-1px)',
+                },
+                transition: 'all 0.2s ease-in-out',
               }}
             >
               {isSubmitting ? 'Adding User...' : 'Add User'}

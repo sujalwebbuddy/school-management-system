@@ -36,12 +36,12 @@ export default function Homework() {
 
   const filteredHomeworks = filterName
     ? filter(homeworks, (homework) => {
-        const searchQuery = filterName.toLowerCase();
-        return (
-          homework.name?.toLowerCase().indexOf(searchQuery) !== -1 ||
-          homework.description?.toLowerCase().indexOf(searchQuery) !== -1
-        );
-      })
+      const searchQuery = filterName.toLowerCase();
+      return (
+        homework.name?.toLowerCase().indexOf(searchQuery) !== -1 ||
+        homework.description?.toLowerCase().indexOf(searchQuery) !== -1
+      );
+    })
     : homeworks;
 
   return (
@@ -55,7 +55,7 @@ export default function Homework() {
             flexWrap="wrap"
             gap={2}
           >
-            <Typography variant="h4" sx={{ fontWeight: 600 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>
               Homework List
             </Typography>
             <Button
@@ -65,9 +65,14 @@ export default function Homework() {
               sx={{
                 px: 3,
                 py: 1.5,
-                fontWeight: 600,
+                fontWeight: 700,
                 textTransform: 'none',
                 borderRadius: 1,
+                boxShadow: (theme) => theme.customShadows?.primary || theme.shadows[8],
+                transition: 'transform 0.2s',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                },
               }}
             >
               New Homework
@@ -80,8 +85,8 @@ export default function Homework() {
         <Card
           sx={{
             borderRadius: 2,
-            boxShadow:
-              '0 0 2px 0 rgba(145, 158, 171, 0.08), 0 12px 24px -4px rgba(145, 158, 171, 0.08)',
+            boxShadow: (theme) => theme.customShadows?.z16 || theme.shadows[10],
+            overflow: 'hidden',
           }}
         >
           <Box
@@ -89,6 +94,7 @@ export default function Homework() {
               p: 3,
               borderBottom: '1px solid',
               borderColor: 'divider',
+              background: (theme) => theme.palette.background.neutral,
             }}
           >
             <Stack
@@ -98,11 +104,16 @@ export default function Homework() {
               flexWrap="wrap"
               gap={2}
             >
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
                 Homework Information
               </Typography>
               <Stack direction="row" spacing={2} alignItems="center">
-                <Chip label={`Total: ${homeworks.length}`} color="primary" variant="outlined" />
+                <Chip
+                  label={`Total: ${homeworks.length}`}
+                  color="primary"
+                  variant="filled"
+                  sx={{ fontWeight: 'bold' }}
+                />
                 <OutlinedInput
                   value={filterName}
                   onChange={handleFilterByName}
@@ -117,9 +128,13 @@ export default function Homework() {
                   }
                   sx={{
                     width: { xs: '100%', sm: 280 },
+                    bgcolor: 'background.paper',
                     '& .MuiOutlinedInput-notchedOutline': {
                       borderColor: 'divider',
                     },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'primary.main',
+                    }
                   }}
                 />
               </Stack>

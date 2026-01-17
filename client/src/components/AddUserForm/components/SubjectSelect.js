@@ -5,8 +5,7 @@ import { Controller } from 'react-hook-form';
 
 export default function SubjectSelect({ control, errors, subjects }) {
   return (
-    <FormControl fullWidth error={!!errors.subject} sx={{ mt: 2 }}>
-      <InputLabel id="subject-label">Subject</InputLabel>
+    <FormControl fullWidth error={!!errors.subject}>
       <Controller
         name="subject"
         control={control}
@@ -15,9 +14,9 @@ export default function SubjectSelect({ control, errors, subjects }) {
           <Select
             {...field}
             value={field.value || ''}
-            labelId="subject-label"
+            displayEmpty
             id="subject-select"
-            label="Subject"
+            sx={{ borderRadius: 1.5 }}
           >
             <MenuItem value="" disabled>
               Select teacher's subject

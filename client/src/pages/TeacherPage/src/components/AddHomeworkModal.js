@@ -10,6 +10,7 @@ import {
   Divider,
   MenuItem,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import api from '../../../../utils/api';
 import Swal from 'sweetalert2';
@@ -24,17 +25,19 @@ const modalStyle = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: { xs: '90%', sm: 600 },
+  width: { xs: '95%', md: 800 },
   maxHeight: '90vh',
-  overflow: 'auto',
   bgcolor: 'background.paper',
   borderRadius: 2,
   boxShadow: 24,
-  p: 4,
+  overflow: 'hidden', // Hide overflow from corners
+  p: 0, // Reset padding
+  outline: 'none',
 };
 
 export default function AddHomeworkModal({ open, onClose }) {
   const dispatch = useDispatch();
+  const theme = useTheme();
   const subject = useSelector((state) => {
     return state?.teacher?.userInfo?.user?.subject;
   });
@@ -69,6 +72,8 @@ export default function AddHomeworkModal({ open, onClose }) {
     onClose();
   };
 
+  const gradientBackground = theme?.palette?.gradients?.primary || `linear-gradient(to right, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`;
+
   return (
     <Modal
       open={open}
@@ -77,22 +82,50 @@ export default function AddHomeworkModal({ open, onClose }) {
       aria-describedby="add-homework-modal-description"
     >
       <Box sx={modalStyle}>
-        <Typography
-          id="add-homework-modal-title"
-          variant="h6"
-          component="h2"
-          sx={{ fontWeight: 600, mb: 3, textAlign: 'center' }}
+        <Box
+          sx={{
+            py: 2.5,
+            px: 3,
+            background: gradientBackground,
+            color: 'common.white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
         >
-          Add New Homework
-        </Typography>
-        <Divider sx={{ mb: 3 }} />
+          <Typography
+            id="add-homework-modal-title"
+            variant="h6"
+            component="h2"
+            sx={{ fontWeight: 700 }}
+          >
+            Add New Homework
+          </Typography>
+        </Box>
 
-        <Stack spacing={3}>
-          <HomeworkBasicFields register={register} control={control} errors={errors} />
-          <HomeworkOptionsFields register={register} errors={errors} />
+        <Box sx={{ p: 3, overflowY: 'auto', maxHeight: 'calc(90vh - 80px)' }}>
+          <Stack spacing={3}>
+            <Box>
+              <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 'bold', mb: 2, display: 'block' }}>
+                Basic Information
+              </Typography>
+              <HomeworkBasicFields register={register} control={control} errors={errors} />
+            </Box>
 
-          <HomeworkModalFooter onClose={handleClose} onSubmit={handleSubmit(onSubmit)} />
-        </Stack>
+            <Divider dashed />
+
+            <Box>
+              <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 'bold', mb: 2, display: 'block' }}>
+                Question Configuration
+              </Typography>
+              <HomeworkOptionsFields register={register} errors={errors} />
+            </Box>
+
+            <Box sx={{ pt: 1 }}>
+              <HomeworkModalFooter onClose={handleClose} onSubmit={handleSubmit(onSubmit)} />
+            </Box>
+          </Stack>
+        </Box>
       </Box>
     </Modal>
   );

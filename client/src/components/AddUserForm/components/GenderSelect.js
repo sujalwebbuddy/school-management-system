@@ -5,8 +5,7 @@ import { Controller } from 'react-hook-form';
 
 export default function GenderSelect({ control, errors }) {
   return (
-    <FormControl fullWidth error={!!errors.gender} sx={{ mt: 2 }}>
-      <InputLabel id="gender-label">Gender</InputLabel>
+    <FormControl fullWidth error={!!errors.gender}>
       <Controller
         name="gender"
         control={control}
@@ -15,9 +14,9 @@ export default function GenderSelect({ control, errors }) {
           <Select
             {...field}
             value={field.value || ''}
-            labelId="gender-label"
+            displayEmpty
             id="gender-select"
-            label="Gender"
+            sx={{ borderRadius: 1.5 }}
           >
             <MenuItem value="" disabled>
               Select gender

@@ -13,9 +13,7 @@ import {
   TextField,
   Button,
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
   Fab,
   Badge,
   Chip,
@@ -23,12 +21,16 @@ import {
   ListItemSecondaryAction,
   CircularProgress,
   Alert,
+  Stack,
+  Divider,
+  InputAdornment,
 } from "@mui/material";
 import { styled, useTheme } from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
 import MessageIcon from "@mui/icons-material/Message";
 import GroupIcon from "@mui/icons-material/Group";
 import PersonIcon from "@mui/icons-material/Person";
+import { ChatBubbleOutline } from "@mui/icons-material";
 import { setCurrentChat, clearMessages, createChat } from "../../../slices/chatSlice";
 import api from "../../../utils/api";
 
@@ -83,6 +85,20 @@ const EmptyStateBox = styled(Box)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
+const commonInputSx = {
+  borderRadius: 1.5,
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(145, 158, 171, 0.32)',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'text.primary',
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'primary.main',
+    borderWidth: 2,
+  },
+};
+
 export default function ChatList() {
   const dispatch = useDispatch();
   const theme = useTheme();
@@ -102,7 +118,7 @@ export default function ChatList() {
     if (showCreateChat && userInfo?._id && contacts.length === 0) {
       fetchContacts();
     }
-  }, [showCreateChat, userInfo._id, contacts.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [showCreateChat, userInfo._id, contacts.length]);
 
   const fetchContacts = async () => {
     if (!userInfo?._id) return;
@@ -298,121 +314,183 @@ export default function ChatList() {
       <Dialog
         open={showCreateChat}
         onClose={resetCreateChatModal}
-        maxWidth="md"
+        maxWidth="sm"
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 24px 48px -12px rgba(16, 24, 40, 0.25)',
+            overflow: 'hidden',
+          },
+        }}
       >
-        <DialogTitle>
-          <Typography variant="h6" fontWeight="600">
+        <Box sx={{ p: 3, pb: 1 }}>
+          <Typography variant="h5" align="center" sx={{ fontWeight: 700, mb: 1, color: '#101828' }}>
             Create New Chat
           </Typography>
-        </DialogTitle>
-        <DialogContent sx={{ pb: 1 }}>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Chat Name"
-            fullWidth
-            variant="outlined"
-            value={newChatName}
-            onChange={(e) => setNewChatName(e.target.value)}
-            placeholder="Enter chat name"
-            sx={{ mb: 2 }}
-          />
-
-          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-            Select Participants ({selectedUsers.length} selected)
+          <Typography variant="body2" align="center" sx={{ color: 'text.secondary' }}>
+            Start a new conversation with friends or groups.
           </Typography>
+        </Box>
 
-          {contactsLoading ? (
-            <Box display="flex" justifyContent="center" p={2}>
-              <CircularProgress size={24} />
-            </Box>
-          ) : contactsError ? (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {contactsError}
-            </Alert>
-          ) : (
-            <List dense sx={{ maxHeight: 300, overflow: 'auto' }}>
-              {contacts.map((contact) => (
-                <ListItem key={contact._id} disablePadding>
-                  <ListItemButton
-                    onClick={() => handleUserSelect(contact._id)}
-                    sx={{ borderRadius: 1 }}
-                  >
-                    <ListItemAvatar>
-                      <Avatar
-                        src={contact.avatarImage ? `data:image/svg+xml;base64,${contact.avatarImage}` : undefined}
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          bgcolor: theme.palette.grey[400]
-                        }}
-                      >
-                        <PersonIcon />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Typography variant="subtitle2" fontWeight="500">
-                          {`${contact.firstName} ${contact.lastName}`}
-                        </Typography>
-                      }
-                      secondary={
-                        <Typography variant="body2" color="text.secondary">
-                          {contact.role}
-                        </Typography>
-                      }
-                    />
-                    <ListItemSecondaryAction>
-                      <Checkbox
-                        edge="end"
-                        checked={selectedUsers.includes(contact._id)}
-                        onChange={() => handleUserSelect(contact._id)}
-                        color="primary"
-                      />
-                    </ListItemSecondaryAction>
-                  </ListItemButton>
-                </ListItem>
-              ))}
-            </List>
-          )}
-
-          {selectedUsers.length > 0 && (
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Selected Users:
+        <DialogContent sx={{ p: 3 }}>
+          <Stack spacing={3}>
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: 'text.primary' }}>
+                Chat Name
               </Typography>
-              <Box display="flex" flexWrap="wrap" gap={1}>
-                {selectedUsers.map(userId => {
-                  const user = contacts.find(c => c._id === userId);
-                  return user ? (
-                    <Chip
-                      key={userId}
-                      label={`${user.firstName} ${user.lastName}`}
-                      size="small"
-                      onDelete={() => handleUserSelect(userId)}
-                      color="primary"
-                      variant="outlined"
-                    />
-                  ) : null;
-                })}
-              </Box>
+              <TextField
+                autoFocus
+                fullWidth
+                variant="outlined"
+                value={newChatName}
+                onChange={(e) => setNewChatName(e.target.value)}
+                placeholder="Enter chat name"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <ChatBubbleOutline sx={{ color: 'text.disabled' }} />
+                    </InputAdornment>
+                  ),
+                  sx: commonInputSx,
+                }}
+              />
             </Box>
-          )}
+
+            <Divider />
+
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
+                Select Participants ({selectedUsers.length} selected)
+              </Typography>
+
+              {contactsLoading ? (
+                <Box display="flex" justifyContent="center" p={4}>
+                  <CircularProgress size={24} />
+                </Box>
+              ) : contactsError ? (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  {contactsError}
+                </Alert>
+              ) : (
+                <Box
+                  sx={{
+                    maxHeight: 250,
+                    overflowY: 'auto',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: 2,
+                    p: 1,
+                  }}
+                >
+                  <List dense disablePadding>
+                    {contacts.map((contact) => (
+                      <ListItem key={contact._id} disablePadding sx={{ mb: 0.5 }}>
+                        <ListItemButton
+                          onClick={() => handleUserSelect(contact._id)}
+                          sx={{ borderRadius: 1.5 }}
+                        >
+                          <ListItemAvatar>
+                            <Avatar
+                              src={contact.avatarImage ? `data:image/svg+xml;base64,${contact.avatarImage}` : undefined}
+                              sx={{
+                                width: 40,
+                                height: 40,
+                                bgcolor: theme.palette.grey[200],
+                                color: theme.palette.text.secondary
+                              }}
+                            >
+                              <PersonIcon />
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText
+                            primary={
+                              <Typography variant="subtitle2" fontWeight="600">
+                                {`${contact.firstName} ${contact.lastName}`}
+                              </Typography>
+                            }
+                            secondary={
+                              <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                                {contact.role}
+                              </Typography>
+                            }
+                          />
+                          <ListItemSecondaryAction>
+                            <Checkbox
+                              edge="end"
+                              checked={selectedUsers.includes(contact._id)}
+                              onChange={() => handleUserSelect(contact._id)}
+                              color="primary"
+                              sx={{
+                                '&.Mui-checked': {
+                                  color: 'primary.main',
+                                },
+                              }}
+                            />
+                          </ListItemSecondaryAction>
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              )}
+            </Box>
+
+            {selectedUsers.length > 0 && (
+              <Box>
+                <Box display="flex" flexWrap="wrap" gap={1}>
+                  {selectedUsers.map(userId => {
+                    const user = contacts.find(c => c._id === userId);
+                    return user ? (
+                      <Chip
+                        key={userId}
+                        label={`${user.firstName} ${user.lastName}`}
+                        size="small"
+                        onDelete={() => handleUserSelect(userId)}
+                        color="primary"
+                        variant="soft"
+                        sx={{ borderRadius: 1 }}
+                      />
+                    ) : null;
+                  })}
+                </Box>
+              </Box>
+            )}
+          </Stack>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={resetCreateChatModal} color="inherit">
+
+        <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ px: 4, pb: 4, pt: 0 }}>
+          <Button
+            onClick={resetCreateChatModal}
+            color="inherit"
+            sx={{ fontWeight: 600, color: 'text.secondary', textTransform: 'none' }}
+          >
             Cancel
           </Button>
           <Button
             onClick={handleCreateChat}
             variant="contained"
             disabled={!newChatName.trim() || selectedUsers.length === 0}
-            sx={{ minWidth: 100 }}
+            sx={{
+              textTransform: 'none',
+              fontWeight: 700,
+              borderRadius: 1.5,
+              px: 3,
+              boxShadow: '0 8px 16px -4px rgba(37, 99, 235, 0.24)',
+              background: 'linear-gradient(to right, #2563EB, #4F46E5)',
+              '&:hover': {
+                background: 'linear-gradient(to right, #1D4ED8, #4338CA)',
+                boxShadow: '0 12px 24px -6px rgba(37, 99, 235, 0.4)',
+              },
+              '&.Mui-disabled': {
+                background: theme.palette.action.disabledBackground,
+                color: theme.palette.action.disabled,
+              },
+            }}
           >
             Create Chat
           </Button>
-        </DialogActions>
+        </Stack>
       </Dialog>
     </StyledCard>
   );
