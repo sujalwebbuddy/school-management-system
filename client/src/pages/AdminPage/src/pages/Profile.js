@@ -36,6 +36,7 @@ import { getUserData } from '../../../../slices/userSlice';
 import { LoadingButton } from '@mui/lab';
 import Page from '../components/Page';
 import api from '../../../../utils/api';
+import ChangePasswordDialog from '../../../../components/ChangePasswordDialog';
 
 const Profile = () => {
   const {
@@ -60,6 +61,7 @@ const Profile = () => {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -112,6 +114,7 @@ const Profile = () => {
   };
 
   return (
+    <>
     <Page title="Profile">
       <Stack
         direction="row"
@@ -235,7 +238,7 @@ const Profile = () => {
                   </Box>
                 </CardContent>
                 <Divider />
-                <CardActions sx={{ p: 2 }}>
+                <CardActions sx={{ p: 2, flexDirection: 'column', gap: 1 }}>
                   <Button
                     component="label"
                     variant="outlined"
@@ -253,6 +256,21 @@ const Profile = () => {
                       type="file"
                       onChange={handleFileChange}
                     />
+                  </Button>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    onClick={() => setChangePasswordOpen(true)}
+                    sx={{
+                      textTransform: 'none',
+                      py: 1.5,
+                      background: 'linear-gradient(to right, #2563EB, #4F46E5)',
+                      '&:hover': {
+                        background: 'linear-gradient(to right, #1D4ED8, #4338CA)',
+                      },
+                    }}
+                  >
+                    Change Password
                   </Button>
                 </CardActions>
               </Card>
@@ -444,6 +462,12 @@ const Profile = () => {
         </Container>
       </Box>
     </Page>
+
+    <ChangePasswordDialog
+      open={changePasswordOpen}
+      onClose={() => setChangePasswordOpen(false)}
+    />
+    </>
   );
 };
 

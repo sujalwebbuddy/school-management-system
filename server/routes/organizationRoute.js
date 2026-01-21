@@ -7,7 +7,8 @@ const {
   signupOrganization,
   createPaymentIntent,
   updateSubscription,
-  confirmSubscription
+  confirmSubscription,
+  findUserOrganizations
 } = require('../controllers/organizationController');
 const tenantMiddleware = require('../middlewares/tenantMiddleware');
 const authMiddleware = require('../middlewares/authMiddleware');
@@ -19,8 +20,9 @@ const router = express.Router();
 router.post('/signup', signupOrganization);
 router.post('/create-payment-intent', createPaymentIntent);
 
-// Public organization search
+// Public organization search and user lookup
 router.get('/search', require('../controllers/organizationController').searchOrganizations);
+router.post('/find-users', findUserOrganizations);
 
 // Organization admin routes (tenant protected)
 router.post('/update-subscription', authMiddleware, tenantMiddleware, roleMiddleware('admin'), updateSubscription);

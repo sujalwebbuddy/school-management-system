@@ -40,7 +40,6 @@ export default function DashboardApp() {
   });
   const analytics = useSelector((state) => state.admin.dashboardAnalytics);
   const registrationTrends = useSelector((state) => state.admin.registrationTrends);
-  const loading = useSelector((state) => state.admin.loading);
 
   const { userInfo } = useSelector((state) => state.user);
 
@@ -96,13 +95,13 @@ export default function DashboardApp() {
                   Quick Actions
                 </Typography>
                 <Stack direction="row" spacing={2} flexWrap="wrap">
-                  <Button variant="outlined" size="small" onClick={() => navigate('/dashboard/users')}>
+                  <Button variant="outlined" size="small" onClick={() => navigate('/dashboard/user')}>
                     Manage Users
                   </Button>
                   <Button variant="outlined" size="small" onClick={() => navigate('/dashboard/classes')}>
                     View Classes
                   </Button>
-                  <Button variant="outlined" size="small" onClick={() => navigate('/settings')}>
+                  <Button variant="outlined" size="small" onClick={() => navigate('/dashboard/settings')}>
                     Organization Settings
                   </Button>
                   <Button variant="outlined" size="small" onClick={() => navigate('/subscription')}>

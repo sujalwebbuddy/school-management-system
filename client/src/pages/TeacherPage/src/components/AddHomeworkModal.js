@@ -2,16 +2,14 @@
 
 import {
   Box,
-  Button,
   Modal,
-  TextField,
   Typography,
   Stack,
   Divider,
-  MenuItem,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
+import { FormProvider } from 'react-hook-form';
 import api from '../../../../utils/api';
 import Swal from 'sweetalert2';
 import { getHomeworks } from '../../../../slices/teacherSlice';
@@ -42,13 +40,15 @@ export default function AddHomeworkModal({ open, onClose }) {
     return state?.teacher?.userInfo?.user?.subject;
   });
 
+  const formMethods = useHomeworkForm();
   const {
     register,
     handleSubmit,
     control,
     resetForm,
     formState: { errors },
-  } = useHomeworkForm();
+    questions,
+  } = formMethods;
 
   const onSubmit = async (data) => {
     try {
@@ -103,29 +103,31 @@ export default function AddHomeworkModal({ open, onClose }) {
           </Typography>
         </Box>
 
-        <Box sx={{ p: 3, overflowY: 'auto', maxHeight: 'calc(90vh - 80px)' }}>
-          <Stack spacing={3}>
-            <Box>
-              <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 'bold', mb: 2, display: 'block' }}>
-                Basic Information
-              </Typography>
-              <HomeworkBasicFields register={register} control={control} errors={errors} />
-            </Box>
+        <FormProvider {...formMethods}>
+          <Box sx={{ p: 3, overflowY: 'auto', maxHeight: 'calc(90vh - 80px)' }}>
+            <Stack spacing={3}>
+              <Box>
+                <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 'bold', mb: 2, display: 'block' }}>
+                  Basic Information
+                </Typography>
+                <HomeworkBasicFields register={register} control={control} errors={errors} />
+              </Box>
 
-            <Divider dashed />
+              <Divider dashed />
 
-            <Box>
-              <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 'bold', mb: 2, display: 'block' }}>
-                Question Configuration
-              </Typography>
-              <HomeworkOptionsFields register={register} errors={errors} />
-            </Box>
+              <Box>
+                <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 'bold', mb: 2, display: 'block' }}>
+                  Questions
+                </Typography>
+                <HomeworkOptionsFields questions={questions} />
+              </Box>
 
-            <Box sx={{ pt: 1 }}>
-              <HomeworkModalFooter onClose={handleClose} onSubmit={handleSubmit(onSubmit)} />
-            </Box>
-          </Stack>
-        </Box>
+              <Box sx={{ pt: 1 }}>
+                <HomeworkModalFooter onClose={handleClose} onSubmit={handleSubmit(onSubmit)} />
+              </Box>
+            </Stack>
+          </Box>
+        </FormProvider>
       </Box>
     </Modal>
   );

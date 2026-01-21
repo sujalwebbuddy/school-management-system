@@ -11,7 +11,7 @@ import {
 } from "../sections/@dashboard/app";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../../../utils/api";
 import { getApprovedUsers } from "../../../../slices/adminSlice";
 import { TaskDialog } from "../../../../features/tasks";
 
@@ -144,9 +144,7 @@ export default function DashboardApp() {
     const fetchStudentCount = async () => {
       if (myClass?._id) {
         try {
-          const res = await axios.get("/api/v1/admin/students", {
-            headers: { token: localStorage.getItem("token") },
-          });
+          const res = await api.get("/admin/students");
           const allStudents = res.data.students || [];
           const classStudents = allStudents.filter((student) => {
             const studentClassId = student.classIn?._id || student.classIn;
@@ -155,7 +153,7 @@ export default function DashboardApp() {
               studentClassId?.toString() === myClass._id?.toString()
             );
           });
-          setStudentCount(classStudents.length);
+          setStudentCount(classStudents?.length || 0);
         } catch (error) {
           setStudentCount(0);
         }
@@ -183,7 +181,7 @@ export default function DashboardApp() {
           <Grid item xs={12} sm={6} md={3}>
             <AppWidgetSummary
               title="Teachers"
-              total={users?.teacher?.length}
+              total={users?.teacher?.length || 0}
               color="info"
               icon={"fa-solid:chalkboard-teacher"}
             />
@@ -193,7 +191,7 @@ export default function DashboardApp() {
           <Grid item xs={12} sm={6} md={3}>
             <AppWidgetSummary
               title="Classrooms"
-              total={classList?.length}
+              total={classList?.length || 0}
               color="error"
               icon={"arcticons:classroom"}
             />
@@ -230,6 +228,7 @@ export default function DashboardApp() {
               chartColors={[...Array(6)].map(
                 () => theme.palette.text.secondary
               )}
+              chartLabels={["Present", "Absent"]}
             />
           </Grid>
 
@@ -243,6 +242,7 @@ export default function DashboardApp() {
               chartColors={[...Array(6)].map(
                 () => theme.palette.text.secondary
               )}
+              chartLabels={["Male", "Female"]}
             />
           </Grid>
 

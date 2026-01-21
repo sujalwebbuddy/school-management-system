@@ -1,21 +1,13 @@
-import { faker } from "@faker-js/faker";
 // @mui
 import { useTheme } from "@mui/material/styles";
 import { Grid, Container, Typography } from "@mui/material";
 // components
 import Page from "../components/Page";
-import Iconify from "../components/Iconify";
 // sections
 import {
   AppTasks,
-  AppNewsUpdate,
-  AppOrderTimeline,
-  AppCurrentVisits,
-  AppWebsiteVisits,
-  AppTrafficBySite,
   AppWidgetSummary,
   AppCurrentSubject,
-  AppConversionRates,
 } from "../sections/@dashboard/app";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
@@ -49,12 +41,12 @@ export default function DashboardApp() {
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
-  const users = useSelector((state) => state.admin.usersApproved);
-  const allUsers = users?.student?.concat(users?.teacher || [], users?.admin || []) || [];
-
   useEffect(() => {
     dispatch(getApprovedUsers());
   }, [dispatch]);
+
+  const users = useSelector((state) => state.admin.usersApproved);
+  const allUsers = users?.student?.concat(users?.teacher || [], users?.admin || []) || [];
 
   const handleOpenTaskDialog = (task = null) => {
     setEditingTask(task);
@@ -66,88 +58,7 @@ export default function DashboardApp() {
     setEditingTask(null);
   };
 
-  const data = [
-    {
-      Id: 2,
-      Subject: "Class course",
-      StartTime: new Date(+todayDate[0], +todayDate[1], +todayDate[2], 10, 0),
-      EndTime: new Date(+todayDate[0], +todayDate[1], +todayDate[2], 12, 30),
-      IsAllDay: false,
-      Status: "Completed",
-      Priority: "High",
-    },
-    {
-      Id: 1,
-      Subject: "Class course",
-      StartTime: new Date(
-        +todayDate[0],
-        +todayDate[1],
-        +todayDate[2] - 3,
-        9,
-        0
-      ),
-      EndTime: new Date(+todayDate[0], +todayDate[1], +todayDate[2] - 3, 12, 0),
-      IsAllDay: false,
-    },
-    {
-      Id: 3,
-      Subject: "Class practical work",
-      StartTime: new Date(
-        +todayDate[0],
-        +todayDate[1],
-        +todayDate[2] - 2,
-        14,
-        0
-      ),
-      EndTime: new Date(
-        +todayDate[0],
-        +todayDate[1],
-        +todayDate[2] - 2,
-        16,
-        30
-      ),
-      IsAllDay: false,
-    },
-    {
-      Id: 4,
-      Subject: "Class course",
-      StartTime: new Date(
-        +todayDate[0],
-        +todayDate[1],
-        +todayDate[2] - 4,
-        14,
-        0
-      ),
-      EndTime: new Date(+todayDate[0], +todayDate[1], +todayDate[2] - 4, 17, 0),
-      IsAllDay: false,
-    },
-    {
-      Id: 5,
-      Subject: "Revision",
-      StartTime: new Date(
-        +todayDate[0],
-        +todayDate[1],
-        +todayDate[2] - 2,
-        10,
-        0
-      ),
-      EndTime: new Date(+todayDate[0], +todayDate[1], +todayDate[2] - 2, 12, 0),
-      IsAllDay: false,
-    },
-    {
-      Id: 6,
-      Subject: "Class course",
-      StartTime: new Date(
-        +todayDate[0],
-        +todayDate[1],
-        +todayDate[2] - 2,
-        14,
-        0
-      ),
-      EndTime: new Date(+todayDate[0], +todayDate[1], +todayDate[2] - 2, 18, 0),
-      IsAllDay: false,
-    },
-  ];
+  const data = [];
   const theme = useTheme();
   const teacher = useSelector((state) => {
     return state?.student?.teachers?.teacherlist;
@@ -249,17 +160,10 @@ export default function DashboardApp() {
             />
           </Grid>
 
-          <Grid item xs={12} md={6} lg={12} style={{ margin: "auto" }}>
+          <Grid item xs={12} md={6} lg={8}>
             <AppTasks
               title="Tasks"
-              list={[
-                { id: "1", label: "Prepare for exams" },
-                { id: "2", label: "Do homework" },
-                { id: "3", label: "Prepare subjects" },
-                { id: "4", label: "Meet with friends" },
-                { id: "5", label: "Attend my class" },
-                { id: "6", label: "Play football" },
-              ]}
+              onAddTask={() => handleOpenTaskDialog()}
               onEditTask={(task) => handleOpenTaskDialog(task)}
             />
           </Grid>

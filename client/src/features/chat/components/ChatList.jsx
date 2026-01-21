@@ -204,6 +204,8 @@ export default function ChatList() {
     return `${chat.participants?.length || 0} members`;
   };
 
+  const isStudent = userInfo?.role === "student";
+
   return (
     <StyledCard>
       <HeaderBox>
@@ -213,14 +215,16 @@ export default function ChatList() {
             Chats
           </Typography>
         </Box>
-        <Fab
-          size="small"
-          color="primary"
-          onClick={() => setShowCreateChat(true)}
-          sx={{ boxShadow: theme.shadows[4] }}
-        >
-          <AddIcon />
-        </Fab>
+        {!isStudent && (
+          <Fab
+            size="small"
+            color="primary"
+            onClick={() => setShowCreateChat(true)}
+            sx={{ boxShadow: theme.shadows[4] }}
+          >
+            <AddIcon />
+          </Fab>
+        )}
       </HeaderBox>
 
       <ChatListContainer>

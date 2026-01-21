@@ -2,25 +2,24 @@ import React, { useEffect, useState } from "react";
 import "./UserInfo.css";
 import "../../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import { useLocation } from "react-router-dom";
-import axios from "axios";
+import api from "../utils/api";
 
 const UserInfo = () => {
   const location = useLocation();
   const userid = location.state;
   const [user, setuser] = useState({});
   useEffect(() => {
-    axios
-      .get(`/api/v1/admin/user/view/${userid}`, {
-        headers: { token: localStorage.getItem("token") }
-      })
-      .then(function (result) {
+    const fetchUser = async () => {
+      try {
+        const result = await api.get(`/admin/user/view/${userid}`);
         setuser(result.data.user);
-      })
-      .catch(function (err) {
-        console.log(err);
-      });
-  }, []);
-  console.log(user);
+      } catch (err) {
+        // Handle error silently or show user-friendly message
+      }
+    };
+
+    fetchUser();
+  }, [userid]);
   return (
     <div className="container">
       <div className="main-body">
@@ -75,7 +74,7 @@ const UserInfo = () => {
                   <div className="col-sm-3">
                     <h6 className="mb-0">Phone</h6>
                   </div>
-                  <div className="col-sm-9 text-secondary">{`(+216) ${user?.phoneNumber}`}</div>
+                  <div className="col-sm-9 text-secondary">{user?.phoneNumber}</div>
                 </div>
                 <hr />
                 <div className="row">

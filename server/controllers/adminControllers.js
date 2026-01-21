@@ -5,9 +5,9 @@ const Attendance = require("../models/attendanceModel");
 const Organization = require("../models/organizationModel");
 const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator");
-const nodemailer = require("nodemailer");
 const mongoose = require("mongoose");
 const config = require("../config/envConfig");
+const { sendUserApprovalEmail } = require("../utils/mailUtils");
 const {
   ANALYTICS_CONSTANTS,
   validateDaysParameter,
@@ -27,14 +27,6 @@ class AdminControllerError extends Error {
   }
 }
 
-// nodemailer config
-let mailTransporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: config.EMAIL_USER,
-    pass: config.EMAIL_PASS,
-  },
-});
 
 // @desc create a new admin account for an organization
 exports.addNewAdmin = async (req, res) => {
@@ -231,20 +223,17 @@ exports.addNewUser = async (req, res) => {
         { new: true }
       );
 
-      const mailDetails = {
-        from: config.EMAIL_USER,
-        to: email,
-        subject: `Your ${req.organization.name} account information`,
-        text: `Welcome to ${req.organization.name}!\n\nemail: ${email}\npassword: ${password}`,
-      };
-
-      mailTransporter.sendMail(mailDetails, function (err, data) {
-        if (err) {
-          console.error("Email sending failed:", err);
-        } else {
-          console.log("Email sent successfully");
-        }
-      });
+      try {
+        await sendUserApprovalEmail(
+          email,
+          `${updatedUser.firstName} ${updatedUser.lastName}`,
+          req.organization.name,
+          email,
+          password
+        );
+      } catch (emailError) {
+        console.error("Email sending failed:", emailError);
+      }
 
       return res.json({
         msg: "User account approved and updated",
@@ -276,20 +265,17 @@ exports.addNewUser = async (req, res) => {
       isApproved: true,
     });
 
-    const mailDetails = {
-      from: config.EMAIL_USER,
-      to: email,
-      subject: `Your ${req.organization.name} account information`,
-      text: `Welcome to ${req.organization.name}!\n\nemail: ${email}\npassword: ${password}`,
-    };
-
-    mailTransporter.sendMail(mailDetails, function (err, data) {
-      if (err) {
-        console.error("Email sending failed:", err);
-      } else {
-        console.log("Email sent successfully");
-      }
-    });
+    try {
+      await sendUserApprovalEmail(
+        email,
+        `${newUser.firstName} ${newUser.lastName}`,
+        req.organization.name,
+        email,
+        password
+      );
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError);
+    }
 
     res.json({
       msg: "New user created successfully",

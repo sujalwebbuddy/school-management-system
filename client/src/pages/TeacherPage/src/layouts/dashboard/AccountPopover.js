@@ -24,11 +24,6 @@ const MENU_OPTIONS = [
     icon: "eva:person-fill",
     linkTo: "/teacherDashboard/editprofile",
   },
-  {
-    label: "Settings",
-    icon: "eva:settings-2-fill",
-    linkTo: "#",
-  },
 ];
 
 // ----------------------------------------------------------------------

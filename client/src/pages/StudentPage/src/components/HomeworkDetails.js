@@ -1,7 +1,6 @@
 import {
   Button,
   Card,
-  CardActions,
   CardContent,
   CardHeader,
   FormControlLabel,
@@ -11,14 +10,14 @@ import {
   Snackbar,
   Stack,
   Typography,
+  Divider,
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
 import { Box } from "@mui/system";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { styled } from "@mui/material/styles";
-
 import Paper from "@mui/material/Paper";
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -94,6 +93,32 @@ function BpRadio(props) {
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
+
+function normalizeHomeworkQuestions(homework) {
+  if (!homework) {
+    return [];
+  }
+
+  if (homework.questions && Array.isArray(homework.questions)) {
+    return homework.questions;
+  }
+
+  if (homework.optionA && homework.optionB && homework.optionC && homework.optionD) {
+    return [
+      {
+        questionText: homework.description || "",
+        optionA: homework.optionA,
+        optionB: homework.optionB,
+        optionC: homework.optionC,
+        optionD: homework.optionD,
+        correct: homework.correct,
+      },
+    ];
+  }
+
+  return [];
+}
+
 export default function HomeworkDetails() {
   const location = useLocation();
   const homeid = location.state;
@@ -102,30 +127,97 @@ export default function HomeworkDetails() {
   });
   const myhomework = homeworkList?.find((el) => el._id === homeid);
 
-  const [answer, setAnswer] = useState("");
-  const handleChange = (event) => {
-    setAnswer(event.target.value);
-  };
-  const [correct, setCorrect] = useState(null);
-  const [open, setOpen] = useState(false);
+  const questions = useMemo(() => normalizeHomeworkQuestions(myhomework), [myhomework]);
 
-  const handleClick = () => {
-    console.log(answer);
-    if (answer === myhomework?.correct) {
-      setCorrect(true);
-    } else {
-      setCorrect(false);
-    }
-    setOpen(true);
+  const [answers, setAnswers] = useState({});
+  const [questionResults, setQuestionResults] = useState({});
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState({ severity: "success", message: "" });
+
+  const handleAnswerChange = (questionIndex, value) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [questionIndex]: value,
+    }));
   };
 
-  const handleClose = (event, reason) => {
-    if (reason === "clickaway") {
+  const handleCheckAnswer = (questionIndex) => {
+    const question = questions[questionIndex];
+    const answer = answers[questionIndex];
+    if (!answer) {
+      setSnackbarMessage({
+        severity: "warning",
+        message: "Please select an answer first",
+      });
+      setOpenSnackbar(true);
       return;
     }
 
-    setOpen(false);
+    const isCorrect = answer === question.correct;
+    setQuestionResults((prev) => ({
+      ...prev,
+      [questionIndex]: isCorrect,
+    }));
+
+    setSnackbarMessage({
+      severity: isCorrect ? "success" : "error",
+      message: isCorrect ? "Good Job! Your answer is correct" : "Incorrect! Try again please",
+    });
+    setOpenSnackbar(true);
   };
+
+  const handleCheckAllAnswers = () => {
+    let allAnswered = true;
+    for (let i = 0; i < questions.length; i += 1) {
+      if (!answers[i]) {
+        allAnswered = false;
+        break;
+      }
+    }
+
+    if (!allAnswered) {
+      setSnackbarMessage({
+        severity: "warning",
+        message: "Please answer all questions before checking",
+      });
+      setOpenSnackbar(true);
+      return;
+    }
+
+    const results = {};
+    let correctCount = 0;
+    for (let i = 0; i < questions.length; i += 1) {
+      const isCorrect = answers[i] === questions[i].correct;
+      results[i] = isCorrect;
+      if (isCorrect) {
+        correctCount += 1;
+      }
+    }
+
+    setQuestionResults(results);
+    setSnackbarMessage({
+      severity: correctCount === questions.length ? "success" : "info",
+      message: `You got ${correctCount} out of ${questions.length} questions correct`,
+    });
+    setOpenSnackbar(true);
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenSnackbar(false);
+  };
+  if (!myhomework || questions.length === 0) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 400 }}>
+        <Typography variant="h6" color="text.secondary">
+          Homework not found or has no questions
+        </Typography>
+      </Stack>
+    );
+  }
+
   return (
     <>
       <Stack
@@ -139,108 +231,118 @@ export default function HomeworkDetails() {
         </Typography>
       </Stack>
 
-      <Card>
-        <CardHeader
-          title={"Question"}
-          titleTypographyProps={{ variant: "h4" }}
-        />
-        <br />
-        <hr
-          style={{
-            border: "0px",
-            height: "1px",
-            background: "#333",
-            backgroundiImage:
-              "linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0))",
-          }}
-        />
-        <CardContent>
-          <Typography variant="h6" style={{ color: "#6B5B95" }}>
-            - Description :
-          </Typography>
-          <Typography variant="subtitle1">{myhomework?.description}</Typography>
-          <br />
-          <Typography variant="h6" style={{ color: "#6B5B95" }}>
-            - Options :
-          </Typography>
-          <RadioGroup
-            name="use-radio-group"
-            defaultValue="A"
-            onChange={handleChange}
-          >
-            <Box sx={{ width: "100%" }}>
-              <Grid
-                container
-                rowSpacing={1}
-                columnSpacing={{ xs: 1, sm: 2, md: 3 }}
-              >
-                <Grid item xs={6}>
-                  <Item>
-                    <FormControlLabel
-                      value="A"
-                      control={<BpRadio />}
-                      label={`Option A : ${myhomework?.optionA}`}
-                    />
-                  </Item>
+      {questions.map((question, questionIndex) => (
+        <Card key={questionIndex} sx={{ mb: 3 }}>
+          <CardHeader
+            title={`Question ${questionIndex + 1}`}
+            titleTypographyProps={{ variant: "h5" }}
+          />
+          <Divider />
+          <CardContent>
+            <Typography variant="h6" style={{ color: "#6B5B95", mb: 2 }}>
+              Question:
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 3 }}>
+              {question.questionText}
+            </Typography>
+            <Typography variant="h6" style={{ color: "#6B5B95", mb: 2 }}>
+              Options:
+            </Typography>
+            <RadioGroup
+              name={`question-${questionIndex}`}
+              value={answers[questionIndex] || ""}
+              onChange={(e) => handleAnswerChange(questionIndex, e.target.value)}
+            >
+              <Box sx={{ width: "100%" }}>
+                <Grid
+                  container
+                  rowSpacing={1}
+                  columnSpacing={{ xs: 1, sm: 2, md: 3 }}
+                >
+                  <Grid item xs={12} sm={6}>
+                    <Item>
+                      <FormControlLabel
+                        value="A"
+                        control={<BpRadio />}
+                        label={`Option A: ${question.optionA}`}
+                      />
+                    </Item>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Item>
+                      <FormControlLabel
+                        value="B"
+                        control={<BpRadio />}
+                        label={`Option B: ${question.optionB}`}
+                      />
+                    </Item>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Item>
+                      <FormControlLabel
+                        value="C"
+                        control={<BpRadio />}
+                        label={`Option C: ${question.optionC}`}
+                      />
+                    </Item>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Item>
+                      <FormControlLabel
+                        value="D"
+                        control={<BpRadio />}
+                        label={`Option D: ${question.optionD}`}
+                      />
+                    </Item>
+                  </Grid>
                 </Grid>
-                <Grid item xs={6}>
-                  <Item>
-                    <FormControlLabel
-                      value="B"
-                      control={<BpRadio />}
-                      label={`Option B : ${myhomework?.optionB}`}
-                    />
-                  </Item>
-                </Grid>
-                <Grid item xs={6}>
-                  <Item>
-                    <FormControlLabel
-                      value="C"
-                      control={<BpRadio />}
-                      label={`Option C : ${myhomework?.optionC}`}
-                    />
-                  </Item>
-                </Grid>
-                <Grid item xs={6}>
-                  <Item>
-                    <FormControlLabel
-                      value="D"
-                      control={<BpRadio />}
-                      label={`Option D : ${myhomework?.optionD}`}
-                    />
-                  </Item>
-                </Grid>
-              </Grid>
-            </Box>
-          </RadioGroup>
-        </CardContent>
-        <Box m={1} display="flex" justifyContent="center" alignItems="center">
-          <Button variant="outlined" onClick={handleClick}>
-            Check Answer
+              </Box>
+            </RadioGroup>
+            {questionResults[questionIndex] !== undefined && (
+              <Box sx={{ mt: 2 }}>
+                <Alert
+                  severity={questionResults[questionIndex] ? "success" : "error"}
+                  sx={{ width: "100%" }}
+                >
+                  {questionResults[questionIndex]
+                    ? "Correct!"
+                    : "Incorrect. Try again!"}
+                </Alert>
+              </Box>
+            )}
+          </CardContent>
+          <Box m={1} display="flex" justifyContent="center" alignItems="center">
+            <Button
+              variant="outlined"
+              onClick={() => handleCheckAnswer(questionIndex)}
+            >
+              Check This Answer
+            </Button>
+          </Box>
+        </Card>
+      ))}
+
+      {questions.length > 1 && (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 3, mb: 3 }}>
+          <Button variant="contained" onClick={handleCheckAllAnswers}>
+            Check All Answers
           </Button>
         </Box>
-        <br />
-      </Card>
-
-      {correct === true ? (
-        <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-          <Alert
-            onClose={handleClose}
-            severity="success"
-            sx={{ width: "100%" }}
-          >
-            Good Job ! Your answer is correct
-          </Alert>
-        </Snackbar>
-      ) : correct === false ? (
-        <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-          <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
-            Incorrect ! Try again please
-          </Alert>
-        </Snackbar>
-      ) : (
-        <></>
       )}
+
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbarMessage.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

@@ -6,7 +6,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import axios from "axios";
+import api from "../../../../utils/api";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
@@ -41,24 +41,16 @@ const Classes = () => {
     formState: { errors },
   } = useForm();
   const dispatch = useDispatch();
-  const onSubmit = (data) => {
-    axios
-      .post("/api/v1/admin/newclass", data, {
-        headers: { token: localStorage.getItem("token") }
-      })
-      .then((res) => {
-        swal(
-          "Done!",
-          "New Class has been added successfully !",
-          "success"
-        );
-      })
-      .catch((err) => {
-        swal("Oops!", err.response.data.msg, "error");
-        reset({ className: "" });
-      });
-    dispatch(getClasses());
-    handleClose();
+  const onSubmit = async (data) => {
+    try {
+      await api.post("/admin/newclass", data);
+      await swal("Done!", "New Class has been added successfully !", "success");
+      dispatch(getClasses());
+      handleClose();
+    } catch (err) {
+      await swal("Oops!", err.message, "error");
+      reset({ className: "" });
+    }
   };
   return (
     <>

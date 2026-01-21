@@ -5,8 +5,8 @@ export const getUserInfo = createAsyncThunk(
   "student/userinfo",
   async (input, { rejectWithValue }) => {
     try {
-      const res = await api.get("/users/");
-      return { user: res.data };
+      const res = await api.get("/users");
+      return res.data;
     } catch (error) {
       return rejectWithValue(error.message || "Failed to fetch user info");
     }

@@ -1,5 +1,5 @@
 import { Button } from "@mui/material";
-import axios from "axios";
+import api from "../../../../utils/api";
 import React from "react";
 import Swal from "sweetalert2";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -25,9 +25,7 @@ const DeleteHomework = ({ id }) => {
 
       if (result.isConfirmed) {
         try {
-          await axios.delete(`/api/v1/teacher/delete/${id}`, {
-            headers: { token: localStorage.getItem("token") }
-          });
+          await api.delete(`/teacher/delete/${id}`);
           await Swal.fire("Deleted!", "Homework has been deleted.", "success");
         } catch (error) {
           // Error handling with context for architecture compliance

@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 // component
 import Iconify from "../../../components/Iconify";
-import axios from "axios";
+import api from "../../../../../../utils/api";
 import { useDispatch, useSelector } from "react-redux";
 import { getExams } from "../../../../../../slices/teacherSlice";
 import Swal from "sweetalert2";
@@ -31,8 +31,8 @@ export default function UserMoreMenu({ id, name, dateOf, totalMark }) {
   const subject = useSelector((state) => {
     return state?.teacher?.userInfo?.user?.subject;
   });
-  const handleDelete = () => {
-    Swal.fire({
+  const handleDelete = async () => {
+    const result = await Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
       icon: "warning",
@@ -40,18 +40,17 @@ export default function UserMoreMenu({ id, name, dateOf, totalMark }) {
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire("Deleted!", "Class has been deleted.", "success");
-        axios
-          .delete(`/api/v1/teacher/deleteExam/${id}`, {
-            headers: { token: localStorage.getItem("token") }
-          })
-          .then((res) => console.log(res))
-          .catch((err) => console.log(err));
-        dispatch(getExams(subject));
-      }
     });
+
+    if (result.isConfirmed) {
+      try {
+        await Swal.fire("Deleted!", "Exam has been deleted.", "success");
+        await api.delete(`/teacher/deleteExam/${id}`);
+        dispatch(getExams(subject));
+      } catch (err) {
+        await Swal.fire("Error!", "Failed to delete exam.", "error");
+      }
+    }
   };
   const style = {
     position: "absolute",
@@ -75,21 +74,15 @@ export default function UserMoreMenu({ id, name, dateOf, totalMark }) {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    axios
-      .put(`/api/v1/teacher/updateexam/${id}`, data, {
-        headers: { token: localStorage.getItem("token") }
-      })
-      .then((res) => {
-        swal("Done!", "Exam has been updated successfully !", "success").then(
-          () => console.log(res)
-        );
-      })
-      .catch((err) => {
-        swal("Oops!", err.response.data.msg, "error");
-      });
-    dispatch(getExams(subject));
-    handleClose();
+  const onSubmit = async (data) => {
+    try {
+      await api.put(`/teacher/updateexam/${id}`, data);
+      await swal("Done!", "Exam has been updated successfully !", "success");
+      dispatch(getExams(subject));
+      handleClose();
+    } catch (err) {
+      await swal("Oops!", err.message, "error");
+    }
   };
   return (
     <>

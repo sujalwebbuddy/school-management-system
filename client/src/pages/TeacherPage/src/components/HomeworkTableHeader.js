@@ -5,8 +5,7 @@ import { TableHead, TableRow, TableCell } from '@mui/material';
 const headerCells = [
   { label: 'Name', align: 'left' },
   { label: 'Description', align: 'left' },
-  { label: 'Options', align: 'left' },
-  { label: 'Correct Answer', align: 'center' },
+  { label: 'Questions', align: 'center' },
   { label: 'Due Date', align: 'center' },
   { label: 'Action', align: 'right', sortable: false },
 ];

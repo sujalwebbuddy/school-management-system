@@ -34,8 +34,8 @@ import { useEffect, useState } from "react";
 import { getApprovedUsers } from "../slices/adminSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import api from "../utils/api";
 import swal from "sweetalert";
-import axios from "axios";
 const EditAccount = () => {
   const {
     register,
@@ -108,41 +108,37 @@ const EditAccount = () => {
     }
   };
 
-  const onSubmit = (data) => {
-    const formData = new FormData();
-    if (file) {
-      formData.append("profile-image", file);
+  const onSubmit = async (data) => {
+    try {
+      const formData = new FormData();
+      if (file) {
+        formData.append("profile-image", file);
+      }
+      formData.append("firstName", data.firstName);
+      formData.append("lastName", data.lastName);
+      formData.append("email", data.email);
+      formData.append("phoneNumber", data.phoneNumber);
+      formData.append("age", data.age);
+      formData.append("gender", data.gender);
+      if (data?.classIn) {
+        formData.append("classIn", data.classIn);
+      }
+      if (data?.subject) {
+        formData.append("subject", data.subject);
+      }
+      setLoading(true);
+
+      await api.put(`/admin/user/update/${userid}`, formData);
+
+      await swal("Done!", "User has been updated successfully !", "success");
+
+      setLoading(false);
+      dispatch(getApprovedUsers());
+      navigate("/dashboard/students");
+    } catch (err) {
+      await swal("Oops!", err.message, "error");
+      setLoading(false);
     }
-    formData.append("firstName", data.firstName);
-    formData.append("lastName", data.lastName);
-    formData.append("email", data.email);
-    formData.append("phoneNumber", data.phoneNumber);
-    formData.append("age", data.age);
-    formData.append("gender", data.gender);
-    if (data?.classIn) {
-      formData.append("classIn", data.classIn);
-    }
-    if (data?.subject) {
-      formData.append("subject", data.subject);
-    }
-    setLoading(true);
-    axios
-      .put(`/api/v1/admin/user/update/${userid}`, formData, {
-        headers: { token: localStorage.getItem("token") }
-      })
-      .then((res) => {
-        swal("Done!", "User has been updated successfully !", "success").then(
-          () => {
-            setLoading(false);
-            dispatch(getApprovedUsers());
-            navigate("/dashboard/students");
-          }
-        );
-      })
-      .catch((err) => {
-        swal("Oops!", err.response.data.msg, "error");
-        setLoading(false);
-      });
   };
 
   if (!userf) {

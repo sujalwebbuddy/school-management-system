@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import axios from "axios";
+import api from "../utils/api";
 import swal from "sweetalert";
 import { MenuItem, FormControl, TextField } from "@mui/material";
 import { StyledSelect, StyledAutocomplete } from "./authStyledComponents";
@@ -35,7 +35,7 @@ const RegisterForm = () => {
     orgDebounceRef.current = setTimeout(async () => {
       setOrgLoading(true);
       try {
-        const response = await axios.get("/api/v1/organizations/search", {
+        const response = await api.get("/organizations/search", {
           params: { q: query.trim(), limit: 20 },
         });
         setOrganizations(response?.data?.organizations || []);
@@ -69,7 +69,7 @@ const RegisterForm = () => {
         organizationDomain: selectedOrganization.domain,
       };
 
-      await axios.post("/api/v1/users/register", registrationData);
+      await api.post("/users/register", registrationData);
       await swal(
         "Done!",
         `Your register request has been sent to ${selectedOrganization.name}! Wait to be approved`,

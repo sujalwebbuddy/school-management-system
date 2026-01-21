@@ -20,7 +20,6 @@ const ClassInfo = ({ subject }) => {
     const teacherSubject = typeof el.subject === "object" ? el.subject?.name : el.subject;
     return teacherSubject === subjectName;
   });
-  console.log(teachers);
   return (
     <>
       <Card

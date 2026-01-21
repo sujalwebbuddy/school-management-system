@@ -15,7 +15,6 @@ import {
   Avatar,
   IconButton,
   Tooltip,
-  Divider,
   Paper,
 } from '@mui/material';
 import {
@@ -43,8 +42,6 @@ import {
   selectTaskStats,
 } from '../../../slices/taskSlice';
 
-// Import user slice to get current user and available users
-import userSlice from '../../../slices/userSlice';
 // Import admin slice to get approved users
 import { getApprovedUsers } from '../../../slices/adminSlice';
 
@@ -72,9 +69,7 @@ const TaskPage = () => {
   // Redux selectors
   const tasks = useSelector(selectTasks);
   const loading = useSelector(selectTasksLoading);
-  const error = useSelector(selectTasksError);
   const stats = useSelector(selectTaskStats);
-  const currentUser = useSelector((state) => state.user.userInfo);
   const users = useSelector((state) => state.admin.usersApproved);
 
   // Combine all user types into a single array

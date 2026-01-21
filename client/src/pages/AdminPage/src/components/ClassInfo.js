@@ -15,7 +15,7 @@ import ClassIcon from "@mui/icons-material/Class";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
-import axios from "axios";
+import api from "../../../../utils/api";
 import { getClasses } from "../../../../slices/adminSlice";
 import EditIcon from "@mui/icons-material/Edit";
 import { useForm } from "react-hook-form";
@@ -29,9 +29,7 @@ const ClassInfo = ({ id, name, number }) => {
   useEffect(() => {
     const fetchStudentCount = async () => {
       try {
-        const res = await axios.get("/api/v1/admin/students", {
-          headers: { token: localStorage.getItem("token") },
-        });
+        const res = await api.get("/admin/students");
         const allStudents = res.data.students || [];
         const classStudents = allStudents.filter((student) => {
           const studentClassId = student.classIn?._id || student.classIn;
@@ -50,8 +48,8 @@ const ClassInfo = ({ id, name, number }) => {
     fetchStudentCount();
   }, [id]);
   const dispatch = useDispatch();
-  const handleDelete = () => {
-    Swal.fire({
+  const handleDelete = async () => {
+    const result = await Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
       icon: "warning",
@@ -59,21 +57,17 @@ const ClassInfo = ({ id, name, number }) => {
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire("Deleted!", "Class has been deleted.", "success");
-        axios
-          .delete(`/api/v1/admin/class/${id}`, {
-            headers: { token: localStorage.getItem("token") },
-          })
-          .then((res) => {
-            dispatch(getClasses());
-          })
-          .catch((err) => {
-            swal("Oops!", "Failed to delete class", "error");
-          });
-      }
     });
+
+    if (result.isConfirmed) {
+      try {
+        await api.delete(`/admin/class/${id}`);
+        await Swal.fire("Deleted!", "Class has been deleted.", "success");
+        dispatch(getClasses());
+      } catch (err) {
+        await swal("Oops!", "Failed to delete class", "error");
+      }
+    }
   };
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -95,19 +89,15 @@ const ClassInfo = ({ id, name, number }) => {
     boxShadow: 24,
     p: 4,
   };
-  const onSubmit = (data) => {
-    axios
-      .put(`/api/v1/admin/class/update/${id}`, data, {
-        headers: { token: localStorage.getItem("token") }
-      })
-      .then((res) => {
-        swal("Done!", "Class has been updated successfully !", "success");
-      })
-      .catch((err) => {
-        swal("Oops!", err.response.data.msg, "error");
-      });
-    dispatch(getClasses());
-    handleClose();
+  const onSubmit = async (data) => {
+    try {
+      await api.put(`/admin/class/update/${id}`, data);
+      await swal("Done!", "Class has been updated successfully !", "success");
+      dispatch(getClasses());
+      handleClose();
+    } catch (err) {
+      await swal("Oops!", err.message, "error");
+    }
   };
   return (
     <>

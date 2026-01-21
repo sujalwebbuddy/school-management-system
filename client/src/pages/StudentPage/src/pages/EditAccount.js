@@ -27,18 +27,20 @@ import {
 } from "@mui/icons-material";
 
 import { useDispatch, useSelector } from "react-redux";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import api from "../../../../utils/api";
 import swal from "sweetalert";
-import axios from "axios";
 
 import { LoadingButton } from "@mui/lab";
 import { getUserInfo } from "../../../../slices/studentSlice";
+import ChangePasswordDialog from "../../../../components/ChangePasswordDialog";
 const EditAccount = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm();
   const states = [
@@ -56,11 +58,30 @@ const EditAccount = () => {
   const userf = useSelector((state) => {
     return state?.student?.userInfo?.user;
   });
+
   const { isAuth, userInfo } = useSelector((state) => state?.user);
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuth && userInfo?.email && !userf) {
+      dispatch(getUserInfo(userInfo));
+    }
+  }, [dispatch, isAuth, userInfo, userf]);
+
+  useEffect(() => {
+    if (userf) {
+      setValue("firstName", userf.firstName || "");
+      setValue("lastName", userf.lastName || "");
+      setValue("email", userf.email || "");
+      setValue("phoneNumber", userf.phoneNumber || "");
+      setValue("age", userf.age || "");
+      setValue("gender", userf.gender || "");
+    }
+  }, [userf, setValue]);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -73,38 +94,35 @@ const EditAccount = () => {
       reader.readAsDataURL(selectedFile);
     }
   };
-  const onSubmit = (data) => {
-    const formData = new FormData();
-    formData.append("image", file);
-    formData.append("firstName", data.firstName);
-    formData.append("lastName", data.lastName);
-    formData.append("email", data.email);
-    formData.append("phoneNumber", data.phoneNumber);
-    formData.append("age", data.age);
-    formData.append("gender", data.gender);
-    console.log(file);
-    setLoading(true);
-    axios
-      .put(`/api/v1/teacher/update/${userf?._id}`, formData, {
-        headers: { token: localStorage.getItem("token") }
-      })
-      .then((res) => {
-        swal("Done!", "User has been updated successfully !", "success").then(
-          () => {
-            setLoading(false);
-            dispatch(getUserInfo(userInfo));
-            navigate("/studentDashboard");
-          }
-        );
-      })
-      .catch((err) => {
-        swal("Oops!", err.response.data.msg, "error");
-        setLoading(false);
-        console.log(err.response.data);
-      });
+  const onSubmit = async (data) => {
+    try {
+      const formData = new FormData();
+      if (file) {
+        formData.append("image", file);
+      }
+      formData.append("firstName", data.firstName);
+      formData.append("lastName", data.lastName);
+      formData.append("email", data.email);
+      formData.append("phoneNumber", data.phoneNumber);
+      formData.append("age", data.age);
+      formData.append("gender", data.gender);
+      setLoading(true);
+
+      await api.put(`/student/update/${userf?._id}`, formData);
+
+      await swal("Done!", "User has been updated successfully !", "success");
+
+      setLoading(false);
+      dispatch(getUserInfo(userInfo));
+      navigate("/studentDashboard");
+    } catch (err) {
+      await swal("Oops!", err.message, "error");
+      setLoading(false);
+    }
   };
 
   return (
+    <>
     <Box
       component="main"
       sx={{
@@ -218,7 +236,7 @@ const EditAccount = () => {
                 </Box>
               </CardContent>
               <Divider />
-              <CardActions sx={{ p: 2 }}>
+              <CardActions sx={{ p: 2, flexDirection: 'column', gap: 1 }}>
                 <Button
                   component="label"
                   variant="outlined"
@@ -236,6 +254,21 @@ const EditAccount = () => {
                     type="file"
                     onChange={handleFileChange}
                   />
+                </Button>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={() => setChangePasswordOpen(true)}
+                  sx={{
+                    textTransform: "none",
+                    py: 1.5,
+                    background: 'linear-gradient(to right, #2563EB, #4F46E5)',
+                    '&:hover': {
+                      background: 'linear-gradient(to right, #1D4ED8, #4338CA)',
+                    },
+                  }}
+                >
+                  Change Password
                 </Button>
               </CardActions>
             </Card>
@@ -269,7 +302,6 @@ const EditAccount = () => {
                         fullWidth
                         label="First Name"
                         name="firstName"
-                        defaultValue={userf?.firstName || ""}
                         variant="outlined"
                         error={!!errors.firstName}
                         helperText={
@@ -290,7 +322,6 @@ const EditAccount = () => {
                         fullWidth
                         label="Last Name"
                         name="lastName"
-                        defaultValue={userf?.lastName || ""}
                         variant="outlined"
                         error={!!errors.lastName}
                         helperText={
@@ -312,7 +343,6 @@ const EditAccount = () => {
                         label="Email Address"
                         name="email"
                         type="email"
-                        defaultValue={userf?.email || ""}
                         variant="outlined"
                         error={!!errors.email}
                         helperText={
@@ -344,7 +374,6 @@ const EditAccount = () => {
                         label="Phone Number"
                         name="phoneNumber"
                         type="tel"
-                        defaultValue={userf?.phoneNumber || ""}
                         variant="outlined"
                         error={!!errors.phoneNumber}
                         helperText={
@@ -366,7 +395,6 @@ const EditAccount = () => {
                         label="Age"
                         name="age"
                         type="number"
-                        defaultValue={userf?.age || ""}
                         variant="outlined"
                         error={!!errors.age}
                         helperText={errors.age?.type === "required" && "Age is required"}
@@ -387,7 +415,6 @@ const EditAccount = () => {
                         label="Gender"
                         name="gender"
                         select
-                        defaultValue={userf?.gender || ""}
                         SelectProps={{ native: true }}
                         variant="outlined"
                         error={!!errors.gender}
@@ -447,6 +474,12 @@ const EditAccount = () => {
         </Grid>
       </Container>
     </Box>
+
+    <ChangePasswordDialog
+      open={changePasswordOpen}
+      onClose={() => setChangePasswordOpen(false)}
+    />
+    </>
   );
 };
 

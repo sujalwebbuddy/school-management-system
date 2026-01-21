@@ -144,7 +144,6 @@ exports.getHomeworks = async (req, res) => {
       });
     }
 
-    console.log(error);
     const wrappedError = new StudentControllerError("Failed to retrieve homeworks", "GET_HOMEWORKS_ERROR", 500);
     wrappedError.originalError = error;
 

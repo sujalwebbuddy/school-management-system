@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 // component
 import Iconify from "../../../components/Iconify";
-import axios from "axios";
+import api from "../../../../../../utils/api";
 import { useDispatch } from "react-redux";
 import { getNoApprovedUsers } from "../../../../../../slices/adminSlice";
 
@@ -22,14 +22,13 @@ export default function UserMoreMenu({ id, role, userData }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleDelete = () => {
-    axios
-      .delete(`/api/v1/admin/deleteUser/${id}`, {
-        headers: { token: localStorage.getItem("token") }
-      })
-      .then((res) => console.log(res))
-      .catch((err) => console.log(err));
-    dispatch(getNoApprovedUsers());
+  const handleDelete = async () => {
+    try {
+      await api.delete(`/admin/deleteUser/${id}`);
+      dispatch(getNoApprovedUsers());
+    } catch (err) {
+      // Error handled by API interceptor
+    }
   };
 
   const handleApprove = () => {

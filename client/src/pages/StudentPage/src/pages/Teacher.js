@@ -67,7 +67,7 @@ const Teacher = () => {
                   <div className="col-sm-3">
                     <h6 className="mb-0">Phone</h6>
                   </div>
-                  <div className="col-sm-9 text-secondary">{`(+216) ${teacher?.phoneNumber}`}</div>
+                  <div className="col-sm-9 text-secondary">{`${teacher?.phoneNumber}`}</div>
                 </div>
                 <hr />
                 <div className="row">

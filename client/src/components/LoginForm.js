@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { loginUser } from "../slices/userSlice";
+import ForgotPasswordForm from "./ForgotPasswordForm";
 import {
   Stack,
   TextField,
@@ -48,6 +49,7 @@ const LoginForm = () => {
   } = useForm();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const dispatch = useDispatch();
   const { errors: loginerror, isAuth, userInfo, loading } = useSelector((state) => state.user);
@@ -66,6 +68,10 @@ const LoginForm = () => {
   const handleShowPassword = () => {
     setShowPassword((prev) => !prev);
   };
+
+  if (showForgotPassword) {
+    return <ForgotPasswordForm onBackToLogin={() => setShowForgotPassword(false)} />;
+  }
 
   return (
     <form className="sign-in-form">
@@ -159,6 +165,25 @@ const LoginForm = () => {
             {loginerror}
           </Alert>
         )}
+
+        <Box sx={{ textAlign: 'right' }}>
+          <Button
+            variant="text"
+            onClick={() => setShowForgotPassword(true)}
+            sx={{
+              textTransform: 'none',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              color: 'primary.main',
+              '&:hover': {
+                color: 'primary.dark',
+                backgroundColor: 'transparent',
+              },
+            }}
+          >
+            Forgot Password?
+          </Button>
+        </Box>
 
         <Button
           fullWidth

@@ -959,6 +959,83 @@ const searchOrganizations = async (req, res) => {
   }
 };
 
+// @desc Find user organizations by email (for password reset)
+// @params POST /api/v1/organizations/find-users
+// @access Public
+const findUserOrganizations = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      throw new OrganizationControllerError("Email is required", "MISSING_EMAIL", 400);
+    }
+
+    // Find all approved users with this email across all organizations
+    const users = await User.find({
+      email: email.toLowerCase(),
+      isApproved: true
+    })
+    .populate('organizationId', 'name domain')
+    .select('organizationId role firstName lastName');
+
+    if (users.length === 0) {
+      return res.json({
+        found: false,
+        organizations: [],
+        msg: "No accounts found with this email address."
+      });
+    }
+
+    // Group by organization and get user roles
+    const organizationsMap = new Map();
+
+    users.forEach(user => {
+      const orgId = user.organizationId._id.toString();
+      if (!organizationsMap.has(orgId)) {
+        organizationsMap.set(orgId, {
+          id: user.organizationId._id,
+          name: user.organizationId.name,
+          domain: user.organizationId.domain,
+          roles: []
+        });
+      }
+
+      // Add role if not already present
+      const org = organizationsMap.get(orgId);
+      if (!org.roles.includes(user.role)) {
+        org.roles.push(user.role);
+      }
+    });
+
+    const organizations = Array.from(organizationsMap.values());
+
+    res.json({
+      found: true,
+      organizations: organizations,
+      count: organizations.length,
+      msg: organizations.length === 1
+        ? "Found your account in 1 organization."
+        : `Found your account in ${organizations.length} organizations.`
+    });
+
+  } catch (error) {
+    if (error instanceof OrganizationControllerError) {
+      return res.status(error.statusCode).json({
+        msg: error.message,
+        code: error.code,
+      });
+    }
+
+    const wrappedError = new OrganizationControllerError("Failed to search organizations", "SEARCH_ORGS_ERROR", 500);
+    wrappedError.originalError = error;
+
+    res.status(wrappedError.statusCode).json({
+      msg: wrappedError.message,
+      code: wrappedError.code,
+    });
+  }
+};
+
 module.exports = {
   createOrganization,
   listOrganizations,
@@ -968,5 +1045,6 @@ module.exports = {
   createPaymentIntent,
   updateSubscription,
   confirmSubscription,
-  searchOrganizations
+  searchOrganizations,
+  findUserOrganizations
 };

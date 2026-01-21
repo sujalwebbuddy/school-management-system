@@ -4,9 +4,19 @@ import { TableRow, TableCell, Chip, Stack, Typography } from '@mui/material';
 import { formatDate } from '../utils/formatDate';
 import HomeworkMoreMenu from './HomeworkMoreMenu';
 
+function getQuestionCount(homework) {
+  if (homework.questions && Array.isArray(homework.questions)) {
+    return homework.questions.length;
+  }
+  if (homework.optionA && homework.optionB && homework.optionC && homework.optionD) {
+    return 1;
+  }
+  return 0;
+}
+
 export default function HomeworkTableRow({ homework }) {
-  const { _id, name, description, optionA, optionB, optionC, optionD, correct, dateOf } =
-    homework;
+  const { _id, name, description, dateOf } = homework;
+  const questionCount = getQuestionCount(homework);
 
   return (
     <TableRow
@@ -27,24 +37,8 @@ export default function HomeworkTableRow({ homework }) {
           {description}
         </Typography>
       </TableCell>
-      <TableCell>
-        <Stack spacing={0.5}>
-          <Typography variant="caption" color="text.secondary">
-            A: {optionA}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            B: {optionB}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            C: {optionC}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            D: {optionD}
-          </Typography>
-        </Stack>
-      </TableCell>
       <TableCell align="center">
-        <Chip label={correct} color="success" size="small" />
+        <Chip label={`${questionCount} Question${questionCount !== 1 ? 's' : ''}`} color="primary" size="small" />
       </TableCell>
       <TableCell align="center">
         <Chip label={formatDate(dateOf)} color="error" variant="outlined" size="small" />

@@ -13,8 +13,16 @@ exports.getAllTasks = async (req, res) => {
 
     const { status, assignee, priority, page = 1, limit = 50 } = req.query;
 
-    // Build filter object
-    const filter = { organizationId: req.organization._id };
+    // Build filter object - only show tasks created by current user or assigned to current user
+    const filter = {
+      organizationId: req.organization._id,
+      $or: [
+        { createdBy: req.user._id },
+        { assignee: req.user._id }
+      ]
+    };
+
+    // Additional filters
     if (status) filter.status = status;
     if (assignee) filter.assignee = assignee;
     if (priority) filter.priority = priority;
@@ -73,7 +81,11 @@ exports.getTask = async (req, res) => {
 
     const task = await Task.findOne({
       _id: req.params.id,
-      organizationId: req.organization._id
+      organizationId: req.organization._id,
+      $or: [
+        { createdBy: req.user._id },
+        { assignee: req.user._id }
+      ]
     })
       .populate([
         { path: "assignee", select: "firstName lastName email role" },
@@ -83,7 +95,7 @@ exports.getTask = async (req, res) => {
     if (!task) {
       return res.status(404).json({
         success: false,
-        message: "Task not found",
+        message: "Task not found or access denied",
       });
     }
 
@@ -362,6 +374,14 @@ exports.getTasksByAssignee = async (req, res) => {
     const { userId } = req.params;
     const { status } = req.query;
 
+    // Check if current user is accessing their own tasks or is an admin
+    if (req.user._id.toString() !== userId && req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: "You can only access your own assigned tasks"
+      });
+    }
+
     // Verify assignee belongs to the organization
     const assigneeUser = await User.findOne({
       _id: userId,
@@ -415,7 +435,13 @@ exports.getTaskStats = async (req, res) => {
 
     const stats = await Task.aggregate([
       {
-        $match: { organizationId }
+        $match: {
+          organizationId,
+          $or: [
+            { createdBy: req.user._id },
+            { assignee: req.user._id }
+          ]
+        }
       },
       {
         $group: {
@@ -427,7 +453,13 @@ exports.getTaskStats = async (req, res) => {
 
     const priorityStats = await Task.aggregate([
       {
-        $match: { organizationId }
+        $match: {
+          organizationId,
+          $or: [
+            { createdBy: req.user._id },
+            { assignee: req.user._id }
+          ]
+        }
       },
       {
         $group: {
@@ -437,7 +469,13 @@ exports.getTaskStats = async (req, res) => {
       },
     ]);
 
-    const totalTasks = await Task.countDocuments({ organizationId });
+    const totalTasks = await Task.countDocuments({
+      organizationId,
+      $or: [
+        { createdBy: req.user._id },
+        { assignee: req.user._id }
+      ]
+    });
 
     res.status(200).json({
       success: true,

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   KanbanComponent,
   ColumnsDirective,
@@ -12,10 +12,10 @@ import "@syncfusion/ej2-inputs/styles/material.css";
 import "@syncfusion/ej2-navigations/styles/material.css";
 import "@syncfusion/ej2-popups/styles/material.css";
 import "@syncfusion/ej2-react-kanban/styles/material.css";
-import { Stack, Typography, CircularProgress, Box } from "@mui/material";
+import { Typography, CircularProgress, Box } from "@mui/material";
 // redux
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchTasks, updateTaskStatus, updateTaskStatusOptimistic } from '../../../slices/taskSlice';
+import { updateTaskStatus, updateTaskStatusOptimistic } from '../../../slices/taskSlice';
 import { selectTasks, selectTasksLoading, selectTasksError } from '../../../slices/taskSlice';
 
 const Kanban = () => {
@@ -51,11 +51,6 @@ const Kanban = () => {
     ClassName: `e-task, e-${task.priority.toLowerCase()}`,
     taskId: task._id, // Keep the original task ID for API calls
   }));
-
-  useEffect(() => {
-    // Fetch tasks when component mounts
-    dispatch(fetchTasks());
-  }, [dispatch]);
 
   // Handle card actions (including drag and drop)
   const onActionComplete = async (args) => {

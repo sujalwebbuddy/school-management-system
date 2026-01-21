@@ -475,6 +475,87 @@ exports.submitMark = async (req, res) => {
   }
 };
 
+function validateQuestions(questions) {
+  if (!Array.isArray(questions) || questions.length === 0) {
+    throw new TeacherControllerError("At least one question is required", "MISSING_QUESTIONS", 400);
+  }
+
+  for (let i = 0; i < questions.length; i += 1) {
+    const question = questions[i];
+    if (!question.questionText || !question.questionText.trim()) {
+      throw new TeacherControllerError(`Question ${i + 1}: Question text is required`, "INVALID_QUESTION_TEXT", 400);
+    }
+    if (!question.optionA || !question.optionA.trim()) {
+      throw new TeacherControllerError(`Question ${i + 1}: Option A is required`, "INVALID_OPTION_A", 400);
+    }
+    if (!question.optionB || !question.optionB.trim()) {
+      throw new TeacherControllerError(`Question ${i + 1}: Option B is required`, "INVALID_OPTION_B", 400);
+    }
+    if (!question.optionC || !question.optionC.trim()) {
+      throw new TeacherControllerError(`Question ${i + 1}: Option C is required`, "INVALID_OPTION_C", 400);
+    }
+    if (!question.optionD || !question.optionD.trim()) {
+      throw new TeacherControllerError(`Question ${i + 1}: Option D is required`, "INVALID_OPTION_D", 400);
+    }
+    if (!question.correct || !["A", "B", "C", "D"].includes(question.correct)) {
+      throw new TeacherControllerError(`Question ${i + 1}: Valid correct answer (A, B, C, or D) is required`, "INVALID_CORRECT_ANSWER", 400);
+    }
+  }
+}
+
+function resolveClassId(classId, classname, className, organizationId) {
+  if (classId && mongoose.Types.ObjectId.isValid(classId)) {
+    return Classroom.findOne({
+      _id: classId,
+      organizationId: organizationId,
+    }).then((foundClass) => {
+      if (!foundClass) {
+        throw new TeacherControllerError("Class not found in your organization", "CLASS_NOT_FOUND", 404);
+      }
+      return classId;
+    });
+  } else if (classname || className) {
+    const classToFind = classname || className;
+    return Classroom.findOne({
+      className: classToFind,
+      organizationId: organizationId,
+    }).then((foundClass) => {
+      if (!foundClass) {
+        throw new TeacherControllerError(`Class "${classToFind}" not found in your organization`, "CLASS_NOT_FOUND", 404);
+      }
+      return foundClass._id;
+    });
+  } else {
+    throw new TeacherControllerError("classId, classname, or className is required", "MISSING_CLASS", 400);
+  }
+}
+
+function resolveSubjectId(subjectId, subject, organizationId) {
+  if (subjectId && mongoose.Types.ObjectId.isValid(subjectId)) {
+    return Subject.findOne({
+      _id: subjectId,
+      organizationId: organizationId,
+    }).then((foundSubject) => {
+      if (!foundSubject) {
+        throw new TeacherControllerError("Subject not found in your organization", "SUBJECT_NOT_FOUND", 404);
+      }
+      return subjectId;
+    });
+  } else if (subject) {
+    return Subject.findOne({
+      name: subject,
+      organizationId: organizationId,
+    }).then((foundSubject) => {
+      if (!foundSubject) {
+        throw new TeacherControllerError(`Subject "${subject}" not found in your organization`, "SUBJECT_NOT_FOUND", 404);
+      }
+      return foundSubject._id;
+    });
+  } else {
+    throw new TeacherControllerError("subjectId or subject is required", "MISSING_SUBJECT", 400);
+  }
+}
+
 exports.newHomework = async (req, res) => {
   try {
     if (!req.organization) {
@@ -490,11 +571,7 @@ exports.newHomework = async (req, res) => {
       classname,
       className,
       classId,
-      optionA,
-      optionB,
-      optionC,
-      optionD,
-      correct,
+      questions,
     } = req.body;
 
     if (!name || !name.trim()) {
@@ -506,72 +583,33 @@ exports.newHomework = async (req, res) => {
       throw new TeacherControllerError("Invalid date format", "INVALID_DATE", 400);
     }
 
-    let classIdObjectId = null;
-    if (classId && mongoose.Types.ObjectId.isValid(classId)) {
-      classIdObjectId = classId;
-      // Verify the class belongs to the organization
-      const foundClass = await Classroom.findOne({
-        _id: classId,
-        organizationId: req.organization._id
-      });
-      if (!foundClass) {
-        throw new TeacherControllerError("Class not found in your organization", "CLASS_NOT_FOUND", 404);
-      }
-    } else if (classname || className) {
-      const classToFind = classname || className;
-      const foundClass = await Classroom.findOne({
-        className: classToFind,
-        organizationId: req.organization._id
-      });
-      if (!foundClass) {
-        throw new TeacherControllerError(`Class "${classToFind}" not found in your organization`, "CLASS_NOT_FOUND", 404);
-      }
-      classIdObjectId = foundClass._id;
-    } else {
-      throw new TeacherControllerError("classId, classname, or className is required", "MISSING_CLASS", 400);
-    }
+    validateQuestions(questions);
 
-    let subjectIdObjectId = null;
-    if (subjectId && mongoose.Types.ObjectId.isValid(subjectId)) {
-      subjectIdObjectId = subjectId;
-      // Verify the subject belongs to the organization
-      const foundSubject = await Subject.findOne({
-        _id: subjectId,
-        organizationId: req.organization._id
-      });
-      if (!foundSubject) {
-        throw new TeacherControllerError("Subject not found in your organization", "SUBJECT_NOT_FOUND", 404);
-      }
-    } else if (subject) {
-      const foundSubject = await Subject.findOne({
-        name: subject,
-        organizationId: req.organization._id
-      });
-      if (!foundSubject) {
-        throw new TeacherControllerError(`Subject "${subject}" not found in your organization`, "SUBJECT_NOT_FOUND", 404);
-      }
-      subjectIdObjectId = foundSubject._id;
-    } else {
-      throw new TeacherControllerError("subjectId or subject is required", "MISSING_SUBJECT", 400);
-    }
+    const classIdObjectId = await resolveClassId(classId, classname, className, req.organization._id);
+    const subjectIdObjectId = await resolveSubjectId(subjectId, subject, req.organization._id);
+
+    const processedQuestions = questions.map((q) => ({
+      questionText: q.questionText.trim(),
+      optionA: q.optionA.trim(),
+      optionB: q.optionB.trim(),
+      optionC: q.optionC.trim(),
+      optionD: q.optionD.trim(),
+      correct: q.correct,
+    }));
 
     await Homework.create({
       name: name.trim(),
       dateOf: dateOfDate,
-      description,
+      description: description ? description.trim() : "",
       subjectId: subjectIdObjectId,
       classId: classIdObjectId,
       organizationId: req.organization._id,
-      optionA,
-      optionB,
-      optionC,
-      optionD,
-      correct,
+      questions: processedQuestions,
     });
 
     res.status(200).json({
       msg: "Homework added successfully",
-      organization: req.organization.name
+      organization: req.organization.name,
     });
   } catch (error) {
     if (error instanceof TeacherControllerError) {
@@ -581,7 +619,6 @@ exports.newHomework = async (req, res) => {
       });
     }
 
-    console.log(error);
     const wrappedError = new TeacherControllerError("Failed to create homework", "CREATE_HOMEWORK_ERROR", 500);
     wrappedError.originalError = error;
 

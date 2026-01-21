@@ -3,7 +3,7 @@ import "./UserCard.css";
 import Iconify from "../pages/AdminPage/src/components/Iconify";
 import Swal from "sweetalert2";
 import { getApprovedUsers } from "../slices/adminSlice";
-import axios from "axios";
+import api from "../utils/api";
 import { useDispatch } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
 const UserCard = ({ id, firstName, lastName, email, image }) => {
@@ -20,8 +20,8 @@ const UserCard = ({ id, firstName, lastName, email, image }) => {
     return ``;
   };
 
-  const handleDelete = () => {
-    Swal.fire({
+  const handleDelete = async () => {
+    const result = await Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
       icon: "warning",
@@ -29,18 +29,17 @@ const UserCard = ({ id, firstName, lastName, email, image }) => {
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire("Deleted!", "User has been deleted.", "success");
-        axios
-          .delete(`/api/v1/admin/user/${id}`, {
-            headers: { token: localStorage.getItem("token") },
-          })
-          .then((res) => console.log(res))
-          .catch((err) => console.log(err));
-        dispatch(getApprovedUsers());
-      }
     });
+
+    if (result.isConfirmed) {
+      try {
+        await api.delete(`/admin/user/${id}`);
+        await Swal.fire("Deleted!", "User has been deleted.", "success");
+        dispatch(getApprovedUsers());
+      } catch (err) {
+        await Swal.fire("Error!", "Failed to delete user.", "error");
+      }
+    }
   };
   return (
     <div className="col-12 col-sm-6 col-md-4 col-lg-3" style={{ width: "20%" }}>
