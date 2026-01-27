@@ -93,14 +93,18 @@ const homeworkSchema = mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 homeworkSchema.index({ organizationId: 1, subjectId: 1, classId: 1 });
 homeworkSchema.index({ organizationId: 1, classId: 1, dateOf: -1 });
 
 homeworkSchema.methods.normalizeQuestions = function () {
-  if (this.questions && Array.isArray(this.questions) && this.questions.length > 0) {
+  if (
+    this.questions &&
+    Array.isArray(this.questions) &&
+    this.questions.length > 0
+  ) {
     return this.questions;
   }
 

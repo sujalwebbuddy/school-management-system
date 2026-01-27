@@ -1,49 +1,38 @@
-'use strict';
-
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   Card,
-  Table,
   Stack,
-  Avatar,
   Button,
-  TableRow,
-  TableBody,
-  TableCell,
-  TableHead,
   Container,
   Typography,
-  TableContainer,
   Box,
-  ToggleButton,
-  ToggleButtonGroup,
   Chip,
   Alert,
-} from '@mui/material';
-import { DesktopDatePicker } from '@mui/lab';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import TextField from '@mui/material/TextField';
-import Page from '../components/Page';
-import Scrollbar from '../components/Scrollbar';
-import Iconify from '../components/Iconify';
-import { useSelector } from 'react-redux';
-import api from '../../../../utils/api';
-import Swal from 'sweetalert2';
+  TextField,
+} from "@mui/material";
+import { DesktopDatePicker } from "@mui/lab";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import Page from "../components/Page";
+import Iconify from "../components/Iconify";
+import { useSelector } from "react-redux";
+import api from "../../../../utils/api";
+import Swal from "sweetalert2";
+import GenericAttendanceTable from "../../../../components/GenericResponsiveTable/GenericAttendanceTable";
 
 const ATTENDANCE_STATUS = {
-  PRESENT: 'present',
-  ABSENT: 'absent',
+  PRESENT: "present",
+  ABSENT: "absent",
 };
 
 export default function Attendance() {
   const classro = useSelector((state) => {
-    return state.teacher?.teacherclass?.classro;
+    return state.teacher?.teacherclass?.classroom;
   });
 
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [attendanceData, setAttendanceData] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
@@ -53,15 +42,15 @@ export default function Attendance() {
       if (classro?._id) {
         try {
           setLoading(true);
-          const res = await api.get('/admin/students');
+          const res = await api.get("/admin/students");
           const allStudents = res.data.students || [];
           const classStudents = allStudents
             .filter((student) => {
-            const studentClassId = student.classIn?._id || student.classIn;
-            return (
-              studentClassId === classro._id ||
-              studentClassId?.toString() === classro._id?.toString()
-            );
+              const studentClassId = student.classIn?._id || student.classIn;
+              return (
+                studentClassId === classro._id ||
+                studentClassId?.toString() === classro._id?.toString()
+              );
             })
             .map((student, index) => ({
               ...student,
@@ -71,7 +60,7 @@ export default function Attendance() {
 
           const initialAttendance = {};
           classStudents.forEach((student) => {
-            initialAttendance[student._id] = ATTENDANCE_STATUS.PRESENT;
+            initialAttendance[student._id] = ATTENDANCE_STATUS.ABSENT;
           });
           setAttendanceData(initialAttendance);
         } catch (error) {
@@ -83,17 +72,66 @@ export default function Attendance() {
     };
     fetchStudents();
   }, [classro]);
+  useEffect(() => {
+    const fetchAttendance = async () => {
+      if (classro?._id && selectedDate && students.length > 0) {
+        try {
+          const formattedDate = selectedDate.toISOString().split("T")[0];
+          const res = await api.get("/teacher/attendance", {
+            params: {
+              date: formattedDate,
+              classId: classro._id,
+            },
+          });
+
+          const records = res.data.attendance || res.data;
+          const data = {};
+
+          if (Array.isArray(records)) {
+            records.forEach((record) => {
+              const studentId = record.studentId?._id || record.studentId;
+              if (studentId) {
+                data[studentId] = record.status;
+              }
+            });
+          } else if (records && typeof records === "object") {
+            Object.keys(records).forEach((studentId) => {
+              data[studentId] = records[studentId].status || records[studentId];
+            });
+          }
+
+          if (Object.keys(data).length > 0) {
+            const updatedAttendance = {};
+            students.forEach((student) => {
+              updatedAttendance[student._id] =
+                data[student._id] || ATTENDANCE_STATUS.ABSENT;
+            });
+
+            setAttendanceData(updatedAttendance);
+            setIsSubmitted(true);
+            setHasChanges(false);
+          } else {
+            const initialAttendance = {};
+            students.forEach((student) => {
+              initialAttendance[student._id] = ATTENDANCE_STATUS.ABSENT;
+            });
+            setAttendanceData(initialAttendance);
+            setIsSubmitted(false);
+            setHasChanges(false);
+          }
+        } catch (error) {
+          console.error("Failed to fetch attendance:", error);
+        }
+      }
+    };
+
+    fetchAttendance();
+  }, [classro, selectedDate, students]);
 
   const handleDateChange = (newDate) => {
-    setSelectedDate(newDate);
-    setIsSubmitted(false);
-    setHasChanges(false);
-
-    const initialAttendance = {};
-    students.forEach((student) => {
-      initialAttendance[student._id] = ATTENDANCE_STATUS.PRESENT;
-    });
-    setAttendanceData(initialAttendance);
+    if (newDate) {
+      setSelectedDate(newDate);
+    }
   };
 
   const handleAttendanceChange = (studentId, status) => {
@@ -108,15 +146,15 @@ export default function Attendance() {
   const handleSubmit = async () => {
     if (!selectedDate) {
       Swal.fire({
-        icon: 'warning',
-        title: 'Date Required',
-        text: 'Please select a date before submitting attendance.',
+        icon: "warning",
+        title: "Date Required",
+        text: "Please select a date before submitting attendance.",
       });
       return;
     }
 
     try {
-      const formattedDate = selectedDate.toISOString().split('T')[0];
+      const formattedDate = selectedDate.toISOString().split("T")[0];
       const attendancePayload = {
         date: formattedDate,
         classId: classro._id,
@@ -126,11 +164,11 @@ export default function Attendance() {
         })),
       };
 
-      await api.post('/teacher/attendance', attendancePayload);
+      await api.post("/teacher/attendance", attendancePayload);
 
       Swal.fire({
-        icon: 'success',
-        title: 'Success!',
+        icon: "success",
+        title: "Success!",
         text: `Attendance marked successfully for ${formattedDate}`,
       });
 
@@ -138,23 +176,15 @@ export default function Attendance() {
       setHasChanges(false);
     } catch (error) {
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: error.message || 'Failed to submit attendance. Please try again.',
+        icon: "error",
+        title: "Error",
+        text: error.message || "Failed to submit attendance. Please try again.",
       });
     }
   };
 
-  const getStatusColor = (status) => {
-    return status === ATTENDANCE_STATUS.PRESENT ? 'success' : 'error';
-  };
-
-  const getStatusLabel = (status) => {
-    return status === ATTENDANCE_STATUS.PRESENT ? 'Present' : 'Absent';
-  };
-
   const presentCount = Object.values(attendanceData).filter(
-    (status) => status === ATTENDANCE_STATUS.PRESENT
+    (status) => status === ATTENDANCE_STATUS.PRESENT,
   ).length;
   const absentCount = students.length - presentCount;
 
@@ -162,16 +192,16 @@ export default function Attendance() {
     <Page title="Attendance">
       <Container maxWidth="xl">
         <Stack spacing={3} sx={{ mb: 3 }}>
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
             flexWrap="wrap"
             gap={2}
-      >
+          >
             <Typography variant="h4" sx={{ fontWeight: 600 }}>
               Mark Student Attendance
-        </Typography>
+            </Typography>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DesktopDatePicker
                 label="Select Date"
@@ -191,14 +221,14 @@ export default function Attendance() {
             sx={{
               borderRadius: 2,
               boxShadow:
-                '0 0 2px 0 rgba(145, 158, 171, 0.08), 0 12px 24px -4px rgba(145, 158, 171, 0.08)',
+                "0 0 2px 0 rgba(145, 158, 171, 0.08), 0 12px 24px -4px rgba(145, 158, 171, 0.08)",
             }}
           >
             <Box
               sx={{
                 p: 3,
-                borderBottom: '1px solid',
-                borderColor: 'divider',
+                borderBottom: "1px solid",
+                borderColor: "divider",
               }}
             >
               <Stack
@@ -209,10 +239,11 @@ export default function Attendance() {
                 gap={2}
               >
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  Attendance for {selectedDate.toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
+                  Attendance for{" "}
+                  {selectedDate.toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
                   })}
                 </Typography>
                 <Stack direction="row" spacing={2} alignItems="center">
@@ -240,150 +271,20 @@ export default function Attendance() {
               </Box>
             )}
 
-            <Scrollbar>
-              <TableContainer sx={{ minWidth: 800 }}>
-                <Table>
-            <TableHead>
-              <TableRow>
-                      <TableCell
-                        sx={{
-                          backgroundColor: 'background.neutral',
-                          fontWeight: 600,
-                        }}
-                      >
-                        Student Name
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          backgroundColor: 'background.neutral',
-                          fontWeight: 600,
-                        }}
-                      >
-                        Roll
-                      </TableCell>
-                      <TableCell
-                        align="center"
-                        sx={{
-                          backgroundColor: 'background.neutral',
-                          fontWeight: 600,
-                        }}
-                      >
-                        Status
-                      </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-                    {students.map((student) => {
-                      const studentId = student._id;
-                      const currentStatus =
-                        attendanceData[studentId] || ATTENDANCE_STATUS.PRESENT;
-                      const name = `${student.firstName} ${student.lastName}`;
-                      const roll = `#${String(student.rollNumber || '').padStart(2, '0')}`;
-
-                      return (
-                        <TableRow
-                          key={studentId}
-                          hover
-                          sx={{
-                            '&:hover': {
-                              backgroundColor: 'action.hover',
-                            },
-                          }}
-                        >
-                          <TableCell>
-                            <Stack
-                              direction="row"
-                              alignItems="center"
-                              spacing={2}
-                            >
-                              <Avatar
-                                alt={name}
-                                src={student.profileImage}
-                                sx={{ width: 40, height: 40 }}
-                              />
-                              <Typography variant="subtitle2">{name}</Typography>
-                            </Stack>
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2" color="text.secondary">
-                              {roll}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="center">
-                            <ToggleButtonGroup
-                              value={currentStatus}
-                              exclusive
-                              onChange={(event, newStatus) => {
-                                if (newStatus !== null) {
-                                  handleAttendanceChange(studentId, newStatus);
-                                }
-                              }}
-                              size="small"
-                              sx={{
-                                '& .MuiToggleButton-root': {
-                                  border: '1px solid',
-                                  borderColor: 'divider',
-                                  px: 2,
-                                  py: 0.5,
-                                  '&.Mui-selected': {
-                                    borderColor: 'primary.main',
-                                  },
-                                },
-                              }}
-                            >
-                              <ToggleButton
-                                value={ATTENDANCE_STATUS.PRESENT}
-                                disabled={isSubmitted}
-                              >
-                                <Stack
-                                  direction="row"
-                                  alignItems="center"
-                                  spacing={1}
-                                >
-                                  <Iconify
-                                    icon="eva:checkmark-circle-2-fill"
-                                    width={18}
-                                    height={18}
-                                    sx={{ color: 'success.main' }}
-                                  />
-                                  <Typography variant="body2">Present</Typography>
-                                </Stack>
-                              </ToggleButton>
-                              <ToggleButton
-                                value={ATTENDANCE_STATUS.ABSENT}
-                                disabled={isSubmitted}
-                              >
-                                <Stack
-                                  direction="row"
-                                  alignItems="center"
-                                  spacing={1}
-                                >
-                                  <Iconify
-                                    icon="eva:close-circle-2-fill"
-                                    width={18}
-                                    height={18}
-                                    sx={{ color: 'error.main' }}
-                                  />
-                                  <Typography variant="body2">Absent</Typography>
-                                </Stack>
-                              </ToggleButton>
-                            </ToggleButtonGroup>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-            </TableBody>
-          </Table>
-              </TableContainer>
-            </Scrollbar>
+            <GenericAttendanceTable
+              role="student"
+              users={students}
+              attendanceData={attendanceData}
+              onAttendanceChange={handleAttendanceChange}
+            />
 
             <Box
               sx={{
                 p: 3,
-                borderTop: '1px solid',
-                borderColor: 'divider',
-                display: 'flex',
-                justifyContent: 'flex-end',
+                borderTop: "1px solid",
+                borderColor: "divider",
+                display: "flex",
+                justifyContent: "flex-end",
               }}
             >
               <Button
@@ -396,11 +297,11 @@ export default function Attendance() {
                   px: 4,
                   py: 1.5,
                   fontWeight: 600,
-                  textTransform: 'none',
+                  textTransform: "none",
                   borderRadius: 1,
                 }}
               >
-                {isSubmitted ? 'Submitted' : 'Submit Attendance'}
+                {isSubmitted ? "Submitted" : "Submit Attendance"}
               </Button>
             </Box>
           </Card>
@@ -411,14 +312,14 @@ export default function Attendance() {
             sx={{
               borderRadius: 2,
               p: 6,
-              textAlign: 'center',
+              textAlign: "center",
               boxShadow:
-                '0 0 2px 0 rgba(145, 158, 171, 0.08), 0 12px 24px -4px rgba(145, 158, 171, 0.08)',
+                "0 0 2px 0 rgba(145, 158, 171, 0.08), 0 12px 24px -4px rgba(145, 158, 171, 0.08)",
             }}
           >
             <Iconify
               icon="eva:calendar-outline"
-              sx={{ width: 80, height: 80, color: 'text.disabled', mb: 2 }}
+              sx={{ width: 80, height: 80, color: "text.disabled", mb: 2 }}
             />
             <Typography variant="h6" color="text.secondary" gutterBottom>
               Select a date to mark attendance

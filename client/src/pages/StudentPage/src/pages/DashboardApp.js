@@ -1,6 +1,6 @@
 // @mui
 import { useTheme } from "@mui/material/styles";
-import { Grid, Container, Typography } from "@mui/material";
+import { Grid, Container, Typography, Card } from "@mui/material";
 // components
 import Page from "../components/Page";
 // sections
@@ -46,7 +46,8 @@ export default function DashboardApp() {
   }, [dispatch]);
 
   const users = useSelector((state) => state.admin.usersApproved);
-  const allUsers = users?.student?.concat(users?.teacher || [], users?.admin || []) || [];
+  const allUsers =
+    users?.student?.concat(users?.teacher || [], users?.admin || []) || [];
 
   const handleOpenTaskDialog = (task = null) => {
     setEditingTask(task);
@@ -113,25 +114,37 @@ export default function DashboardApp() {
             />
           </Grid>
 
-          <Grid item style={{ marginTop: "4%" }}>
-            <ScheduleComponent
-              height="550px"
-              selectedDate={
-                new Date(+todayDate[0], +todayDate[1], +todayDate[2])
-              }
-              eventSettings={{
-                dataSource: data,
-                fields: {
-                  id: "Id",
-                  subject: { name: "Subject" },
-                  isAllDay: { name: "IsAllDay" },
-                  startTime: { name: "StartTime" },
-                  endTime: { name: "EndTime" },
-                },
+          <Grid item xs={12}>
+            <Card
+              sx={{
+                borderRadius: 2,
+                boxShadow: (theme) =>
+                  theme.customShadows?.z16 || theme.shadows[10],
+                p: 2,
               }}
             >
-              <Inject services={[Day, Week, WorkWeek, Month, Agenda]} />
-            </ScheduleComponent>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+                Study Schedule
+              </Typography>
+              <ScheduleComponent
+                height="500px"
+                selectedDate={
+                  new Date(+todayDate[0], +todayDate[1], +todayDate[2])
+                }
+                eventSettings={{
+                  dataSource: data,
+                  fields: {
+                    id: "Id",
+                    subject: { name: "Subject" },
+                    isAllDay: { name: "IsAllDay" },
+                    startTime: { name: "StartTime" },
+                    endTime: { name: "EndTime" },
+                  },
+                }}
+              >
+                <Inject services={[Day, Week, WorkWeek, Month, Agenda]} />
+              </ScheduleComponent>
+            </Card>
           </Grid>
 
           <Grid item xs={12} md={6} lg={6}>
@@ -142,7 +155,7 @@ export default function DashboardApp() {
                 { title: "Absent", value: 15, color: "#955251" },
               ]}
               chartColors={[...Array(6)].map(
-                () => theme.palette.text.secondary
+                () => theme.palette.text.secondary,
               )}
             />
           </Grid>
@@ -155,7 +168,7 @@ export default function DashboardApp() {
                 { title: "Female", value: 40, color: "#C13C37" },
               ]}
               chartColors={[...Array(6)].map(
-                () => theme.palette.text.secondary
+                () => theme.palette.text.secondary,
               )}
             />
           </Grid>

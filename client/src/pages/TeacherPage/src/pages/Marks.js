@@ -1,36 +1,43 @@
-'use strict';
+"use strict";
 
-import { useEffect, useState } from 'react';
-import { Card, Stack, Container, Typography } from '@mui/material';
-import Page from '../components/Page';
-import { useSelector } from 'react-redux';
-import ExamSelector from '../components/ExamSelector';
-import ExamInfoHeader from '../components/ExamInfoHeader';
-import MarksTable from '../components/MarksTable';
-import MarksEmptyState from '../components/MarksEmptyState';
-import MarksSubmitFooter from '../components/MarksSubmitFooter';
-import { useStudents } from '../hooks/useStudents';
-import { useMarksForm } from '../hooks/useMarksForm';
-import { useMarksSubmission } from '../hooks/useMarksSubmission';
+import { useEffect, useState } from "react";
+import { Card, Stack, Container, Typography } from "@mui/material";
+import Page from "../components/Page";
+import { useSelector } from "react-redux";
+import ExamSelector from "../components/ExamSelector";
+import ExamInfoHeader from "../components/ExamInfoHeader";
+import MarksTable from "../components/MarksTable";
+import MarksEmptyState from "../components/MarksEmptyState";
+import MarksSubmitFooter from "../components/MarksSubmitFooter";
+import { useStudents } from "../hooks/useStudents";
+import { useMarksForm } from "../hooks/useMarksForm";
+import { useMarksSubmission } from "../hooks/useMarksSubmission";
+
+import GenericResponsiveTable, {
+  getTableConfig,
+} from "../../../../components/GenericResponsiveTable";
 
 export default function Marks() {
-  const classro = useSelector((state) => {
-    return state?.teacher?.teacherclass?.classro;
+  const classroom = useSelector((state) => {
+    return state?.teacher?.teacherclass?.classroom;
   });
   const exams = useSelector((state) => {
     return state?.teacher?.exams?.exams || [];
   });
 
-  const { students, loading } = useStudents(classro);
-  const [selectedExam, setSelectedExam] = useState('');
+  const { students, loading } = useStudents(classroom);
+  const [selectedExam, setSelectedExam] = useState("");
   const [selectedExamData, setSelectedExamData] = useState(null);
   const [hasChanges, setHasChanges] = useState(false);
 
   const { register, handleSubmit, errors, watch } = useMarksForm(
     students,
-    selectedExamData
+    selectedExamData,
   );
-  const { isSubmitting, submitMarks } = useMarksSubmission(selectedExam, setHasChanges);
+  const { isSubmitting, submitMarks } = useMarksSubmission(
+    selectedExam,
+    setHasChanges,
+  );
 
   useEffect(() => {
     if (selectedExam) {
@@ -54,13 +61,14 @@ export default function Marks() {
       const hasFormChanges = students.some((student) => {
         const studentId = student._id?.toString();
         const currentValue = watchedValues[studentId];
-        return currentValue !== undefined && currentValue !== '';
+        return currentValue !== undefined && currentValue !== "";
       });
       setHasChanges(hasFormChanges);
     }
   }, [watchedValues, students, selectedExamData]);
 
   const onSubmit = handleSubmit(submitMarks);
+  const config = getTableConfig("student-marks");
 
   return (
     <Page title="Marks">
@@ -73,7 +81,7 @@ export default function Marks() {
             flexWrap="wrap"
             gap={2}
           >
-            <Typography variant="h4" sx={{ fontWeight: 600 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>
               Student Marks
             </Typography>
             <ExamSelector
@@ -88,8 +96,9 @@ export default function Marks() {
           <Card
             sx={{
               borderRadius: 2,
-              boxShadow:
-                '0 0 2px 0 rgba(145, 158, 171, 0.08), 0 12px 24px -4px rgba(145, 158, 171, 0.08)',
+              boxShadow: (theme) =>
+                theme.customShadows?.z16 ||
+                "0 0 2px 0 rgba(145, 158, 171, 0.08), 0 12px 24px -4px rgba(145, 158, 171, 0.08)",
             }}
           >
             <ExamInfoHeader
@@ -98,13 +107,18 @@ export default function Marks() {
             />
 
             <form onSubmit={onSubmit}>
-              <MarksTable
-                students={students}
+              <GenericResponsiveTable
+                config={config}
+                data={students}
                 loading={loading}
-                selectedExamData={selectedExamData}
+                actions={{}}
+                filters={{}}
+                pagination={{}}
+                // Custom props for the marks form
                 register={register}
                 errors={errors}
                 watchedValues={watchedValues}
+                selectedExamData={selectedExamData}
               />
 
               <MarksSubmitFooter

@@ -1,5 +1,3 @@
-'use strict';
-
 import { useEffect, useState } from 'react';
 import {
   Card,
@@ -7,27 +5,15 @@ import {
   Container,
   Typography,
   Box,
-  OutlinedInput,
-  InputAdornment,
   TablePagination,
   Chip,
 } from '@mui/material';
 import Page from '../components/Page';
-import Iconify from '../components/Iconify';
 import { useDispatch, useSelector } from 'react-redux';
 import { getNoApprovedUsers } from '../../../../slices/adminSlice';
 import { getComparator, applySortFilter } from '../utils/tableUtils';
 import { UserListToolbar } from '../sections/@dashboard/user';
-import PendingUserTable from '../components/PendingUserTable';
-
-const TABLE_HEAD = [
-  { id: 'name', label: 'Name', alignRight: false },
-  { id: 'email', label: 'Email', alignRight: false },
-  { id: 'role', label: 'Role', alignRight: false },
-  { id: 'phoneNumber', label: 'Phone Number', alignRight: false },
-  { id: 'status', label: 'Status', alignRight: false },
-  { id: 'action', label: 'Action', alignRight: false, sortable: false },
-];
+import ResponsivePendingUserTable from '../components/ResponsivePendingUserTable';
 
 export default function User() {
   const dispatch = useDispatch();
@@ -134,7 +120,7 @@ export default function User() {
             />
           </Box>
 
-          <PendingUserTable
+          <ResponsivePendingUserTable
             users={filteredUsers}
             order={order}
             orderBy={orderBy}

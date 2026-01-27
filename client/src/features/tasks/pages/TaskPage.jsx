@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -16,7 +16,7 @@ import {
   IconButton,
   Tooltip,
   Paper,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
@@ -26,24 +26,28 @@ import {
   AccessTime,
   CheckCircle,
   RadioButtonUnchecked,
-} from '@mui/icons-material';
-import { useDispatch, useSelector } from 'react-redux';
+} from "@mui/icons-material";
+import { useDispatch, useSelector } from "react-redux";
 
 // Import task components
-import TaskDialog from '../components/TaskDialog';
-import KanbanBoard from '../components/KanbanBoard';
+import TaskDialog from "../components/TaskDialog";
+import KanbanBoard from "../components/KanbanBoard";
 
 // Import Redux actions and selectors
-import { fetchTasks, fetchTaskStats, deleteTask } from '../../../slices/taskSlice';
+import {
+  fetchTasks,
+  fetchTaskStats,
+  deleteTask,
+} from "../../../slices/taskSlice";
 import {
   selectTasks,
   selectTasksLoading,
   selectTasksError,
   selectTaskStats,
-} from '../../../slices/taskSlice';
+} from "../../../slices/taskSlice";
 
 // Import admin slice to get approved users
-import { getApprovedUsers } from '../../../slices/adminSlice';
+import { getApprovedUsers } from "../../../slices/adminSlice";
 
 // Tab panel component
 function TabPanel({ children, value, index, ...other }) {
@@ -73,7 +77,8 @@ const TaskPage = () => {
   const users = useSelector((state) => state.admin.usersApproved);
 
   // Combine all user types into a single array
-  const allUsers = users?.student?.concat(users?.teacher || [], users?.admin || []) || [];
+  const allUsers =
+    users?.student?.concat(users?.teacher || [], users?.admin || []) || [];
 
   useEffect(() => {
     // Fetch tasks and stats on component mount
@@ -97,15 +102,14 @@ const TaskPage = () => {
   };
 
   const handleDeleteTask = async (taskId) => {
-    if (window.confirm('Are you sure you want to delete this task?')) {
+    if (window.confirm("Are you sure you want to delete this task?")) {
       try {
         await dispatch(deleteTask(taskId)).unwrap();
       } catch (error) {
-        console.error('Failed to delete task:', error);
+        console.error("Failed to delete task:", error);
       }
     }
   };
-
 
   if (loading && tasks.length === 0) {
     return (
@@ -124,31 +128,31 @@ const TaskPage = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Open':
-        return 'primary';
-      case 'InProgress':
-        return 'warning';
-      case 'Testing':
-        return 'info';
-      case 'Close':
-        return 'success';
+      case "Open":
+        return "primary";
+      case "InProgress":
+        return "warning";
+      case "Testing":
+        return "info";
+      case "Close":
+        return "success";
       default:
-        return 'default';
+        return "default";
     }
   };
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'Critical':
-        return 'error';
-      case 'High':
-        return 'warning';
-      case 'Normal':
-        return 'info';
-      case 'Low':
-        return 'default';
+      case "Critical":
+        return "error";
+      case "High":
+        return "warning";
+      case "Normal":
+        return "info";
+      case "Low":
+        return "default";
       default:
-        return 'default';
+        return "default";
     }
   };
 
@@ -168,7 +172,7 @@ const TaskPage = () => {
           startIcon={<AddIcon />}
           onClick={() => handleOpenTaskDialog()}
           sx={{
-            textTransform: 'none',
+            textTransform: "none",
             fontWeight: 600,
             px: 3,
             py: 1.5,
@@ -188,20 +192,33 @@ const TaskPage = () => {
               sx={{
                 borderRadius: 2,
                 boxShadow: 3,
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                "&:hover": {
+                  transform: "translateY(-4px)",
                   boxShadow: 6,
                 },
               }}
             >
               <CardContent>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={500}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      gutterBottom
+                      fontWeight={500}
+                    >
                       Total Tasks
                     </Typography>
-                    <Typography variant="h4" fontWeight={700} color="text.primary">
+                    <Typography
+                      variant="h4"
+                      fontWeight={700}
+                      color="text.primary"
+                    >
                       {stats.totalTasks || 0}
                     </Typography>
                   </Box>
@@ -210,13 +227,15 @@ const TaskPage = () => {
                       width: 56,
                       height: 56,
                       borderRadius: 2,
-                      bgcolor: 'primary.lighter',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      bgcolor: "primary.lighter",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    <AssignmentOutlined sx={{ color: 'primary.main', fontSize: 28 }} />
+                    <AssignmentOutlined
+                      sx={{ color: "primary.main", fontSize: 28 }}
+                    />
                   </Box>
                 </Stack>
               </CardContent>
@@ -227,21 +246,35 @@ const TaskPage = () => {
               sx={{
                 borderRadius: 2,
                 boxShadow: 3,
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                "&:hover": {
+                  transform: "translateY(-4px)",
                   boxShadow: 6,
                 },
               }}
             >
               <CardContent>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={500}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      gutterBottom
+                      fontWeight={500}
+                    >
                       Open Tasks
                     </Typography>
-                    <Typography variant="h4" fontWeight={700} color="primary.main">
-                      {stats.statusStats?.find(s => s._id === 'Open')?.count || 0}
+                    <Typography
+                      variant="h4"
+                      fontWeight={700}
+                      color="primary.main"
+                    >
+                      {stats.statusStats?.find((s) => s._id === "Open")
+                        ?.count || 0}
                     </Typography>
                   </Box>
                   <Box
@@ -249,13 +282,15 @@ const TaskPage = () => {
                       width: 56,
                       height: 56,
                       borderRadius: 2,
-                      bgcolor: 'primary.lighter',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      bgcolor: "primary.lighter",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    <RadioButtonUnchecked sx={{ color: 'primary.main', fontSize: 28 }} />
+                    <RadioButtonUnchecked
+                      sx={{ color: "primary.main", fontSize: 28 }}
+                    />
                   </Box>
                 </Stack>
               </CardContent>
@@ -266,21 +301,35 @@ const TaskPage = () => {
               sx={{
                 borderRadius: 2,
                 boxShadow: 3,
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                "&:hover": {
+                  transform: "translateY(-4px)",
                   boxShadow: 6,
                 },
               }}
             >
               <CardContent>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={500}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      gutterBottom
+                      fontWeight={500}
+                    >
                       In Progress
                     </Typography>
-                    <Typography variant="h4" fontWeight={700} color="warning.main">
-                      {stats.statusStats?.find(s => s._id === 'InProgress')?.count || 0}
+                    <Typography
+                      variant="h4"
+                      fontWeight={700}
+                      color="warning.main"
+                    >
+                      {stats.statusStats?.find((s) => s._id === "InProgress")
+                        ?.count || 0}
                     </Typography>
                   </Box>
                   <Box
@@ -288,13 +337,13 @@ const TaskPage = () => {
                       width: 56,
                       height: 56,
                       borderRadius: 2,
-                      bgcolor: 'warning.lighter',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      bgcolor: "warning.lighter",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    <AccessTime sx={{ color: 'warning.main', fontSize: 28 }} />
+                    <AccessTime sx={{ color: "warning.main", fontSize: 28 }} />
                   </Box>
                 </Stack>
               </CardContent>
@@ -305,21 +354,35 @@ const TaskPage = () => {
               sx={{
                 borderRadius: 2,
                 boxShadow: 3,
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                "&:hover": {
+                  transform: "translateY(-4px)",
                   boxShadow: 6,
                 },
               }}
             >
               <CardContent>
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={500}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      gutterBottom
+                      fontWeight={500}
+                    >
                       Completed
                     </Typography>
-                    <Typography variant="h4" fontWeight={700} color="success.main">
-                      {stats.statusStats?.find(s => s._id === 'Close')?.count || 0}
+                    <Typography
+                      variant="h4"
+                      fontWeight={700}
+                      color="success.main"
+                    >
+                      {stats.statusStats?.find((s) => s._id === "Close")
+                        ?.count || 0}
                     </Typography>
                   </Box>
                   <Box
@@ -327,13 +390,13 @@ const TaskPage = () => {
                       width: 56,
                       height: 56,
                       borderRadius: 2,
-                      bgcolor: 'success.lighter',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      bgcolor: "success.lighter",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    <CheckCircle sx={{ color: 'success.main', fontSize: 28 }} />
+                    <CheckCircle sx={{ color: "success.main", fontSize: 28 }} />
                   </Box>
                 </Stack>
               </CardContent>
@@ -347,18 +410,24 @@ const TaskPage = () => {
         sx={{
           borderRadius: 2,
           boxShadow: 3,
-          overflow: 'hidden',
+          overflow: "hidden",
         }}
       >
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
+        <Box
+          sx={{
+            borderBottom: 1,
+            borderColor: "divider",
+            bgcolor: "background.paper",
+          }}
+        >
           <Tabs
             value={tabValue}
             onChange={handleTabChange}
             aria-label="task tabs"
             sx={{
               px: 2,
-              '& .MuiTab-root': {
-                textTransform: 'none',
+              "& .MuiTab-root": {
+                textTransform: "none",
                 fontWeight: 600,
                 minHeight: 64,
               },
@@ -386,7 +455,7 @@ const TaskPage = () => {
                 startIcon={<AddIcon />}
                 onClick={() => handleOpenTaskDialog()}
                 sx={{
-                  textTransform: 'none',
+                  textTransform: "none",
                   fontWeight: 600,
                 }}
               >
@@ -403,13 +472,13 @@ const TaskPage = () => {
                     elevation={0}
                     sx={{
                       p: 2.5,
-                      border: '1px solid',
-                      borderColor: 'divider',
+                      border: "1px solid",
+                      borderColor: "divider",
                       borderRadius: 2,
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        bgcolor: 'action.hover',
-                        borderColor: 'primary.main',
+                      transition: "all 0.2s ease",
+                      "&:hover": {
+                        bgcolor: "action.hover",
+                        borderColor: "primary.main",
                         boxShadow: 2,
                       },
                     }}
@@ -429,16 +498,21 @@ const TaskPage = () => {
                             color="text.secondary"
                             sx={{
                               mb: 2,
-                              display: '-webkit-box',
+                              display: "-webkit-box",
                               WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden',
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
                             }}
                           >
                             {task.description}
                           </Typography>
                         )}
-                        <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
+                        <Stack
+                          direction="row"
+                          spacing={1.5}
+                          alignItems="center"
+                          flexWrap="wrap"
+                        >
                           {task.status && (
                             <Chip
                               label={task.status}
@@ -446,7 +520,7 @@ const TaskPage = () => {
                               color={getStatusColor(task.status)}
                               sx={{
                                 fontWeight: 600,
-                                fontSize: '0.75rem',
+                                fontSize: "0.75rem",
                               }}
                             />
                           )}
@@ -458,23 +532,35 @@ const TaskPage = () => {
                               color={getPriorityColor(task.priority)}
                               sx={{
                                 fontWeight: 500,
-                                fontSize: '0.75rem',
+                                fontSize: "0.75rem",
                               }}
                             />
                           )}
                           {task.assignee && (
-                            <Stack direction="row" spacing={1} alignItems="center">
-                              <PersonOutline sx={{ fontSize: 16, color: 'text.secondary' }} />
-                              <Typography variant="caption" color="text.secondary">
-                                {task.assignee.firstName} {task.assignee.lastName}
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                            >
+                              <PersonOutline
+                                sx={{ fontSize: 16, color: "text.secondary" }}
+                              />
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {task.assignee.firstName}{" "}
+                                {task.assignee.lastName}
                               </Typography>
-                              <Tooltip title={`Assigned to ${task.assignee.firstName} ${task.assignee.lastName}`}>
+                              <Tooltip
+                                title={`Assigned to ${task.assignee.firstName} ${task.assignee.lastName}`}
+                              >
                                 <Avatar
                                   sx={{
                                     width: 24,
                                     height: 24,
-                                    fontSize: '0.7rem',
-                                    bgcolor: 'primary.main',
+                                    fontSize: "0.7rem",
+                                    bgcolor: "primary.main",
                                   }}
                                   src={task.assignee.profileImage}
                                 >
@@ -491,9 +577,9 @@ const TaskPage = () => {
                             size="small"
                             onClick={() => handleOpenTaskDialog(task)}
                             sx={{
-                              color: 'primary.main',
-                              '&:hover': {
-                                bgcolor: 'primary.lighter',
+                              color: "primary.main",
+                              "&:hover": {
+                                bgcolor: "primary.lighter",
                               },
                             }}
                           >
@@ -505,9 +591,9 @@ const TaskPage = () => {
                             size="small"
                             onClick={() => handleDeleteTask(task._id)}
                             sx={{
-                              color: 'error.main',
-                              '&:hover': {
-                                bgcolor: 'error.lighter',
+                              color: "error.main",
+                              "&:hover": {
+                                bgcolor: "error.lighter",
                               },
                             }}
                           >
@@ -523,37 +609,49 @@ const TaskPage = () => {
               <Paper
                 sx={{
                   p: 6,
-                  textAlign: 'center',
-                  bgcolor: 'background.paper',
+                  textAlign: "center",
+                  bgcolor: "background.paper",
                 }}
               >
                 <Box
                   sx={{
                     width: 100,
                     height: 100,
-                    borderRadius: '50%',
-                    bgcolor: 'action.hover',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mx: 'auto',
+                    borderRadius: "50%",
+                    bgcolor: "action.hover",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mx: "auto",
                     mb: 3,
                   }}
                 >
-                  <AssignmentOutlined sx={{ fontSize: 48, color: 'text.disabled' }} />
+                  <AssignmentOutlined
+                    sx={{ fontSize: 48, color: "text.disabled" }}
+                  />
                 </Box>
-                <Typography variant="h6" color="text.primary" gutterBottom fontWeight={600}>
+                <Typography
+                  variant="h6"
+                  color="text.primary"
+                  gutterBottom
+                  fontWeight={600}
+                >
                   No Tasks Found
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: 400, mx: 'auto' }}>
-                  Get started by creating your first task. Tasks help you stay organized and track your progress.
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 3, maxWidth: 400, mx: "auto" }}
+                >
+                  Get started by creating your first task. Tasks help you stay
+                  organized and track your progress.
                 </Typography>
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}
                   onClick={() => handleOpenTaskDialog()}
                   sx={{
-                    textTransform: 'none',
+                    textTransform: "none",
                     fontWeight: 600,
                     px: 3,
                     py: 1.5,

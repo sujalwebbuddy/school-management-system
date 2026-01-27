@@ -25,7 +25,7 @@ export default function Router({ isAuth, role }) {
         { path: "calender", element: <Calender /> },
         { path: "homework", element: <FeatureGuard feature="homework"><Homework /></FeatureGuard> },
         { path: "subject", element: <Subject /> },
-        { path: "details/:id", element: <FeatureGuard feature="homework"><HomeworkDetails /></FeatureGuard> },
+        { path: "homework/:id", element: <FeatureGuard feature="homework"><HomeworkDetails /></FeatureGuard> },
         { path: "examdetails/:id", element: <FeatureGuard feature="exams"><ExamDetails /></FeatureGuard> },
         { path: "teacher/:id", element: <Teacher /> },
         { path: "exam", element: <FeatureGuard feature="exams"><Exam /></FeatureGuard> },

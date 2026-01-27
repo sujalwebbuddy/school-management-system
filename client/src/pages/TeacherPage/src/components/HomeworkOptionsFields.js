@@ -26,7 +26,7 @@ function QuestionFields({ questionIndex, onRemove, canRemove }) {
         )}
       </Box>
 
-      <Grid container spacing={3}>
+    <Grid container spacing={3}>
         <Grid item xs={12}>
           <TextField
             label="Question Text"
@@ -42,76 +42,76 @@ function QuestionFields({ questionIndex, onRemove, canRemove }) {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Option A"
-            variant="outlined"
-            fullWidth
+      <Grid item xs={12} sm={6}>
+        <TextField
+          label="Option A"
+          variant="outlined"
+          fullWidth
             {...register(`questions.${questionIndex}.optionA`, {
               required: 'Option A is required',
             })}
             error={!!questionErrors?.optionA}
             helperText={questionErrors?.optionA?.message}
-          />
-        </Grid>
+        />
+      </Grid>
 
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Option B"
-            variant="outlined"
-            fullWidth
+      <Grid item xs={12} sm={6}>
+        <TextField
+          label="Option B"
+          variant="outlined"
+          fullWidth
             {...register(`questions.${questionIndex}.optionB`, {
               required: 'Option B is required',
             })}
             error={!!questionErrors?.optionB}
             helperText={questionErrors?.optionB?.message}
-          />
-        </Grid>
+        />
+      </Grid>
 
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Option C"
-            variant="outlined"
-            fullWidth
+      <Grid item xs={12} sm={6}>
+        <TextField
+          label="Option C"
+          variant="outlined"
+          fullWidth
             {...register(`questions.${questionIndex}.optionC`, {
               required: 'Option C is required',
             })}
             error={!!questionErrors?.optionC}
             helperText={questionErrors?.optionC?.message}
-          />
-        </Grid>
+        />
+      </Grid>
 
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Option D"
-            variant="outlined"
-            fullWidth
+      <Grid item xs={12} sm={6}>
+        <TextField
+          label="Option D"
+          variant="outlined"
+          fullWidth
             {...register(`questions.${questionIndex}.optionD`, {
               required: 'Option D is required',
             })}
             error={!!questionErrors?.optionD}
             helperText={questionErrors?.optionD?.message}
-          />
-        </Grid>
+        />
+      </Grid>
 
-        <Grid item xs={12}>
-          <TextField
-            select
-            label="Correct Answer"
-            fullWidth
+      <Grid item xs={12}>
+        <TextField
+          select
+          label="Correct Answer"
+          fullWidth
             {...register(`questions.${questionIndex}.correct`, {
               required: 'Correct answer is required',
             })}
             error={!!questionErrors?.correct}
             helperText={questionErrors?.correct?.message}
-          >
-            <MenuItem value="A">A</MenuItem>
-            <MenuItem value="B">B</MenuItem>
-            <MenuItem value="C">C</MenuItem>
-            <MenuItem value="D">D</MenuItem>
-          </TextField>
-        </Grid>
+        >
+          <MenuItem value="A">A</MenuItem>
+          <MenuItem value="B">B</MenuItem>
+          <MenuItem value="C">C</MenuItem>
+          <MenuItem value="D">D</MenuItem>
+        </TextField>
       </Grid>
+    </Grid>
     </Box>
   );
 }

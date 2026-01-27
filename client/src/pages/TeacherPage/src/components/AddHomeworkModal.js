@@ -104,29 +104,29 @@ export default function AddHomeworkModal({ open, onClose }) {
         </Box>
 
         <FormProvider {...formMethods}>
-          <Box sx={{ p: 3, overflowY: 'auto', maxHeight: 'calc(90vh - 80px)' }}>
-            <Stack spacing={3}>
-              <Box>
-                <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 'bold', mb: 2, display: 'block' }}>
-                  Basic Information
-                </Typography>
-                <HomeworkBasicFields register={register} control={control} errors={errors} />
-              </Box>
+        <Box sx={{ p: 3, overflowY: 'auto', maxHeight: 'calc(90vh - 80px)' }}>
+          <Stack spacing={3}>
+            <Box>
+              <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 'bold', mb: 2, display: 'block' }}>
+                Basic Information
+              </Typography>
+              <HomeworkBasicFields register={register} control={control} errors={errors} />
+            </Box>
 
-              <Divider dashed />
+            <Divider dashed />
 
-              <Box>
-                <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 'bold', mb: 2, display: 'block' }}>
+            <Box>
+              <Typography variant="overline" sx={{ color: 'text.secondary', fontWeight: 'bold', mb: 2, display: 'block' }}>
                   Questions
-                </Typography>
+              </Typography>
                 <HomeworkOptionsFields questions={questions} />
-              </Box>
+            </Box>
 
-              <Box sx={{ pt: 1 }}>
-                <HomeworkModalFooter onClose={handleClose} onSubmit={handleSubmit(onSubmit)} />
-              </Box>
-            </Stack>
-          </Box>
+            <Box sx={{ pt: 1 }}>
+              <HomeworkModalFooter onClose={handleClose} onSubmit={handleSubmit(onSubmit)} />
+            </Box>
+          </Stack>
+        </Box>
         </FormProvider>
       </Box>
     </Modal>

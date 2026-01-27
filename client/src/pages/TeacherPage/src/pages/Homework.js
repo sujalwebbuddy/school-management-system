@@ -16,8 +16,8 @@ import Page from '../components/Page';
 import Iconify from '../components/Iconify';
 import { useSelector } from 'react-redux';
 import AddHomeworkModal from '../components/AddHomeworkModal';
-import HomeworkTable from '../components/HomeworkTable';
 import { filter } from 'lodash';
+import GenericResponsiveTable, { getTableConfig } from '../../../../components/GenericResponsiveTable';
 
 export default function Homework() {
   const homeworks = useSelector((state) => {
@@ -43,6 +43,8 @@ export default function Homework() {
       );
     })
     : homeworks;
+
+  const config = getTableConfig('homework');
 
   return (
     <Page title="Homework">
@@ -141,7 +143,13 @@ export default function Homework() {
             </Stack>
           </Box>
 
-          <HomeworkTable homeworks={filteredHomeworks} filterName={filterName} />
+          <GenericResponsiveTable
+            config={config}
+            data={filteredHomeworks}
+            actions={{}}
+            filters={{}}
+            pagination={{}}
+          />
         </Card>
       </Container>
     </Page>

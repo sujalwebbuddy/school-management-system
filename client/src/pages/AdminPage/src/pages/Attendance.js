@@ -17,7 +17,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import TextField from '@mui/material/TextField';
 import Page from '../components/Page';
 import Iconify from '../components/Iconify';
-import AttendanceTable from '../components/AttendanceTable';
+import { GenericAttendanceTable } from '../../../../components/GenericResponsiveTable';
 import AttendanceHeader from '../components/AttendanceHeader';
 import AttendanceEmptyState from '../components/AttendanceEmptyState';
 import AttendanceRoleToggle from '../components/AttendanceRoleToggle';
@@ -124,7 +124,7 @@ export default function Attendance() {
                 </Typography>
               </Box>
             ) : (
-              <AttendanceTable
+              <GenericAttendanceTable
                 users={users}
                 attendanceData={attendanceData}
                 onAttendanceChange={handleAttendanceChange}

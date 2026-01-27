@@ -28,57 +28,59 @@ const GREY = {
   500_80: alpha('#919EAB', 0.8),
 };
 
+// Unified 4-color system with professional shades
 const PRIMARY = {
-  lighter: '#D1E9FC',
-  light: '#76B0F1',
-  main: '#2065D1',
-  dark: '#103996',
-  darker: '#061B64',
+  lighter: '#E3F2FD',
+  light: '#90CAF9',
+  main: '#1976D2',
+  dark: '#1565C0',
+  darker: '#0D47A1',
   contrastText: '#fff',
 };
 
 const SECONDARY = {
-  lighter: '#D6E4FF',
-  light: '#84A9FF',
-  main: '#3366FF',
-  dark: '#1939B7',
-  darker: '#091A7A',
-  contrastText: '#fff',
-};
-
-const INFO = {
-  lighter: '#D0F2FF',
-  light: '#74CAFF',
-  main: '#1890FF',
-  dark: '#0C53B7',
-  darker: '#04297A',
+  lighter: '#F3E5F5',
+  light: '#CE93D8',
+  main: '#9C27B0',
+  dark: '#7B1FA2',
+  darker: '#4A148C',
   contrastText: '#fff',
 };
 
 const SUCCESS = {
-  lighter: '#E9FCD4',
-  light: '#AAF27F',
-  main: '#54D62C',
-  dark: '#229A16',
-  darker: '#08660D',
-  contrastText: GREY[800],
+  lighter: '#E8F5E8',
+  light: '#A5D6A7',
+  main: '#4CAF50',
+  dark: '#388E3C',
+  darker: '#1B5E20',
+  contrastText: '#fff',
 };
 
 const WARNING = {
-  lighter: '#FFF7CD',
-  light: '#FFE16A',
-  main: '#FFC107',
-  dark: '#B78103',
-  darker: '#7A4F01',
-  contrastText: GREY[800],
+  lighter: '#FFF8E1',
+  light: '#FFD54F',
+  main: '#FF9800',
+  dark: '#F57C00',
+  darker: '#E65100',
+  contrastText: '#fff',
+};
+
+// Keep INFO and ERROR for system messages
+const INFO = {
+  lighter: '#E1F5FE',
+  light: '#4FC3F7',
+  main: '#29B6F6',
+  dark: '#0288D1',
+  darker: '#01579B',
+  contrastText: '#fff',
 };
 
 const ERROR = {
-  lighter: '#FFE7D9',
-  light: '#FFA48D',
-  main: '#FF4842',
-  dark: '#B72136',
-  darker: '#7A0C2E',
+  lighter: '#FFEBEE',
+  light: '#EF5350',
+  main: '#F44336',
+  dark: '#D32F2F',
+  darker: '#B71C1C',
   contrastText: '#fff',
 };
 

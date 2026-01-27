@@ -36,7 +36,7 @@ export default function UserMoreMenu({ id }) {
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Link
-          to={`/studentDashboard/details/${id}`}
+          to={`/studentDashboard/homework/${id}`}
           state={id}
           style={{ textDecoration: "none" }}
         >

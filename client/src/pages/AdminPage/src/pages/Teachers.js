@@ -1,6 +1,6 @@
 'use strict';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import {
   Card,
   Stack,
@@ -10,7 +10,6 @@ import {
   Box,
   OutlinedInput,
   InputAdornment,
-  TablePagination,
   Chip,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
@@ -18,7 +17,7 @@ import Page from '../components/Page';
 import Iconify from '../components/Iconify';
 import { useSelector, useDispatch } from 'react-redux';
 import { getApprovedUsers } from '../../../../slices/adminSlice';
-import TeacherTable from '../components/TeacherTable';
+import GenericResponsiveTable, { getTableConfig } from '../../../../components/GenericResponsiveTable';
 import useTeachersTable from '../hooks/useTeachersTable';
 
 export default function Teachers() {
@@ -34,18 +33,14 @@ export default function Teachers() {
   const {
     page,
     order,
-    selected,
     orderBy,
     filterName,
     rowsPerPage,
     filteredTeachers,
-    handleRequestSort,
-    handleSelectAllClick,
-    handleClick,
-    handleChangePage,
-    handleChangeRowsPerPage,
     handleFilterByName,
   } = useTeachersTable(teachers);
+
+  const config = getTableConfig('teachers');
 
   return (
     <Page title="Teachers">
@@ -128,36 +123,21 @@ export default function Teachers() {
             </Stack>
           </Box>
 
-          <TeacherTable
-            teachers={filteredTeachers}
-            order={order}
-            orderBy={orderBy}
-            selected={selected}
-            onRequestSort={handleRequestSort}
-            onSelectAllClick={handleSelectAllClick}
-            onSelect={handleClick}
-            filterName={filterName}
-            page={page}
-            rowsPerPage={rowsPerPage}
-          />
-
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25, 50]}
-            component="div"
-            count={teachers?.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            sx={{
-              borderTop: '1px solid',
-              borderColor: 'divider',
-              '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows':
-                {
-                  fontWeight: 500,
-                },
+          <GenericResponsiveTable
+            config={config}
+            data={filteredTeachers}
+            actions={{}}
+            filters={{
+              filterName,
+              order,
+              orderBy,
+            }}
+            pagination={{
+              page,
+              rowsPerPage,
             }}
           />
+
         </Card>
       </Container>
     </Page>
